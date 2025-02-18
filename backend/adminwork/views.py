@@ -5,8 +5,12 @@ from rest_framework import status
 from backend.permissions import IsAdmin
 from django.utils import timezone
 from .serializers import CombinedEventSerializer
-from .models import Event, EventDetail
+from .serializers import RegistrationSerializer
+from .models import Event, EventDetail, Category, EventRegistration, RegistrationDetail
 from django.db import transaction
+from rest_framework.permissions import IsAuthenticated
+
+
 
 @api_view(['POST'])
 @permission_classes([IsAdmin])
@@ -144,3 +148,91 @@ def delete_event(request, event_id):
         return Response({'message': 'Event deleted successfully'}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def register_for_event(request):
+    """Register for an event with category-specific details."""
+    serializer = RegistrationSerializer(data=request.data)
+    
+    if serializer.is_valid():
+        try:
+            with transaction.atomic():
+                # Check for existing registration in this year's event
+                event_detail = EventDetail.objects.get(pk=serializer.validated_data['event_detail'])
+                category = Category.objects.get(pk=serializer.validated_data['category'])
+                
+                existing_registration = EventRegistration.objects.filter(
+                    event_detail=event_detail,
+                    user=request.user,
+                    category=category,
+                    is_deleted=False
+                ).first()
+
+                if existing_registration:
+                    return Response(
+                        {'error': f'Already registered for {category.name} this year'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                # Create registration
+                registration = EventRegistration.objects.create(
+                    event_detail=event_detail,
+                    user=request.user,
+                    category=category
+                )
+
+                # Create registration details
+                RegistrationDetail.objects.create(
+                    registration=registration,
+                    music_instrument=serializer.validated_data.get('music_instrument'),
+                    drinks=serializer.validated_data.get('drinks')
+                )
+
+                return Response({
+                    'message': 'Registration successful',
+                    'registration_id': registration.registration_id,
+                    'category': category.name,
+                    'year': event_detail.year
+                }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_registrations(request, year=None):
+    """Get user's registrations with optional year filter."""
+    registrations = EventRegistration.objects.filter(
+        user=request.user,
+        is_deleted=False
+    )
+    
+    if year:
+        registrations = registrations.filter(event_detail__year=year)
+    
+    data = []
+    for reg in registrations.select_related('event_detail', 'category', 'registrationdetail'):
+        reg_data = {
+            'registration_id': reg.registration_id,
+            'event_name': reg.event_detail.event.name,
+            'category': reg.category.name,
+            'year': reg.event_detail.year,
+            'registration_date': reg.registration_date
+        }
+        
+        # Add category-specific details
+        if hasattr(reg, 'registrationdetail'):
+            if reg.category.code == 'MUSIC':
+                reg_data['music_instrument'] = reg.registrationdetail.music_instrument
+            elif reg.category.code == 'STALL':
+                reg_data['drinks'] = reg.registrationdetail.drinks
+        
+        data.append(reg_data)
+    
+    return Response(data, status=status.HTTP_200_OK)

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Event
+from .models import Category
 
 class CombinedEventSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=200, required=False)  
@@ -21,4 +22,25 @@ class CombinedEventSerializer(serializers.Serializer):
                 if not data.get("photo"):
                     raise serializers.ValidationError({"photo": "Photo is required for new events."})
 
+        return data
+
+
+
+class RegistrationSerializer(serializers.Serializer):
+    event_detail = serializers.IntegerField()
+    category = serializers.IntegerField()
+    music_instrument = serializers.CharField(required=False, allow_null=True)
+    drinks = serializers.CharField(required=False, allow_null=True)
+
+    def validate(self, data):
+        category = Category.objects.get(pk=data['category'])
+        
+        if category.code == 'MUSIC' and not data.get('music_instrument'):
+            raise serializers.ValidationError({
+                "music_instrument": "Required for music volunteers"
+            })
+        elif category.code == 'STALL' and not data.get('drinks'):
+            raise serializers.ValidationError({
+                "drinks": "Required for stall registration"
+            })
         return data
