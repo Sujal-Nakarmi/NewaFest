@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'registerlogin',
     'adminwork',
+    'pandit_booking',
     'rest_framework', 
 
 ]
