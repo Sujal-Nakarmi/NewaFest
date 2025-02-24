@@ -155,13 +155,11 @@ def delete_event(request, event_id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def register_for_event(request):
-    """Register for an event with category-specific details."""
     serializer = RegistrationSerializer(data=request.data)
     
     if serializer.is_valid():
         try:
             with transaction.atomic():
-                # Check for existing registration in this year's event
                 event_detail = EventDetail.objects.get(pk=serializer.validated_data['event_detail'])
                 category = Category.objects.get(pk=serializer.validated_data['category'])
                 
@@ -171,34 +169,33 @@ def register_for_event(request):
                     category=category,
                     is_deleted=False
                 ).first()
-
+                
                 if existing_registration:
                     return Response(
                         {'error': f'Already registered for {category.name} this year'},
                         status=status.HTTP_400_BAD_REQUEST
                     )
-
-                # Create registration
+                
                 registration = EventRegistration.objects.create(
                     event_detail=event_detail,
                     user=request.user,
                     category=category
                 )
-
-                # Create registration details
+                
                 RegistrationDetail.objects.create(
                     registration=registration,
                     music_instrument=serializer.validated_data.get('music_instrument'),
-                    drinks=serializer.validated_data.get('drinks')
+                    drinks=serializer.validated_data.get('drinks'),
+                    rally_option_id=serializer.validated_data.get('rally_option')
                 )
-
+                
                 return Response({
                     'message': 'Registration successful',
                     'registration_id': registration.registration_id,
                     'category': category.name,
                     'year': event_detail.year
                 }, status=status.HTTP_201_CREATED)
-
+                
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     

@@ -32,9 +32,6 @@ class EventDetail(models.Model):
         super().save(*args, **kwargs)
 
 
-# models.py
-from django.db import models
-from django.utils import timezone
 
 class Category(models.Model):
     category_id = models.AutoField(primary_key=True)
@@ -74,6 +71,19 @@ class RegistrationDetail(models.Model):
     registration = models.OneToOneField(EventRegistration, on_delete=models.CASCADE)
     music_instrument = models.CharField(max_length=100, null=True, blank=True)
     drinks = models.CharField(max_length=200, null=True, blank=True)
-    
+    rally_option = models.ForeignKey('BhintunaRally', on_delete=models.PROTECT, null=True, blank=True)
+
     class Meta:
         db_table = 'RegistrationDetail'
+
+
+class BhintunaRally(models.Model):
+    option_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50)  # Walk, Bike, Car
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'BhintunaRally'
+
+    def __str__(self):
+        return self.name
