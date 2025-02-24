@@ -30,6 +30,7 @@ class User(AbstractBaseUser):
         NORMAL_USER = "normal_user", "Normal User"
         ADMIN = "admin", "Admin"
         PANDIT = "pandit", "Pandit"
+        VENDOR = "vendor", "Vendor" 
 
     id = models.AutoField(primary_key=True)
     full_name = models.CharField(max_length=100)
@@ -75,3 +76,16 @@ class Pandit(models.Model):
 
     class Meta:
         db_table = "Pandit"
+
+
+class Vendor(models.Model):
+    vendor_id = models.AutoField(primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    company_name = models.CharField(max_length=200)
+    business_description = models.TextField()
+    
+    
+    class Meta:
+        db_table = "Vendor"
+
+

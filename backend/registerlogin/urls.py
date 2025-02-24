@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import register_user, register_pandit, protected_view, get_user_profile, CustomTokenObtainPairView, create_admin, create_first_admin, manage_user, admin_dashboard, admin_create_user, admin_create_pandit
+from .views import register_user, register_pandit, protected_view, get_user_profile, CustomTokenObtainPairView, create_admin, create_first_admin, manage_user, admin_dashboard, admin_create_user, admin_create_pandit, promote_to_vendor
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -28,4 +28,5 @@ urlpatterns = [
 
     path('api/admin/users/create/', admin_create_user, name='admin_create_user'),
     path('api/admin/pandits/create/', admin_create_pandit, name='admin_create_pandit'),
+    path('api/admin/promote-to-vendor/', promote_to_vendor, name='promote_to_vendor'),
 ]

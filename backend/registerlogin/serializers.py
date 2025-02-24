@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
-from .models import User
-from .models import Pandit
+from .models import User, Pandit, Vendor
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from django.contrib.auth.hashers import check_password
@@ -45,6 +44,29 @@ class PanditSerializer(serializers.ModelSerializer):
         pandit = Pandit.objects.create(user=user, **validated_data)
         return pandit
     
+class VendorSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)  # Read-only for promotion API
+    user_id = serializers.IntegerField(write_only=True)  # For accepting user ID
+    
+    class Meta:
+        model = Vendor
+        fields = ['vendor_id', 'user', 'user_id', 'company_name', 'business_description']
+    
+    def create(self, validated_data):
+        user_id = validated_data.pop('user_id')
+        try:
+            user = User.objects.get(id=user_id, is_deleted=False)
+            # Change user role to vendor
+            user.user_role = User.UserRole.VENDOR
+            user.save()
+            
+            # Create vendor instance
+            vendor = Vendor.objects.create(user=user, **validated_data)
+            return vendor
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User not found")
+        
+    
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
@@ -85,3 +107,5 @@ class AdminUserCreateSerializer(serializers.ModelSerializer):
         validated_data['user_role'] = User.UserRole.ADMIN
         validated_data['password'] = make_password(validated_data['password'])
         return super().create(validated_data)
+    
+

@@ -1,8 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import UserSerializer
-from .serializers import PanditSerializer
+from .serializers import UserSerializer, PanditSerializer, VendorSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -229,6 +228,10 @@ def admin_dashboard(request):
         is_deleted=False,
         user_role=User.UserRole.NORMAL_USER
     ).count()
+    total_vendors = User.objects.filter(
+        is_deleted=False,
+        user_role=User.UserRole.VENDOR
+    ).count()
     
     # Serialize the filtered users
     serializer = UserSerializer(users, many=True)
@@ -238,7 +241,26 @@ def admin_dashboard(request):
         'stats': {
             'total_users': total_users,
             'total_pandits': total_pandits,
-            'total_normal_users': total_normal_users
+            'total_normal_users': total_normal_users,
+            'total_vendors': total_vendors
         },
         'users': serializer.data
     })
+
+
+@api_view(['POST'])
+@permission_classes([IsAdmin])
+def promote_to_vendor(request):
+    """
+    API endpoint for an admin to promote a user to vendor role.
+    Requires admin permissions.
+    """
+    if request.method == 'POST':
+        serializer = VendorSerializer(data=request.data)
+        if serializer.is_valid():
+            vendor = serializer.save()
+            return Response({
+                'message': 'User promoted to vendor successfully',
+                'vendor': VendorSerializer(vendor).data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
