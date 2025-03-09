@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock } from "react-icons/fa";
-import "../CSS/Login.css";
+import "../CSS/UserLogin.css";
 import Design1 from "../Assests/Design1.png";
 import Design2 from "../Assests/Design2.png";
 import logo from "../Assests/Logo.png";
@@ -98,7 +98,7 @@ const LoginPage = () => {
               </Form>
               <p className="Bottom-Link-Login">
                 Don't have an account?
-                <a href="/registration" className="register-link">
+                <a href="/register/user" className="register-link">
                   Create One
                 </a>
               </p>

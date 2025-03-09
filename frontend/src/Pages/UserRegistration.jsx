@@ -94,7 +94,7 @@ function Registration() {
             </form>
             <p className="Bottom-Link-Register">
               Already have an account?
-              <Link to="/login" className="login-link">Login</Link>
+              <Link to="/login/user" className="login-link">Login</Link>
             </p>
             <p>{message}</p>
           </div>

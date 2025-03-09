@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "../CSS/PanditRegistration.css";
+import { Link } from "react-router-dom"
 import Design1 from "../Assests/Design1.png";
 import Design2 from "../Assests/Design2.png";
 import { FaUser, FaEnvelope, FaLock, FaPhone, FaMapMarkerAlt, FaFlag, FaBriefcase, FaFileAlt } from 'react-icons/fa';
@@ -148,7 +149,7 @@ function RegistrationPandit() {
               </div>
 
               <div className="bottom-link">
-                <p>Already have an account? <a href="#" className="login-link">Login</a></p>
+                <p>Already have an account? <Link to="/login/pandit" className="login-link">Login</Link></p>
               </div>
             </form>
           </div>

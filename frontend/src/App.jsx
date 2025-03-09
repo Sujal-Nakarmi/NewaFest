@@ -5,7 +5,8 @@ import './App.css';
 import HomePage from './Pages/HomePage';
 import Registration from './Pages/UserRegistration';
 import RegistrationPandit from './Pages/PanditRegistration';
-import LoginPage from './Pages/Login';
+import LoginPage from './Pages/UserLogin';
+import PanditLoginPage from './Pages/PanditLogin';
 
 // Import other pages as needed
 
@@ -16,9 +17,10 @@ function App() {
       <div className="min-vh-100 d-flex flex-column">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/registration" element={<Registration />} />
+          <Route path="/register/user" element={<Registration />} />
           <Route path="/register/pandit" element={<RegistrationPandit />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login/user" element={<LoginPage />} />
+          <Route path="/login/pandit" element={<PanditLoginPage />} />
           
 
         </Routes>
