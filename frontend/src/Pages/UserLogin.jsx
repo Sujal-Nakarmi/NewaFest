@@ -27,18 +27,36 @@ const LoginPage = () => {
         email,
         password,
       });
+      
+      // Store tokens
       localStorage.setItem("access_token", response.data.access);
       localStorage.setItem("refresh_token", response.data.refresh);
+      
+      // Store user role and any other relevant user info
+      localStorage.setItem("user_role", response.data.user_role);
+      
+      // Set default authorization header
       axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.access}`;
-      navigate("/");
-     
-
-       // Redirect to dashboard or home
+      
+      // Redirect based on user role
+      switch(response.data.user_role) {
+        case "admin":
+          navigate("/admin/dashboard");
+          break;
+        case "pandit":
+          navigate("/pandit/dashboard");
+          break;
+        case "vendor":
+          navigate("/vendor/dashboard");
+          break;
+        default:
+          navigate("/"); // Regular user home page
+      }
     } catch (err) {
       setError("Invalid email or password");
     }
   };
-
+  
   return (
     <div className="login-container">
       <Container fluid>
