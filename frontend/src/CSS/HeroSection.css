@@ -1,0 +1,56 @@
+.hero-section {
+    background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('../Assests/Picture4.png');
+    background-size: cover;
+    background-position: center;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+  }
+  
+  .greeting-image {
+    max-width: 300px;
+    transition: transform 0.3s ease;
+  }
+  
+  .greeting-image:hover {
+    transform: scale(1.05);
+  }
+  
+  .greeting-text {
+    color: #eab308;
+    font-size: 2rem;
+    font-weight: bold;
+  }
+  
+  .register-btn {
+    background-color: #991b1b;
+    border-color: #991b1b;
+    transition: all 0.3s ease;
+    padding: 0.75rem 2rem;
+  }
+  
+  .register-btn:hover {
+    background-color: #7f1d1d;
+    border-color: #7f1d1d;
+    transform: translateY(-2px);
+  }
+  
+  .card {
+    background: rgba(255, 255, 255, 0.98);
+  }
+  
+  @media (max-width: 768px) {
+    .hero-section {
+      padding-top: 5rem;
+    }
+    
+    .greeting-image {
+      max-width: 250px;
+    }
+  }
+
+  .hero_section_heading{
+    font-size: 50px;
+    font-weight: bold;
+  }
+  
+  

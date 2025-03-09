@@ -1,0 +1,116 @@
+        
+    
+        
+        .registration-left-panel {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../Assests/Picture1.png') no-repeat center center;
+            background-size: cover;
+            color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+           
+            height: 100vh;
+            position: relative;
+            /* &::after{
+                position: absolute;
+                content: '';
+                height: 100%;
+                width: 100%;
+                background: linear-gradient(#ff7e5f 0% , #feb47b 100%);
+            } */
+        }
+       
+        .registration-left-panel h1 {
+            
+            font-size: 40px;
+            font-weight: bold;
+            margin-top: 160px;
+        }
+        .registration-left-panel p {
+            font-size: 1.2rem;
+        }
+        .right-panel {
+            background-color: white;
+            padding: 80px;
+            border-radius: 10px;
+        }
+        .form-container {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+          }
+          
+          .right-panel h2 {
+            color: #8b0000;
+            font-weight: bold;
+            font-size: 2rem;
+            
+          }
+        .btn-register {
+            background-color: #8B0000;
+            color: white;
+        }
+        .btn-register:hover{
+            color: #8B0000;
+        }
+        .btn-cancel {
+            border-color: #8B0000;
+            color: #8B0000;
+        }
+        .login-link {
+            color: #8B0000;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    margin-left: 5px;
+        }
+        .login-link:hover {
+            color: #6b0000;
+            text-decoration: underline;
+        }
+        
+        .design1 {
+            position: absolute;
+            max-width: 17%; /* Make width relative to parent */
+            height: auto; /* Maintain aspect ratio */
+            right: 0px; /* Adjust position responsively */
+            top: 0px; /* Adjust position responsively */
+        }
+        
+        .design2 {
+            position: absolute;
+            max-width: 25%; /* Make width relative to parent */
+            height: auto; /* Maintain aspect ratio */
+            right: 0px; /* Adjust position responsively */
+            bottom: 0px; /* Adjust position responsively */
+        }
+
+        .register-logo{
+            height: 90px;
+            width: 150px;
+           
+           
+        }
+
+        .Bottom-Link-Register{
+            margin-top: 40px;
+            margin-left: 100px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px; /* Match your existing form-control margin */
+          }
+          
+          .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            z-index: 1;
+          }
+          
+          .input-group .form-control {
+            padding-left: 40px; /* Add space for the icon */
+          }
