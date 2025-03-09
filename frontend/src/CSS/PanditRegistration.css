@@ -1,0 +1,169 @@
+/* Base styles remain unchanged */
+.registration-p-left-panel {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("../Assests/Picture5.png") no-repeat center
+      center;
+    background-size: cover;
+    color: white;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100vh;
+    position: relative;
+  }
+  
+  .left-panel h1 {
+    font-size: 40px;
+    font-weight: bold;
+  }
+  
+  .left-panel p {
+    font-size: 1.2rem;
+  }
+  
+  .Logo {
+    position: absolute;
+    top: 70px;
+  }
+  
+  .design1 {
+    position: absolute;
+    max-width: 16%;
+    height: auto;
+    right: 0px;
+    top: 0px;
+  }
+  
+  .design2 {
+    position: absolute;
+    max-width: 20%;
+    height: auto;
+    right: 0px;
+    bottom: 0px;
+  }
+  
+  /* Specific pandit registration styles */
+  .pandit-right-panel {
+    background-color: white;
+    padding: 25px 40px;
+    margin: 70px 0 0 0;
+    width: 95%;
+    max-width: 800px;
+    min-height: 80vh;
+    position: relative;
+  }
+  
+  .pandit-right-panel h2 {
+    color: #8b0000;
+    font-weight: bold;
+    margin-bottom: 25px;
+  }
+  
+  /* Two-column layout for inputs */
+  .input-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .input-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  /* Add these styles for the input icons */
+  .input-group {
+    position: relative;
+  }
+  
+  .input-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6b7280;
+    z-index: 1;
+  }
+  
+  .pandit-form .form-control {
+    height: 45px;
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+    padding: 10px 15px 10px 40px; /* Added left padding for icons */
+  }
+  
+  .form-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+  }
+  
+  .btn-register {
+    background-color: #8b0000;
+    color: white;
+    padding: 10px 30px;
+    border: none;
+    border-radius: 5px;
+    flex: 1;
+    cursor: pointer;
+  }
+  
+  .btn-register:hover {
+    color: #8b0000;
+  }
+  
+  .btn-cancel {
+    border: 1px solid #8b0000;
+    color: #8b0000;
+    background: transparent;
+    padding: 10px 30px;
+    border-radius: 5px;
+    flex: 1;
+    cursor: pointer;
+  }
+  
+  .bottom-link {
+    text-align: center;
+    margin-top: 30px;
+  }
+  
+  .login-link {
+    color: #8b0000;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  
+  .login-link:hover {
+    color: #6b0000;
+    text-decoration: underline;
+  }
+  
+  /* Responsive styles */
+  @media (max-width: 992px) {
+    .input-row {
+      flex-direction: column;
+      gap: 15px;
+    }
+  
+    .pandit-right-panel {
+      margin: 40px auto;
+      width: 90%;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .registration-left-panel {
+      height: auto;
+      min-height: 300px;
+    }
+  
+    .pandit-right-panel {
+      width: 95%;
+      padding: 25px;
+    }
+  }
+  
+  
