@@ -14,6 +14,7 @@ from datetime import timedelta
 
 import pymysql
 pymysql.install_as_MySQLdb()
+import os
 
 
 
@@ -21,6 +22,14 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Media files settings
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Ensure media folder exists at startup
+if not os.path.exists(MEDIA_ROOT):
+    os.makedirs(MEDIA_ROOT)
 
 
 # Quick-start development settings - unsuitable for production

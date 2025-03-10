@@ -1,0 +1,67 @@
+.date-box {
+    text-align: center;
+  }
+  
+  .month {
+    font-size: 1.25rem;
+    font-weight: bolder;
+    margin-right: 200px;
+  }
+  
+  .day {
+    font-size: 120px;
+    font-weight: bolder;
+    margin-right: 200px;
+  }
+  
+  .Event_heading{
+    margin-top: 70px;
+    margin-left: 75px;
+    font-size: 70px;
+    font-weight: bolder;
+    color: #8B4513;
+
+  }
+
+  .event_name{
+    font-size: 40px;
+    font-weight: bold;
+    padding-bottom: 10px;
+  }
+
+  .event_loc{
+    font-size: 20px;
+    padding-bottom: 20px;
+    
+  }
+
+  .event_time{
+    font-size: 20px;
+    padding-bottom: 20px;
+  
+  }
+
+  .get_involved_btn{
+
+    background-color: #8B0000;
+    color: white;
+    border: none;
+    font-size: 20px;
+    height: 40px;
+    width: 170px;
+    margin-top: 10px;
+
+  }
+
+.eventonehr{
+   margin-top: 90px;
+   width: 1100px;
+   margin-left: 100px;
+}
+
+.twoeventhr{
+    margin-top: 90px;
+    margin-left: 100px;
+    width: 1100px;
+
+}

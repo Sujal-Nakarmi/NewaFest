@@ -62,11 +62,7 @@ class User(AbstractBaseUser):
         self.email = f"deleted_{self.id}_{self.email}"  # Prevent email conflicts
         self.save()
 
-        # Reset AUTO_INCREMENT correctly
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT COALESCE(MAX(id), 0) FROM User")
-            max_id = cursor.fetchone()[0]  # Fetch the result
-            cursor.execute(f"ALTER TABLE User AUTO_INCREMENT = {max_id + 1}")
+    
 
 class Pandit(models.Model):
     pandit_id = models.AutoField(primary_key=True)

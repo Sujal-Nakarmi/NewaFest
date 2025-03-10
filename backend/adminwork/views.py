@@ -9,6 +9,8 @@ from .serializers import RegistrationSerializer
 from .models import Event, EventDetail, Category, EventRegistration, RegistrationDetail
 from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
+from django.conf import settings
 
 
 
@@ -94,6 +96,38 @@ def list_events(request):
                 'is_active': latest_detail.is_active
             })
 
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+
+
+# In your views.py
+@api_view(['GET'])
+@permission_classes([AllowAny]) 
+def public_list_events(request):
+    """Retrieve a list of events along with the latest event details for public users."""
+    events = Event.objects.all()
+    response_data = []
+    
+    for event in events:
+        latest_detail = event.details.order_by('-year').first()
+        if latest_detail:
+            # Make sure to construct the full URL correctly
+            photo_url = None
+            if event.photo:
+                photo_url = request.build_absolute_uri(settings.MEDIA_URL + event.photo.name)
+            
+            response_data.append({
+                'event_id': event.event_id,
+                'name': event.name,
+                'description': event.description,
+                'photo': photo_url,
+                'location': latest_detail.location,
+                'start_time': latest_detail.start_time,
+                'year': latest_detail.year,
+                'is_active': latest_detail.is_active
+            })
+    
     return Response(response_data, status=status.HTTP_200_OK)
 
 
