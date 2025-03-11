@@ -13,7 +13,11 @@ import VendorDashboard from './Pages/VendorDashboard';
 import ProtectedRoute from "./Components/ProtectedRoute";
 import BhintunaDetail from "./Pages/BhintunaDetail";
 import ProfilePage from './Pages/ProfilePage';
-
+import IhiDetail from './Pages/IhiDetail';
+import PanditBookingForm from './Components/PanditBookingForm';
+import Events from './Components/EventsAdminPanel';
+import Users from './Components/UsersAdminPanel';
+import EventRegistrations from './Components/RegistrationAdminPanel';
 // Import other pages as needed
 
 function App() {
@@ -28,13 +32,20 @@ function App() {
           <Route path="/login/user" element={<LoginPage />} />
           <Route path="/login/pandit" element={<PanditLoginPage />} />
           <Route path="/Bhintuna" element={<BhintunaDetail />} />
+          <Route path="/Ihi" element={<IhiDetail />} />
           <Route path="/Profile" element={<ProfilePage />} />
+          <Route path="/PanditBookingForm" element={<PanditBookingForm />} />
 
           <Route path="/register/:eventDetailId" element={<BhintunaDetail />} />
+
+          <Route path="/book-pandit/:panditId" element={<PanditBookingForm />} />
 
            {/* Protected routes for specific roles */}
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/dashboard/users" element={<Users />} />
+          <Route path="/admin/dashboard/events" element={<Events />} />
+          <Route path="/admin/dashboard/registrations" element={<EventRegistrations />} />
         </Route>
         
         <Route element={<ProtectedRoute allowedRoles={["pandit"]} />}>

@@ -1,0 +1,79 @@
+.booking-form-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+  }
+  
+  .step-circle {
+    width: 40px;
+    height: 40px;
+    background-color: #FFD700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+  
+  .step-heading {
+    color: #8B2500;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+ 
+  
+  .description-textarea {
+    resize: none;
+  }
+  
+  .divider {
+    border-top: 1px solid #e0e0e0;
+    margin: 1.5rem 0;
+  }
+  
+  .pandit-avatar {
+    width: 120px;
+    height: 120px;
+    background-color: #e0e0e0;
+    border-radius: 50%;
+  }
+  
+  .pandit-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #333;
+  }
+  
+  .pandit-address {
+    font-size: 0.9rem;
+    color: #555;
+  }
+  
+  .submit-btn {
+    background-color: #8B2500;
+    color: white;
+    border: none;
+    padding: 0.5rem 2rem;
+    font-size: 1.1rem;
+    min-width: 120px;
+  }
+  
+  .submit-btn:hover {
+    background-color: #6B1D00;
+  }
+  
+  .cancel-btn {
+    background-color: white;
+    color: #8B2500;
+    border: 1px solid #8B2500;
+    padding: 0.5rem 2rem;
+    font-size: 1.1rem;
+    min-width: 120px;
+  }
+  
+  .cancel-btn:hover {
+    background-color: #f8f8f8;
+  }

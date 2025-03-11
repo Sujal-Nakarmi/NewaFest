@@ -1,0 +1,69 @@
+.ihi {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url("../Assests/IhiIN.png");
+      background-size: cover;
+      background-position: center;
+      height: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      }
+
+      event-card {
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 2rem;
+      }
+      
+      .event-image {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      
+      .event-title {
+        color: #8b4513;
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 1.5rem;
+      }
+      
+      .event-description {
+        color: #666;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+      }
+      
+      .register-btn {
+        background-color: #8b0000;
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        font-size: 1.1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+      
+      .register-btn:hover {
+        background-color: #660000;
+      }
+      
+      @media (max-width: 992px) {
+        .event-section {
+          padding: 3rem 1rem;
+        }
+      
+        .section-title {
+          font-size: 2rem;
+        }
+      
+        .event-title {
+          font-size: 1.75rem;
+          margin-top: 1.5rem;
+        }
+      }

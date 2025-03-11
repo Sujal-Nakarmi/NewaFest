@@ -269,6 +269,35 @@ def get_user_registrations(request, year=None):
     
     return Response(data, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@permission_classes([IsAdmin])
+def get_all_user_registrations(request, year=None):
+    """Get all user registrations for admins."""
+    registrations = EventRegistration.objects.filter(is_deleted=False)
+    if year:
+        registrations = registrations.filter(event_detail__year=year)
+    
+    data = []
+    for reg in registrations.select_related('event_detail', 'category', 'registrationdetail'):
+        reg_data = {
+            'registration_id': reg.registration_id,
+            'event_name': reg.event_detail.event.name,
+            'category': reg.category.name,
+            'year': reg.event_detail.year,
+            'registration_date': reg.registration_date
+        }
+        
+        # Add category-specific details
+        if hasattr(reg, 'registrationdetail'):
+            if reg.category.code == 'MUSIC':
+                reg_data['music_instrument'] = reg.registrationdetail.music_instrument
+            elif reg.category.code == 'STALL':
+                reg_data['drinks'] = reg.registrationdetail.drinks
+        
+        data.append(reg_data)
+    
+    return Response(data, status=status.HTTP_200_OK)
+
 
 
 @api_view(['GET'])

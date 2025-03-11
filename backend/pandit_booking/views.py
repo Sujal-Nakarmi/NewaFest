@@ -8,6 +8,7 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .models import PanditBooking
 from registerlogin.models import Pandit, User
+from rest_framework.permissions import AllowAny
 from .serializers import (
     PanditDetailSerializer,
     BookingSerializer,
@@ -15,7 +16,7 @@ from .serializers import (
 )
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def list_pandits(request):
     """List all available pandits."""
     pandits = Pandit.objects.select_related('user').filter(user__is_deleted=False)
