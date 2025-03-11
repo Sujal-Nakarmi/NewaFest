@@ -1,0 +1,121 @@
+.registration-modal .modal-content {
+    border-radius: 0;
+    border: none;
+  }
+  
+  .modal-header-custom {
+    padding: 2rem;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .modal-title-custom {
+    color: white;
+    font-size: 2rem;
+    margin: 0;
+  }
+  
+  .btn-close-white {
+    filter: brightness(0) invert(1);
+  }
+  
+  .custom-modal-body {
+    padding: 2rem;
+    background: white;
+  }
+  
+  .form-input {
+    background-color: #ffe8e8 !important;
+    border: none !important;
+    border-radius: 4px !important;
+    padding: 0.75rem !important;
+  }
+  
+  .form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+  }
+  
+  .button-container {
+    display: flex;
+    justify-content: flex-start;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  
+  .register-button {
+    background-color: #7b2110 !important;
+    border: none !important;
+    padding: 0.5rem 2rem !important;
+    font-weight: 500;
+  }
+  
+  .cancel-button {
+    background: transparent !important;
+    border: 1px solid #7b2110 !important;
+    color: #7b2110 !important;
+    padding: 0.5rem 2rem !important;
+    font-weight: 500;
+  }
+  
+  .modal-decoration {
+    position: relative;
+    height: 80px;
+    background: white;
+  }
+  
+  .dots-pattern {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    display: grid;
+    grid-template-columns: repeat(8, 8px);
+    grid-template-rows: repeat(3, 8px);
+    gap: 4px;
+  }
+  
+  .dots-pattern::before {
+    content: "";
+    width: 4px;
+    height: 4px;
+    background-color: #7b2110;
+    border-radius: 50%;
+  }
+  
+  .corner-triangle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 200px;
+    height: 120px;
+    background-color: #7b2110;
+    clip-path: polygon(100% 0, 0% 100%, 100% 100%);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .modal-header-custom {
+      height: 100px;
+    }
+  
+    .modal-title-custom {
+      font-size: 1.5rem;
+    }
+  
+    .button-container {
+      flex-direction: column;
+    }
+  
+    .register-button,
+    .cancel-button {
+      width: 100%;
+    }
+  }
+  
+  

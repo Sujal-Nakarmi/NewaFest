@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import list_events, manage_event, update_event, delete_event, register_for_event, get_user_registrations, public_list_events
+from .views import list_events, manage_event, update_event, delete_event, register_for_event, get_user_registrations, public_list_events, get_category, get_rallyoptions
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -11,6 +11,11 @@ urlpatterns = [
     path('events/register/', register_for_event, name='register_event'),
     path('events/registrations/', get_user_registrations, name='user_registrations'),   
     path('events/', public_list_events, name='public_list_events'),
+
+    path('events/categories/', get_category, name='category-list'),
+
+    path('events/rallyoptions/', get_rallyoptions, name='rally-options'),
+
 
 ]
 

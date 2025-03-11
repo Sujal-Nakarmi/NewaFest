@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import Event, EventDetail
-from .models import Category
+from .models import Event, EventDetail, Category, BhintunaRally
+
 
 class CombinedEventSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=200, required=False)  
@@ -55,3 +55,15 @@ class RegistrationSerializer(serializers.Serializer):
                     "category": "Rally registration is only available for Bhintuna event"
                 })
         return data
+    
+
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'  # You can specify the fields you want to expose, or use '__all__' to expose all.
+
+
+class RallySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BhintunaRally
+        fields = '__all__'  # You can specify the fields you want to expose, or use '__all__' to expose all.

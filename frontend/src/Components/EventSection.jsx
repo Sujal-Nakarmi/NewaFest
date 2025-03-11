@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../CSS/EventSection.css';
 import { Link } from 'react-router-dom';
-import axios from 'axios'; // Make sure axios is installed
+import axios from 'axios';
 
 const EventSection = () => {
   const [events, setEvents] = useState([]);
@@ -49,6 +49,7 @@ const EventSection = () => {
       ) : (
         events.map((event, index) => {
           const date = formatDate(event.start_time);
+          const eventDetailId = event.event_detail_id; // Safe check for details array
           
           return (
             <div key={event.event_id}>
@@ -83,9 +84,12 @@ const EventSection = () => {
                       <strong>Time:</strong> {new Date(event.start_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                     </p>
                     <p className="text-muted">{event.description}</p>
-                    <Link to={`/${event.name.replace(/\s+/g, '')}`} className="get_involved_btn">
-                      Get Involved
-                    </Link>
+                     {/* Only render Link if eventDetailId exists */}
+                     {eventDetailId && (
+                       <Link to={`/register/${eventDetailId}`} className="get_involved_btn">
+                         Get Involved
+                       </Link>
+                     )}
                   </div>
                 </div>
               </div>

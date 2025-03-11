@@ -1,0 +1,101 @@
+.section-title {
+    color: #7b2110;
+    font-weight: bold;
+    margin-bottom: 2rem;
+  }
+  
+  .numbered-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .numbered-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  
+  .number {
+    font-weight: bold;
+    min-width: 25px;
+  }
+  
+  .content {
+    margin: 0;
+    flex: 1;
+  }
+  
+  .bhintuna-title {
+    color: #7b2110;
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+  }
+  
+  .bhintuna-description {
+    max-width: 800px;
+    margin: 0 auto;
+    color: #666;
+    line-height: 1.6;
+  }
+  
+  .celebration-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .celebration-item {
+    position: relative;
+  }
+  
+  .number-circle {
+    width: 40px;
+    height: 40px;
+    background-color: #ffd700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+  }
+  
+  .method-description {
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: #333;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .numbered-item {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  
+    .number {
+      margin-bottom: 0.5rem;
+    }
+  
+    .bhintuna-title {
+      font-size: 2rem;
+    }
+  
+    /* Make images stack on mobile */
+    .celebration-item .col-md-4 {
+      margin-bottom: 1rem;
+    }
+  }
+  
+  /* For larger screens, ensure images maintain consistent height */
+  @media (min-width: 992px) {
+    .celebration-item img {
+      height: 200px;
+      object-fit: cover;
+      width: 100%;
+    }
+  }
+  
+  

@@ -11,7 +11,8 @@ import AdminDashboard from './Pages/AdminDashboard';
 import PanditDashboard from './Pages/PanditDashboard';
 import VendorDashboard from './Pages/VendorDashboard';
 import ProtectedRoute from "./Components/ProtectedRoute";
-
+import BhintunaDetail from "./Pages/BhintunaDetail";
+import ProfilePage from './Pages/ProfilePage';
 
 // Import other pages as needed
 
@@ -26,6 +27,10 @@ function App() {
           <Route path="/register/pandit" element={<RegistrationPandit />} />
           <Route path="/login/user" element={<LoginPage />} />
           <Route path="/login/pandit" element={<PanditLoginPage />} />
+          <Route path="/Bhintuna" element={<BhintunaDetail />} />
+          <Route path="/Profile" element={<ProfilePage />} />
+
+          <Route path="/register/:eventDetailId" element={<BhintunaDetail />} />
 
            {/* Protected routes for specific roles */}
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>

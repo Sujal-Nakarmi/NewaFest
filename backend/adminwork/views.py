@@ -5,8 +5,8 @@ from rest_framework import status
 from backend.permissions import IsAdmin
 from django.utils import timezone
 from .serializers import CombinedEventSerializer
-from .serializers import RegistrationSerializer
-from .models import Event, EventDetail, Category, EventRegistration, RegistrationDetail
+from .serializers import RegistrationSerializer, CategorySerializer, RallySerializer
+from .models import Event, EventDetail, Category, EventRegistration, RegistrationDetail, BhintunaRally
 from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
@@ -119,6 +119,7 @@ def public_list_events(request):
             
             response_data.append({
                 'event_id': event.event_id,
+                'event_detail_id': latest_detail.event_detail_id, 
                 'name': event.name,
                 'description': event.description,
                 'photo': photo_url,
@@ -267,3 +268,21 @@ def get_user_registrations(request, year=None):
         data.append(reg_data)
     
     return Response(data, status=status.HTTP_200_OK)
+
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny]) 
+def get_category(request):
+    categories = Category.objects.all()  # Get all categories from the Category model
+    serializer = CategorySerializer(categories, many=True)  # Serialize the data (many=True means multiple items)
+    return Response(serializer.data)  # Return the serialized data in a Response object
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny]) 
+def get_rallyoptions(request):
+    categories = BhintunaRally.objects.all()  # Get all categories from the Category model
+    serializer = RallySerializer(categories, many=True)  # Serialize the data (many=True means multiple items)
+    return Response(serializer.data)  # Return the serialized data in a Response object
+

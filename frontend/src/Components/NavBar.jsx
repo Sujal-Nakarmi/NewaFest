@@ -9,31 +9,40 @@ import axios from 'axios';
 function NavBar() {
   const [showPopover, setShowPopover] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userFullName, setUserFullName] = useState(null); // State to store full name
   const target = useRef(null);
   const navigate = useNavigate();
 
-  // Check if user is logged in when component mounts
+  // Check if user is logged in and retrieve user details
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    setIsLoggedIn(!!token);
+    const token = localStorage.getItem("access_token");
+    const fullName = localStorage.getItem("user_full_name"); // Retrieve full_name from localStorage
+    setUserFullName(fullName); // Update state with full name
+    setIsLoggedIn(!!token); // Set logged-in state
   }, []);
 
   const handlePopover = () => setShowPopover(!showPopover);
 
   const handleLogout = () => {
-    // Clear tokens from localStorage
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    
+    // Clear tokens and user details from localStorage
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user_role");
+    localStorage.removeItem("user_full_name"); // Remove full_name from localStorage
+    localStorage.removeItem("user_email");
+    localStorage.removeItem("user_phone_number");
+    localStorage.removeItem("user_address");
+    localStorage.removeItem("user_country");
+
     // Clear any authorization headers
     delete axios.defaults.headers.common["Authorization"];
-    
+
     // Update state
     setIsLoggedIn(false);
     setShowPopover(false);
-    
+
     // Redirect to login page
-    navigate('/login/user');
+    navigate("/login/user");
   };
 
   return (
@@ -50,7 +59,7 @@ function NavBar() {
               />
             </NavLink>
           </Navbar.Brand>
-          
+
           <Nav className="nav-links">
             <NavLink
               to="/"
@@ -71,7 +80,7 @@ function NavBar() {
               Contact Us
             </NavLink>
           </Nav>
-          
+
           <div ref={target}>
             {isLoggedIn ? (
               <Button
@@ -80,6 +89,7 @@ function NavBar() {
                 onClick={handlePopover}
               >
                 <FaUser className="user-icon" />
+                <span className="user-name">{userFullName}</span> {/* Display full_name */}
               </Button>
             ) : (
               <Button

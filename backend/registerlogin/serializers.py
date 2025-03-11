@@ -91,6 +91,8 @@ class CustomTokenObtainSerializer(TokenObtainPairSerializer):
                 'refresh': str(refresh),
                 'email': user.email,
                 'user_role': user.user_role,
+                'full_name': user.full_name,  # Add full_name
+               
             }
         except get_user_model().DoesNotExist:
             raise serializers.ValidationError('User not found')

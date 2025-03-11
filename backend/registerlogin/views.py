@@ -31,6 +31,9 @@ def register_user(request):
             return Response({
                 'access': str(refresh.access_token),
                 'refresh': str(refresh),
+                'email': user.email,
+                'full_name': user.full_name,  # Include full_name here
+                'user_role': user.user_role,
             }, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

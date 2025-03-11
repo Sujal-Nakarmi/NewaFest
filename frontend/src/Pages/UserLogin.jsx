@@ -33,7 +33,15 @@ const LoginPage = () => {
       localStorage.setItem("refresh_token", response.data.refresh);
       
       // Store user role and any other relevant user info
-      localStorage.setItem("user_role", response.data.user_role);
+      // Store tokens and user info (full_name, email, etc.)
+   
+    localStorage.setItem("user_role", response.data.user_role);
+    localStorage.setItem("user_full_name", response.data.full_name);  // full_name from response
+    localStorage.setItem("user_email", response.data.email);  // email from response
+    localStorage.setItem("user_phone_number", response.data.phone_number);  // phone_number
+    localStorage.setItem("user_address", response.data.address);  // address
+    localStorage.setItem("user_country", response.data.country);  // country
+
       
       // Set default authorization header
       axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.access}`;
