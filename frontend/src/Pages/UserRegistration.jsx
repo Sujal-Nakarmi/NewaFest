@@ -42,9 +42,9 @@ function Registration() {
       <div className="container-fluid">
         <div className="row w-100">
           <div className="col-md-6 registration-left-panel">
-            <img src={logo || "/placeholder.svg"} className="register-logo" alt="Logo" />
+            <Link to="/"><img src={logo || "/placeholder.svg"} className="register-logo" alt="Logo" /></Link>
             <h1>Create your account now</h1>
-            <p>Lorem Ipsum.</p>
+            <p></p>
           </div>
 
           <div className="col-md-6 right-panel">

@@ -9,8 +9,7 @@
       justify-content: center;
       color: white;
       }
-      
-      
+  
     
       .form-control-modal{
         background-color: #FFE4E1;
@@ -28,8 +27,8 @@
       }
       
       .register-btn:hover {
-        background-color: #5e1a0c;
-        border-color: #5e1a0c;
+        background-color:white;
+        
       }
       
       h1 {

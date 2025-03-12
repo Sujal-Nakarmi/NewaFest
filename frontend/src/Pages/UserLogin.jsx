@@ -7,6 +7,7 @@ import "../CSS/UserLogin.css";
 import Design1 from "../Assests/Design1.png";
 import Design2 from "../Assests/Design2.png";
 import logo from "../Assests/Logo.png";
+import { Link } from "react-router-dom"
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -71,7 +72,7 @@ const LoginPage = () => {
         <Row className="h-100">
           <Col md={6} className="p-0">
             <div className="login-left-panel">
-              <img src={logo} className="login-logo" alt="Logo" />
+             <Link to="/"> <img src={logo} className="login-logo" alt="Logo" /></Link>
               <h1>Log In Now</h1>
               <p>Stay connected with everything that matters to you.</p>
             </div>

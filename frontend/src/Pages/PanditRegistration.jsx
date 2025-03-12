@@ -4,7 +4,7 @@ import { Link } from "react-router-dom"
 import Design1 from "../Assests/Design1.png";
 import Design2 from "../Assests/Design2.png";
 import { FaUser, FaEnvelope, FaLock, FaPhone, FaMapMarkerAlt, FaFlag, FaBriefcase, FaFileAlt } from 'react-icons/fa';
-
+import NavBar from "../Components/NavBar";
 function RegistrationPandit() {
   const [formData, setFormData] = useState({
     full_name: "",
@@ -81,9 +81,9 @@ function RegistrationPandit() {
       <div className="row">
         {/* Left Panel */}
         <div className="col-md-6 registration-p-left-panel">
-          <div className="Logo">Logo</div>
-          <h1>Create your account to</h1>
-          <p>Lorem Ipsum.</p>
+          <Link to="/"><div className="Logo">Logo</div></Link>
+          <h1>Create your account now</h1>
+          <p></p>
         </div>
 
         {/* Right Panel */}

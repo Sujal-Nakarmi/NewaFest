@@ -1,0 +1,122 @@
+
+ 
+  .title-underline {
+    width: 80px;
+    height: 3px;
+    background-color:  #8B0000 ;
+    margin: 0 auto 24px;
+  }
+  
+  .section-subtitle {
+    font-size: 20px;
+    color: #6c757d;
+    margin-bottom: 48px;
+  }
+  
+  .services-section {
+    padding: 80px 0;
+    background-color: #fff;
+  }
+  
+  .section-title {
+    font-size: 42px;
+    font-weight: 700;
+    color: #000; /* Ensuring "Our Services" is black */
+    margin-bottom: 16px;
+  }
+  .service-card {
+    background: #fff;
+    padding: 32px;
+    border-radius: 8px;
+    box-shadow: none; /* Remove default shadow */
+    border: none; /* Remove default border */
+    height: 100%;
+    transition: all 0.3s ease;
+    position: relative; /* For the underline positioning */
+  }
+  
+  .service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Add shadow on hover */
+    border: 1px solid #eaeaea; /* Add subtle border on hover */
+  }
+  
+  /* Add the top middle underline on hover */
+  .service-card:hover::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 8px;
+    background-color:  #8B0000 ; /* Blue underline */
+  }
+  
+  .icon-wrapper {
+    margin-bottom: 24px;
+  }
+  
+  .service-icon {
+    width: 48px;
+    height: 48px;
+    color:  #8B0000 ;
+  }
+  
+  .card-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 16px;
+  }
+  
+  .card-description {
+    color: #6c757d;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  
+  .find-out-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #8B0000 ;
+    text-decoration: none;
+    font-weight: 500;
+    transition: gap 0.3s ease;
+  }
+  
+  .find-out-more:hover {
+    gap: 12px;
+    color: #6B1D00; /* Slightly darker on hover */
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 991px) {
+    .services-section {
+      padding: 60px 0;
+    }
+  
+    .section-title {
+      font-size: 36px;
+    }
+  
+    .section-subtitle {
+      font-size: 18px;
+    }
+  }
+  
+  @media (max-width: 767px) {
+    .service-card {
+      padding: 24px;
+    }
+  
+    .card-title {
+      font-size: 20px;
+    }
+  
+    .section-title {
+      font-size: 32px;
+    }
+  }

@@ -18,12 +18,14 @@ import PanditBookingForm from './Components/PanditBookingForm';
 import Events from './Components/EventsAdminPanel';
 import Users from './Components/UsersAdminPanel';
 import EventRegistrations from './Components/RegistrationAdminPanel';
+import EventCard from './Components/EventSection'
+import ScrollToTop from './Components/Scrolltotop';
 // Import other pages as needed
 
 function App() {
   return (
     <Router>
-     
+     <ScrollToTop />
       <div className="min-vh-100 d-flex flex-column">
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -37,8 +39,14 @@ function App() {
           <Route path="/PanditBookingForm" element={<PanditBookingForm />} />
 
           <Route path="/register/:eventDetailId" element={<BhintunaDetail />} />
+          
 
           <Route path="/book-pandit/:panditId" element={<PanditBookingForm />} />
+
+          <Route path="/register-event" element={<EventCard />}/>
+          <Route path="/book-pandits" element={<IhiDetail />}/>
+
+
 
            {/* Protected routes for specific roles */}
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>

@@ -3,6 +3,7 @@ import { useParams, useLocation } from "react-router-dom";
 import axios from "axios"; // Import axios
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../CSS/PanditBookingForm.css";
+import NavBar from '../Components/NavBar';
 
 const PanditBookingForm = () => {
   const { panditId } = useParams(); // Get Pandit ID from URL
@@ -58,6 +59,7 @@ const PanditBookingForm = () => {
 
   return (
     <div className="container booking-form-container">
+        <NavBar/><br/><br/>
       <form onSubmit={handleSubmit}>
         <div className="row mb-4">
           <div className="col-md-8">

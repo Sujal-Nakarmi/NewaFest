@@ -9,6 +9,7 @@ from django.shortcuts import get_object_or_404
 from .models import PanditBooking
 from registerlogin.models import Pandit, User
 from rest_framework.permissions import AllowAny
+from django.utils import timezone
 from .serializers import (
     PanditDetailSerializer,
     BookingSerializer,
@@ -26,17 +27,35 @@ def list_pandits(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_booking(request):
-    """Create a new booking for a pandit."""
     serializer = CreateBookingSerializer(data=request.data)
     
     if serializer.is_valid():
         try:
-            # Check if pandit exists and is active
             pandit = get_object_or_404(
                 Pandit, 
                 pandit_id=serializer.validated_data['pandit'].pandit_id,
                 user__is_deleted=False
             )
+            
+            # Check if pandit is already booked at this time
+            requested_date = serializer.validated_data['booking_date']
+            existing_bookings = PanditBooking.objects.filter(
+                pandit=pandit,
+                booking_date__range=(
+                    requested_date - timezone.timedelta(hours=1),
+                    requested_date + timezone.timedelta(hours=1)
+                ),
+                status__in=[
+                    PanditBooking.BookingStatus.PENDING,
+                    PanditBooking.BookingStatus.ACCEPTED
+                ]
+            ).exists()
+            
+            if existing_bookings:
+                return Response(
+                    {'error': 'Pandit already has a booking at this time'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             
             booking = serializer.save(
                 user=request.user,
@@ -48,6 +67,7 @@ def create_booking(request):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -86,5 +106,41 @@ def update_booking_status(request, booking_id):
     
     booking.status = new_status
     booking.save()
+    serializer = BookingSerializer(booking)
+    return Response(serializer.data)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def cancel_booking(request, booking_id):
+    """Cancel a booking (for users only)."""
+    booking = get_object_or_404(PanditBooking, booking_id=booking_id)
+    
+    if request.user != booking.user:
+        return Response(
+            {'error': 'Only the booking user can cancel this booking'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    if booking.status not in [PanditBooking.BookingStatus.PENDING, PanditBooking.BookingStatus.ACCEPTED]:
+        return Response(
+            {'error': 'Cannot cancel a booking that is already cancelled or rejected'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Check if cancellation is allowed (e.g., not too close to booking time)
+    time_until_booking = booking.booking_date - timezone.now()
+    if time_until_booking < timezone.timedelta(hours=24):
+        return Response(
+            {'error': 'Bookings cannot be cancelled less than 24 hours before the appointment'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    booking.status = PanditBooking.BookingStatus.CANCELLED
+    booking.save()
+    
+    # Notify pandit of cancellation
+    # send_booking_notification(booking, 'cancelled')
+    
     serializer = BookingSerializer(booking)
     return Response(serializer.data)

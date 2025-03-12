@@ -33,7 +33,7 @@ const PanditBooking = () => {
   if (error) return <p className="text-danger">{error}</p>;
 
   return (
-    <div className="container pandit-booking-container">
+    <div className="container pandit-booking-container">   
       <h1 className="pandit-heading mb-5">Pandit Booking</h1>
       <div className="row row-cols-1 row-cols-md-2 g-4">
         {pandits.map((pandit) => (

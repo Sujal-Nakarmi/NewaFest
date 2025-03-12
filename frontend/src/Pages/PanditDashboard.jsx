@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import '../CSS/PanditDashboard.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-
+import NavBar from '../Components/NavBar';
 const API_URL = 'http://localhost:8000/pandit_booking/bookings/';
 
 const BookingCard = ({ booking, updateBookingStatus }) => {
@@ -11,6 +11,8 @@ const BookingCard = ({ booking, updateBookingStatus }) => {
   };
 
   return (
+
+   
     <div className="booking-card">
       <div className="booking-header">
         <div className="user-info">
@@ -101,7 +103,9 @@ const PanditDashboard = () => {
   if (error) return <p>Error: {error}</p>;
 
   return (
+
     <div className="manage-bookings-container">
+      <NavBar/><br/><br/><br/>
       <h1 className="page-title">Manage Bookings</h1>
       <div className="bookings-grid">
         {bookings.length > 0 ? (
@@ -113,6 +117,8 @@ const PanditDashboard = () => {
         )}
       </div>
     </div>
+   
+
   );
 };
 
