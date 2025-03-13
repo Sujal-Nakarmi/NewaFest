@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.db import models
 from django.utils import timezone
-from django.db import connection
+from django.db.models.signals import post_save
 
 
 
@@ -69,6 +69,10 @@ class Pandit(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     experience_years = models.IntegerField()
     experience_description = models.TextField()
+    # Add this to your Pandit model
+    average_rating = models.FloatField(default=0.0)
+    total_reviews = models.IntegerField(default=0)
+
 
     class Meta:
         db_table = "Pandit"

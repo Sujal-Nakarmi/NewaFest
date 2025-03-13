@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import PanditBooking
+from .models import PanditBooking, PanditReview
 from django.utils import timezone
 
 from registerlogin.models import Pandit, User  # Updated import path
@@ -30,3 +30,18 @@ class CreateBookingSerializer(serializers.ModelSerializer):
         if value < timezone.now():
             raise serializers.ValidationError("Booking date cannot be in the past")
         return value
+
+
+class PanditReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PanditReview
+        fields = '__all__'
+        read_only_fields = ['review_id', 'user', 'pandit', 'created_at', 'updated_at']
+
+
+class CreateReviewSerializer(serializers.ModelSerializer):
+    booking_id = serializers.IntegerField()
+    
+    class Meta:
+        model = PanditReview
+        fields = ['booking_id', 'rating', 'comment']
