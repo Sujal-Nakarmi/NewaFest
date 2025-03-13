@@ -227,6 +227,7 @@ def create_review(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def pandit_reviews(request, pandit_id):
     """Get all reviews for a specific pandit."""
     pandit = get_object_or_404(Pandit, pandit_id=pandit_id)

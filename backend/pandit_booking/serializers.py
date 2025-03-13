@@ -10,7 +10,7 @@ class PanditDetailSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Pandit
-        fields = ['pandit_id', 'user', 'experience_years', 'experience_description']
+        fields = ['pandit_id', 'user', 'experience_years', 'experience_description', 'average_rating', 'total_reviews']
 
 class BookingSerializer(serializers.ModelSerializer):
     user_details = UserSerializer(source='user', read_only=True)
