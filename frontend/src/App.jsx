@@ -20,6 +20,10 @@ import Users from './Components/UsersAdminPanel';
 import EventRegistrations from './Components/RegistrationAdminPanel';
 import EventCard from './Components/EventSection'
 import ScrollToTop from './Components/Scrolltotop';
+import UserBookings from './Components/UserBookingHistory';
+import PanditReviews from './Components/PanditReview';
+import CreateReview from './Components/Review';
+import UserReviews from './Components/UserReview';
 // Import other pages as needed
 
 function App() {
@@ -42,9 +46,14 @@ function App() {
           
 
           <Route path="/book-pandit/:panditId" element={<PanditBookingForm />} />
+          <Route path="/my-bookings" element={<UserBookings />} />
 
           <Route path="/register-event" element={<EventCard />}/>
           <Route path="/book-pandits" element={<IhiDetail />}/>
+
+          <Route path="/pandit-reviews/:panditId" element={<PanditReviews />} />
+          <Route path="/create-review/:bookingId" element={<CreateReview />} />
+          <Route path="/my-reviews" element={<UserReviews />} />
 
 
 

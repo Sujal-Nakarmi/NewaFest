@@ -20,7 +20,7 @@ const HeroSection = () => {
             Your one-stop platform for Newari festival event registrations, traditional clothing rentals, and pandit booking services.
             </p>
             <button className="get-started-btn">
-            Register Now
+            Explore Now
             </button>
             <p className="footnote">* Experience the rich heritage and cultural essence of Newari traditions.</p>
           </div>

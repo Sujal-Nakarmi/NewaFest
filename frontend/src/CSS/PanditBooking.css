@@ -1,0 +1,61 @@
+/* Rating stars styling */
+.rating-stars {
+    color: #ffc107;
+    font-size: 1.2rem;
+    margin-left: 4px;
+  }
+  
+  .rating-value {
+    font-weight: bold;
+    margin-left: 5px;
+  }
+  
+  .review-count {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-left: 5px;
+  }
+  
+  .rating-display {
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .rating-display:hover {
+    color: #0d6efd;
+  }
+  
+  /* Create Review form styling */
+  .rating-input {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+  }
+  
+  .rating-input label {
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 3px;
+    transition: all 0.2s;
+  }
+  
+  .rating-input input:checked ~ label {
+    background-color: #ffc107;
+    color: white;
+  }
+  
+  .rating-input label:hover,
+  .rating-input label:hover ~ label {
+    background-color: #ffdb70;
+  }
+  
+  /* Review card enhancements */
+  .card-footer {
+    background-color: rgba(0,0,0,.03);
+  }
+  
+  .card:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,.1);
+    transform: translateY(-3px);
+    transition: all 0.3s ease;
+  }
