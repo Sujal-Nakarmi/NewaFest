@@ -1,16 +1,27 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../CSS/PanditBooking.css";
+import AuthModal from "./LoginRequiredMessage"; // Import the AuthModal component
 
 const PanditBooking = () => {
   const [pandits, setPandits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  
+  // Add state for the auth modal
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMessage, setAuthModalMessage] = useState("");
+  const [authModalRedirectPath, setAuthModalRedirectPath] = useState("/login/user");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    // Check if user is authenticated
+    const token = localStorage.getItem("access_token");
+    setIsAuthenticated(!!token);
+
     const fetchPandits = async () => {
       try {
         const response = await axios.get("http://localhost:8000/pandit_booking/pandits/");
@@ -26,12 +37,40 @@ const PanditBooking = () => {
   }, []);
 
   const handleBooking = (pandit) => {
-    navigate(`/book-pandit/${pandit.pandit_id}`, { state: { pandit } });
+    if (isAuthenticated) {
+      navigate(`/book-pandit/${pandit.pandit_id}`, { state: { pandit } });
+    } else {
+      setAuthModalMessage("Please log in to book a pandit.");
+      setAuthModalRedirectPath("/login/user");
+      setAuthModalOpen(true);
+    }
   };
 
   // Added function to view pandit reviews
   const viewReviews = (panditId) => {
     navigate(`/pandit-reviews/${panditId}`);
+  };
+
+  // Function to handle navigation that requires authentication
+  const handleAuthRequiredAction = (action, message, path = "/login/user") => {
+    if (isAuthenticated) {
+      // User is authenticated, proceed with navigation
+      if (action === "viewBookings") {
+        navigate("/my-bookings");
+      } else if (action === "viewReviews") {
+        navigate("/my-reviews");
+      }
+    } else {
+      // Store the intended action in local storage
+      localStorage.setItem("intendedAction", action);
+      // Store the current URL to return to after login
+      localStorage.setItem("returnUrl", window.location.pathname);
+      
+      // User is not authenticated, show the modal
+      setAuthModalMessage(message);
+      setAuthModalRedirectPath(path);
+      setAuthModalOpen(true);
+    }
   };
 
   if (loading) return <div className="container mt-5">Loading pandits...</div>;
@@ -42,12 +81,25 @@ const PanditBooking = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Pandit Booking</h2>
         <div>
-          <Link to="/my-bookings" className="btn btn-outline-primary me-2">
+          {/* Replace Link components with buttons that check authentication */}
+          <button 
+            className="btn btn-outline-primary me-2"
+            onClick={() => handleAuthRequiredAction(
+              "viewBookings", 
+              "Please log in to view and manage your bookings."
+            )}
+          >
             View My Bookings
-          </Link>
-          <Link to="/my-reviews" className="btn btn-outline-secondary">
+          </button>
+          <button 
+            className="btn btn-outline-secondary"
+            onClick={() => handleAuthRequiredAction(
+              "viewReviews", 
+              "Please log in to view your reviews."
+            )}
+          >
             My Reviews
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -92,6 +144,14 @@ const PanditBooking = () => {
           </div>
         ))}
       </div>
+
+      {/* Include the AuthModal component */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        message={authModalMessage}
+        redirectPath={authModalRedirectPath}
+      />
     </div>
   );
 };

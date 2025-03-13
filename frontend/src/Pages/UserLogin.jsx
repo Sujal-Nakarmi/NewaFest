@@ -15,6 +15,10 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  
+  // Extract returnUrl from query parameters if present
+  const queryParams = new URLSearchParams(window.location.search);
+  const returnUrl = queryParams.get("returnUrl") || "/";
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -33,22 +37,64 @@ const LoginPage = () => {
       localStorage.setItem("access_token", response.data.access);
       localStorage.setItem("refresh_token", response.data.refresh);
       
-      // Store user role and any other relevant user info
-      // Store tokens and user info (full_name, email, etc.)
-   
-    localStorage.setItem("user_role", response.data.user_role);
-    localStorage.setItem("user_full_name", response.data.full_name);  // full_name from response
-    localStorage.setItem("user_email", response.data.email);  // email from response
-    localStorage.setItem("user_phone_number", response.data.phone_number);  // phone_number
-    localStorage.setItem("user_address", response.data.address);  // address
-    localStorage.setItem("user_country", response.data.country);  // country
-
+      // Store user info
+      localStorage.setItem("user_role", response.data.user_role);
+      localStorage.setItem("user_full_name", response.data.full_name);
+      localStorage.setItem("user_email", response.data.email);
+      localStorage.setItem("user_phone_number", response.data.phone_number);
+      localStorage.setItem("user_address", response.data.address);
+      localStorage.setItem("user_country", response.data.country);
       
       // Set default authorization header
       axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.access}`;
       
-      // Redirect based on user role
-      switch(response.data.user_role) {
+      // Check if there's an intended action in localStorage
+      const intendedAction = localStorage.getItem("intendedAction");
+      
+      if (intendedAction) {
+        // Clear the intended action from localStorage
+        localStorage.removeItem("intendedAction");
+        localStorage.removeItem("returnUrl");
+        
+        // Handle specific actions
+        switch(intendedAction) {
+          case "viewBookings":
+            navigate("/my-bookings");
+            break;
+          case "viewReviews":
+            navigate("/my-reviews");
+            break;
+          default:
+            // If returnUrl exists, navigate to it, otherwise use role-based navigation
+            navigateBasedOnRole(response.data.user_role, returnUrl);
+        }
+      } else {
+        // No intended action, use returnUrl or role-based navigation
+        navigateBasedOnRole(response.data.user_role, returnUrl);
+      }
+    } catch (err) {
+      if (err.response) {
+        // Server responded with an error
+        if (err.response.status === 401) {
+          setError("Invalid email or password");
+        } else {
+          setError(`Login failed: ${err.response.data.detail || "Please try again later"}`);
+        }
+      } else if (err.request) {
+        // Request was made but no response received
+        setError("Server not responding. Please try again later.");
+      } else {
+        // Something happened in setting up the request
+        setError("An error occurred. Please try again.");
+      }
+    }
+  };
+  
+  // Helper function to navigate based on user role or returnUrl
+  const navigateBasedOnRole = (role, returnUrl) => {
+    // If returnUrl is the default "/" or a login/register page, use role-based navigation
+    if (returnUrl === "/" || returnUrl.includes("/login") || returnUrl.includes("/register")) {
+      switch(role) {
         case "admin":
           navigate("/admin/dashboard");
           break;
@@ -61,8 +107,9 @@ const LoginPage = () => {
         default:
           navigate("/"); // Regular user home page
       }
-    } catch (err) {
-      setError("Invalid email or password");
+    } else {
+      // Navigate to the return URL
+      navigate(returnUrl);
     }
   };
   
@@ -78,8 +125,8 @@ const LoginPage = () => {
             </div>
           </Col>
           <Col md={6} className="login-right d-flex align-items-center">
-            <img src={Design1} className="design1" />
-            <img src={Design2} className="design2" />
+            <img src={Design1} className="design1" alt="Design element 1" />
+            <img src={Design2} className="design2" alt="Design element 2" />
             <div className="login-form-container">
               <h1 className="login-title">Log in to your Account</h1>
               <p className="login-subtitle">Welcome back! Select a method to log in</p>
@@ -110,12 +157,17 @@ const LoginPage = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
-                  <button type="button" className="password-toggle" onClick={togglePasswordVisibility}>
+                  <button 
+                    type="button" 
+                    className="password-toggle" 
+                    onClick={togglePasswordVisibility}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
                 <div className="text-end mb-3">
-                  <a href="#" className="forgot-password">
+                  <a href="/forgot-password" className="forgot-password">
                     Forgot Password?
                   </a>
                 </div>
@@ -124,10 +176,10 @@ const LoginPage = () => {
                 </Button>
               </Form>
               <p className="Bottom-Link-Login">
-                Don't have an account?
-                <a href="/register/user" className="register-link">
+                Don't have an account?{" "}
+                <Link to="/register/user" className="register-link">
                   Create One
-                </a>
+                </Link>
               </p>
             </div>
           </Col>
