@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'registerlogin',
     'adminwork',
     'pandit_booking',
+    'renting',
     'rest_framework', 
 
 ]

@@ -24,6 +24,8 @@ import UserBookings from './Components/UserBookingHistory';
 import PanditReviews from './Components/PanditReview';
 import CreateReview from './Components/Review';
 import UserReviews from './Components/UserReview';
+import RentingPage from './Pages/RentingPage';
+import CartPage from './Components/Cart';
 // Import other pages as needed
 
 function App() {
@@ -40,7 +42,9 @@ function App() {
           <Route path="/Bhintuna" element={<BhintunaDetail />} />
           <Route path="/Ihi" element={<IhiDetail />} />
           <Route path="/Profile" element={<ProfilePage />} />
+          <Route path="/Renting" element={<RentingPage />} />
           <Route path="/PanditBookingForm" element={<PanditBookingForm />} />
+          <Route path="/cart" element={<CartPage />} /> 
 
           <Route path="/register/:eventDetailId" element={<BhintunaDetail />} />
           

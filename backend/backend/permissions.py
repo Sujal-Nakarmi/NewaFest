@@ -16,3 +16,12 @@ class IsVendor(BasePermission):
             request.user.is_authenticated and 
             request.user.user_role == User.UserRole.VENDOR
         )
+    
+class IsAdminOrVendor(BasePermission):
+    """
+    Allows access to either admins or vendors.
+    """
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        return request.user.user_role in [User.UserRole.ADMIN, User.UserRole.VENDOR]

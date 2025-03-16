@@ -140,6 +140,36 @@
   background-color: #f8f9fa;
   color: #5271ff;
 }
+
+/* Add these styles to your NavBar.css file */
+
+.cart-icon {
+  color: #333;
+  transition: color 0.3s ease;
+}
+
+.cart-icon:hover {
+  color: #0d6efd;
+}
+
+.cart-button {
+  background: none;
+  border: none;
+  padding: 0;
+  position: relative;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 0.7rem;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
   
   /* Responsive adjustments */
   @media (max-width: 991px) {
