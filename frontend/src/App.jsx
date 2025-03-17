@@ -42,7 +42,7 @@ function App() {
           <Route path="/Bhintuna" element={<BhintunaDetail />} />
           <Route path="/Ihi" element={<IhiDetail />} />
           <Route path="/Profile" element={<ProfilePage />} />
-          <Route path="/Renting" element={<RentingPage />} />
+          <Route path="/rent-traditionals" element={<RentingPage />} />
           <Route path="/PanditBookingForm" element={<PanditBookingForm />} />
           <Route path="/cart" element={<CartPage />} /> 
 

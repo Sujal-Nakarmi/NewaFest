@@ -3,9 +3,10 @@ import { Container, Row, Col, Card, Button, Form, Table, Alert } from 'react-boo
 import { FaTrash, FaMinus, FaPlus, FaCalendarAlt } from 'react-icons/fa';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import DatePicker from 'react-datepicker'; // You'll need to install this package
+import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../CSS/Cart.css';
+import DeliveryLocationSelector from './DeliveryLocation';
 
 const CartPage = () => {
   const [cart, setCart] = useState({ items: [] });
@@ -141,12 +142,32 @@ const CartPage = () => {
     }
   };
 
+  const handleLocationSelected = (location) => {
+    // Update the cart with the new location
+    const updatedCart = { ...cart };
+    updatedCart.delivery_location_details = location;
+    updatedCart.delivery_fee = parseFloat(location.delivery_charge);
+    
+    // Recalculate total price
+    const itemsTotal = updatedCart.items_total || 
+      (updatedCart.items ? updatedCart.items.reduce((total, item) => total + parseFloat(item.price), 0) : 0);
+    updatedCart.total_price = (parseFloat(itemsTotal) + parseFloat(updatedCart.delivery_fee)).toFixed(2);
+    
+    setCart(updatedCart);
+  };
+
   const handleCheckout = () => {
+    if (!cart.delivery_location_details) {
+      setError('Please select a delivery location before proceeding to checkout.');
+      return;
+    }
     navigate('/checkout');
   };
 
   // Calculate total price from the cart data
-  const totalPrice = cart.total_price || (cart.items ? cart.items.reduce((total, item) => total + item.price, 0) : 0);
+  const itemsTotal = cart.items_total || (cart.items ? cart.items.reduce((total, item) => total + item.price, 0) : 0);
+  const deliveryFee = cart.delivery_fee || 0;
+  const totalPrice = cart.total_price || (itemsTotal + deliveryFee);
 
   // Calculate rental days between two dates
   const calculateDays = (startDate, endDate) => {
@@ -180,7 +201,7 @@ const CartPage = () => {
         <div className="text-center py-5">
           <h3>Your cart is empty</h3>
           <p className="mb-4">Looks like you haven't added any items to your cart yet.</p>
-          <Button variant="primary" onClick={() => navigate('/renting')}>
+          <Button variant="primary" onClick={() => navigate('/rent-traditionals')}>
             Continue Shopping
           </Button>
         </div>
@@ -336,7 +357,7 @@ const CartPage = () => {
               <Button 
                 variant="outline-primary" 
                 className="ms-2"
-                onClick={() => navigate('/renting')}
+                onClick={() => navigate('/rent-traditionals')}
               >
                 Continue Shopping
               </Button>
@@ -347,20 +368,27 @@ const CartPage = () => {
                   <h5 className="mb-3">Order Summary</h5>
                   <div className="d-flex justify-content-between mb-2">
                     <span>Items ({cart.items ? cart.items.length : 0}):</span>
-                    <span>Rs {totalPrice}</span>
+                    <span>Rs {itemsTotal}</span>
+                  </div>
+                  <div className="d-flex justify-content-between mb-2">
+                    <span>Delivery Fee:</span>
+                    <span>Rs {deliveryFee}</span>
                   </div>
                   <hr />
                   <div className="d-flex justify-content-between mb-3">
                     <strong>Total:</strong>
                     <strong>Rs {totalPrice}</strong>
                   </div>
+                  
+                  <DeliveryLocationSelector 
+                    onLocationSelected={handleLocationSelected} 
+                  />
+                  
                   <Button 
                     variant="primary" 
-                    size="lg" 
-                    block 
-                    className="w-100"
+                    className="w-100 mt-3"
                     onClick={handleCheckout}
-                    disabled={!cart.items || cart.items.length === 0}
+                    disabled={loading || !cart.items || cart.items.length === 0}
                   >
                     Proceed to Checkout
                   </Button>

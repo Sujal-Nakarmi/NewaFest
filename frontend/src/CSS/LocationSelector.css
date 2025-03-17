@@ -1,0 +1,125 @@
+.location-selector-container {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .location-selector-card {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+  
+  .location-header {
+    padding: 15px;
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  
+  .back-link {
+    color: #3366cc;
+    cursor: pointer;
+    font-weight: 500;
+    margin-right: 10px;
+  }
+  
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+  }
+  
+  .selected-item {
+    color: #3366cc;
+    font-weight: 500;
+  }
+  
+  .prompt-text {
+    color: #555;
+  }
+  
+  .breadcrumb-icon {
+    margin: 0 10px;
+    color: #888;
+  }
+  
+  .search-container {
+    position: relative;
+    margin-bottom: 15px;
+  }
+  
+  .search-input {
+    border-radius: 8px;
+    padding: 12px 40px 12px 15px;
+    border: 1px solid #ddd;
+    width: 100%;
+    font-size: 16px;
+  }
+  
+  .search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+  }
+  
+  .location-list {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .location-item {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .location-item:hover {
+    background-color: #f9f9f9;
+  }
+  
+  .delivery-charge {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .location-footer {
+    padding: 12px 15px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #eee;
+  }
+  
+  .mobile-scan {
+    display: flex;
+    align-items: center;
+    color: #555;
+    font-size: 14px;
+  }
+  
+  .mobile-icon {
+    margin-right: 8px;
+  }
+  
+  /* Adding orange styling for the header background to match the images */
+  .location-header {
+    background-color: #ff7043;
+    color: white;
+  }
+  
+  .back-link, .selected-item {
+    color: white;
+  }
+  
+  .prompt-text {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .breadcrumb-icon {
+    color: rgba(255, 255, 255, 0.7);
+  }

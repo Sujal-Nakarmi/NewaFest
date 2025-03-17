@@ -4,13 +4,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
 import os
-from .models import RentalItem, ItemSizeVariant
+from .models import RentalItem, ItemSizeVariant, DeliveryLocation
 from .serializers import RentalItemSerializer, RentalItemCreateSerializer, ItemSizeVariantSerializer
 from rest_framework.permissions import AllowAny
 from backend.permissions import IsAdminOrVendor
 from rest_framework.permissions import IsAuthenticated
 from .models import CartItem, Cart, RentalItem, ItemSizeVariant
-from .serializers import CartItemSerializer, CartSerializer
+from .serializers import CartItemSerializer, CartSerializer, DeliveryLocationSerializer
 
 @api_view(['POST'])
 @permission_classes([IsAdminOrVendor])
@@ -399,3 +399,67 @@ def clear_cart(request):
         return Response(cart_serializer.data, status=status.HTTP_200_OK)
     else:
         return Response({'message': 'Cart is already empty'}, status=status.HTTP_200_OK)
+    
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def list_provinces(request):
+    """List all provinces with available delivery locations."""
+    provinces = DeliveryLocation.objects.filter(
+        is_available=True
+    ).values_list('province', flat=True).distinct()
+    return Response(list(provinces), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def list_metro_areas(request, province):
+    """List all metro areas in a province."""
+    metro_areas = DeliveryLocation.objects.filter(
+        province=province, 
+        is_available=True
+    ).values_list('metro_area', flat=True).distinct()
+    return Response(list(metro_areas), status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def list_areas(request, province, metro_area=None):
+    """List all areas in a metro area."""
+    filters = {'province': province, 'is_available': True}
+    if metro_area:
+        filters['metro_area'] = metro_area
+    
+    locations = DeliveryLocation.objects.filter(**filters)
+    serializer = DeliveryLocationSerializer(locations, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_cart_delivery_location(request):
+    """Update the delivery location for the user's cart."""
+    location_id = request.data.get('location_id')
+    
+    if not location_id:
+        return Response({'error': 'Location ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Get the delivery location
+    location = get_object_or_404(DeliveryLocation, location_id=location_id, is_available=True)
+    
+    # Get or create user's cart
+    cart, created = Cart.objects.get_or_create(user=request.user, is_active=True)
+    
+    # Update cart's delivery location
+    cart.delivery_location = location
+    cart.save()
+    
+    # Return the updated cart
+    cart_serializer = CartSerializer(cart, context={'request': request})
+    return Response(cart_serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def list_all_delivery_locations(request):
+    """List all available delivery locations."""
+    locations = DeliveryLocation.objects.filter(is_available=True)
+    serializer = DeliveryLocationSerializer(locations, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

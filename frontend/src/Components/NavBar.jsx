@@ -112,7 +112,7 @@ function NavBar() {
               Home
             </NavLink>
             <NavLink
-              to="/renting"
+              to="/rent-traditionals"
               className={({ isActive }) => isActive ? 'nav-link active-link' : 'nav-link'}
             >
               Renting

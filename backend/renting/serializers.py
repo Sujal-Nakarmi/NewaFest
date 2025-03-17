@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import RentalItem, ItemSizeVariant
+from .models import RentalItem, ItemSizeVariant, DeliveryLocation
 
 class ItemSizeVariantSerializer(serializers.ModelSerializer):
     actual_price = serializers.DecimalField(source='get_price', max_digits=10, decimal_places=2, read_only=True)
@@ -8,6 +8,11 @@ class ItemSizeVariantSerializer(serializers.ModelSerializer):
         model = ItemSizeVariant
         fields = ['variant_id', 'size', 'quantity', 'price', 'actual_price', 'is_default']
         read_only_fields = ['variant_id', 'actual_price']
+
+class DeliveryLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeliveryLocation
+        fields = ['location_id', 'province', 'metro_area', 'area_name', 'delivery_charge']
 
 class RentalItemSerializer(serializers.ModelSerializer):
     size_variants = ItemSizeVariantSerializer(many=True, read_only=True)
@@ -24,6 +29,8 @@ class RentalItemSerializer(serializers.ModelSerializer):
         if value <= 0:
             raise serializers.ValidationError("Price must be greater than zero.")
         return value
+    
+
 
 # Serializer for creating a rental item with optional size variants
 class RentalItemCreateSerializer(serializers.ModelSerializer):
@@ -53,35 +60,6 @@ class RentalItemCreateSerializer(serializers.ModelSerializer):
                 ItemSizeVariant.objects.create(rental_item=rental_item, **variant_data)
         
         return rental_item
-
-
-'''
-class RentalItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RentalItem
-        fields = ['item_id', 'name', 'description', 'price', 'quantity', 
-                  'image', 'is_available', 'category', 'size', 'sizes', 'created_at', 'updated_at']
-        read_only_fields = ['item_id', 'created_at', 'updated_at']
-        
-    def validate(self, data):
-        # Ensure price is positive
-        if 'price' in data and data['price'] <= 0:
-            raise serializers.ValidationError({"price": "Price must be greater than zero."})
-            
-        # Ensure quantity is positive
-        if 'quantity' in data and data['quantity'] < 0:
-            raise serializers.ValidationError({"quantity": "Quantity cannot be negative."})
-            
-        return data
-    
-
-class RentalItemSizeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RentalItemSize
-        fields = ['size_id', 'size', 'quantity', 'price']
-        read_only_fields = ['size_id']
-    
-'''
 
 from rest_framework import serializers
 from .models import Cart, CartItem, RentalItem, ItemSizeVariant
@@ -121,10 +99,20 @@ class CartItemSerializer(serializers.ModelSerializer):
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
+    items_total = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    delivery_fee = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     total_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     items_count = serializers.IntegerField(read_only=True)
+    delivery_location_details = serializers.SerializerMethodField()
     
     class Meta:
         model = Cart
-        fields = ('cart_id', 'items', 'total_price', 'items_count', 'created_at', 'updated_at')
+        fields = ('cart_id', 'items', 'items_total', 'delivery_fee', 'total_price', 
+                  'items_count', 'delivery_location', 'delivery_location_details', 
+                  'created_at', 'updated_at')
         read_only_fields = ('cart_id', 'created_at', 'updated_at')
+    
+    def get_delivery_location_details(self, obj):
+        if obj.delivery_location:
+            return DeliveryLocationSerializer(obj.delivery_location).data
+        return None
