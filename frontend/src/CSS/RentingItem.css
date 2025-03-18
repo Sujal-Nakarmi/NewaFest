@@ -127,3 +127,117 @@
   .date-picker-container > div:hover {
     background-color: #f8f9fa;
   }
+
+  /* Existing RentingItem.css styles - keep them and add these new styles */
+
+/* Filter Panel */
+.filter-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+.filter-toggle-btn {
+  height: 38px;
+  display: flex;
+  align-items: center;
+}
+
+.filters-panel {
+  transition: all 0.3s ease;
+}
+
+.results-count {
+  font-size: 14px;
+}
+
+/* Category Tag */
+.category-tag {
+  margin: 10px 0;
+}
+
+.category-tag .badge {
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 20px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+/* Enhance existing card styles */
+.clothing-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid #e9ecef;
+}
+
+.clothing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhance search bar */
+.search-bar {
+  min-width: 250px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.search-bar .form-control,
+.search-bar .input-group-text {
+  border-color: #e9ecef;
+}
+
+.search-bar .form-control:focus {
+  box-shadow: none;
+  border-color: #ced4da;
+}
+
+/* No results state */
+.no-results {
+  padding: 40px 0;
+  text-align: center;
+}
+
+/* Enhance availability badge */
+.availability-badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.availability-badge.in-stock {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.availability-badge.available {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.availability-badge.limited {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+/* Price display */
+.item-price {
+  font-weight: 600;
+  color: #495057;
+  margin-right: 10px;
+}
+
+/* Modal styles */
+.modal-item-image {
+  border: 1px solid #e9ecef;
+}
+
+/* Form styles */
+.form-select:focus,
+.form-control:focus {
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+}

@@ -23,7 +23,7 @@ urlpatterns = [
     path('cart/items/<int:cart_item_id>/remove/', views.remove_from_cart, name='remove-from-cart'),
     path('cart/clear/', views.clear_cart, name='clear-cart'),
 
-     path('delivery/provinces/', views.list_provinces, name='list_provinces'),
+    path('delivery/provinces/', views.list_provinces, name='list_provinces'),
     path('delivery/provinces/<str:province>/metro-areas/', views.list_metro_areas, name='list_metro_areas'),
     path('delivery/provinces/<str:province>/metro-areas/<str:metro_area>/areas/', views.list_areas, name='list_areas'),
     path('delivery/provinces/<str:province>/areas/', views.list_areas, name='list_areas_by_province'),

@@ -26,6 +26,7 @@ import CreateReview from './Components/Review';
 import UserReviews from './Components/UserReview';
 import RentingPage from './Pages/RentingPage';
 import CartPage from './Components/Cart';
+import GaiJatra from './Pages/GaiJatra';
 // Import other pages as needed
 
 function App() {
@@ -47,6 +48,7 @@ function App() {
           <Route path="/cart" element={<CartPage />} /> 
 
           <Route path="/register/:eventDetailId" element={<BhintunaDetail />} />
+          <Route path="/GaiJatra" element={<GaiJatra />} />
           
 
           <Route path="/book-pandit/:panditId" element={<PanditBookingForm />} />

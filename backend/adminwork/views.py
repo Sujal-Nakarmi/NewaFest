@@ -5,8 +5,8 @@ from rest_framework import status
 from backend.permissions import IsAdmin
 from django.utils import timezone
 from .serializers import CombinedEventSerializer
-from .serializers import RegistrationSerializer, CategorySerializer, RallySerializer
-from .models import Event, EventDetail, Category, EventRegistration, RegistrationDetail, BhintunaRally
+from .serializers import RegistrationSerializer, CategorySerializer, RallySerializer, RallyLapSerializer, VolunteerLapSerializer, VolunteerTypeSerializer, NewariInstrumentSerializer, StallTypeSerializer, StallLocationSerializer
+from .models import Event, EventDetail, Category, EventRegistration, RegistrationDetail, BhintunaRally, BhintunaRallyLap, VolunteerLap, VolunteerType, NewariInstrument, StallType, StallLocation
 from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
@@ -185,56 +185,323 @@ def delete_event(request, event_id):
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status, serializers
+from django.db import transaction
+
+from .models import (
+    EventDetail, Category, EventRegistration, RegistrationDetail,
+    BhintunaRally, BhintunaRallyLap, VolunteerType, 
+    VolunteerLap, NewariInstrument
+)
+from .serializers import RegistrationSerializer
 
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def register_for_event(request):
     serializer = RegistrationSerializer(data=request.data)
-    
+
     if serializer.is_valid():
         try:
             with transaction.atomic():
                 event_detail = EventDetail.objects.get(pk=serializer.validated_data['event_detail'])
                 category = Category.objects.get(pk=serializer.validated_data['category'])
                 
-                existing_registration = EventRegistration.objects.filter(
+                # Get number of seats requested (default to 1 if not specified)
+                seats_requested = serializer.validated_data.get('seats_requested', 1)
+                
+                # Check if maximum allowed seats per user is defined for this category
+                max_seats_per_user = getattr(category, 'max_seats_per_user', 5)  # Default to 5 if not set
+                
+                # Check if user is trying to register more than allowed seats
+                if seats_requested > max_seats_per_user:
+                    return Response(
+                        {'error': f'Maximum {max_seats_per_user} seats allowed per user for {category.name}'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                # Count existing registrations for this user in this category
+                existing_registrations_count = EventRegistration.objects.filter(
                     event_detail=event_detail,
                     user=request.user,
                     category=category,
                     is_deleted=False
-                ).first()
+                ).count()
                 
-                if existing_registration:
+                # Check if user will exceed maximum allowed registrations
+                if existing_registrations_count + seats_requested > max_seats_per_user:
+                    remaining_slots = max_seats_per_user - existing_registrations_count
                     return Response(
-                        {'error': f'Already registered for {category.name} this year'},
+                        {'error': f'You already have {existing_registrations_count} registrations for {category.name}. Maximum allowed is {max_seats_per_user}. You can register {remaining_slots} more seats.'},
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 
-                registration = EventRegistration.objects.create(
-                    event_detail=event_detail,
-                    user=request.user,
-                    category=category
-                )
+                registrations = []
                 
-                RegistrationDetail.objects.create(
-                    registration=registration,
-                    music_instrument=serializer.validated_data.get('music_instrument'),
-                    drinks=serializer.validated_data.get('drinks'),
-                    rally_option_id=serializer.validated_data.get('rally_option')
-                )
+                # Pre-process rally option if needed
+                rally_option = None
+                if category.code == 'RALLY':
+                    rally_option_id = serializer.validated_data.get('rally_option')
+                    if not rally_option_id:
+                        return Response(
+                            {"error": "Rally option is required."}, 
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    
+                    # Get the rally option
+                    try:
+                        rally_option = BhintunaRally.objects.get(pk=rally_option_id)
+                    except BhintunaRally.DoesNotExist:
+                        return Response({"error": "Invalid rally option."}, status=status.HTTP_404_NOT_FOUND)
+                    
+                    # Check if there are enough available seats in the rally option
+                    if rally_option.available_seats < seats_requested:
+                        return Response(
+                            {"error": f"Not enough available seats for this rally option. Only {rally_option.available_seats} remaining."}, 
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                # Pre-process volunteer type and instrument if needed
+                volunteer_type = None
+                newari_instrument = None
+                if category.code == 'Volunteer':
+                    volunteer_type_id = serializer.validated_data.get('volunteer_type')
+                    if not volunteer_type_id:
+                        return Response(
+                            {"error": "Volunteer type is required."}, 
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    
+                    # Get the volunteer type
+                    try:
+                        volunteer_type = VolunteerType.objects.get(pk=volunteer_type_id)
+                    except VolunteerType.DoesNotExist:
+                        return Response({"error": "Invalid volunteer type."}, status=status.HTTP_404_NOT_FOUND)
+                    
+                    # Handle music volunteer type with instrument selection
+                    if volunteer_type.code == 'Music':
+                        instrument_id = serializer.validated_data.get('newari_instrument')
+                        if not instrument_id:
+                            return Response(
+                                {"error": "Musical instrument is required for music volunteers."}, 
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                        
+                        # Get the instrument
+                        try:
+                            newari_instrument = NewariInstrument.objects.get(pk=instrument_id)
+                        except NewariInstrument.DoesNotExist:
+                            return Response({"error": "Invalid musical instrument."}, status=status.HTTP_404_NOT_FOUND)
+                        
+                        # Check if there are enough available seats for this instrument
+                        if newari_instrument.available_seats < seats_requested:
+                            return Response(
+                                {"error": f"Not enough available positions for this instrument. Only {newari_instrument.available_seats} remaining."}, 
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                         
+                # Pre-process stall type if needed
+                stall_type = None
+                stall_location = None
+                if category.code == 'STALL':
+                    stall_type_id = serializer.validated_data.get('stall_type')
+                    if not stall_type_id:
+                        return Response(
+                            {"error": "Stall type is required."}, 
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    
+                    # Get the stall type
+                    try:
+                        stall_type = StallType.objects.get(pk=stall_type_id)
+                    except StallType.DoesNotExist:
+                        return Response({"error": "Invalid stall type."}, status=status.HTTP_404_NOT_FOUND)
+                    
+                    # Check if there are enough available seats for this stall type
+                    if stall_type.available_seats < seats_requested:
+                        return Response(
+                            {"error": f"Not enough available spaces for this stall type. Only {stall_type.available_seats} remaining."}, 
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    
+                    stall_location_id = serializer.validated_data.get('stall_location')
+                    if not stall_location_id:
+                        return Response(
+                             {"error": "Stall location is required."}, 
+                             status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                    try:
+                        stall_location = StallLocation.objects.get(pk=stall_location_id)
+                    except StallLocation.DoesNotExist:
+                        return Response({"error": "Invalid stall location."}, status=status.HTTP_404_NOT_FOUND)
+                    
+                    # Check if there are enough available seats at this location
+                    if stall_location.available_seats < seats_requested:
+                        return Response(
+                            {"error": f"Not enough available spaces at this location. Only {stall_location.available_seats} remaining."}, 
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                    
+                    # Check required fields based on stall type
+                    if stall_type.code == 'FOOD' and not serializer.validated_data.get('food_items'):
+                        return Response(
+                            {"error": "Food items details are required for food stalls."}, 
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+                        
+                    if stall_type.code == 'DRINKS' and not serializer.validated_data.get('drinks'):
+                        return Response(
+                            {"error": "Drinks details are required for drink stalls."}, 
+                            status=status.HTTP_400_BAD_REQUEST
+                        )
+
+                # Process registrations for each seat
+                for _ in range(seats_requested):
+                    # Create event registration
+                    registration = EventRegistration.objects.create(
+                        event_detail=event_detail,
+                        user=request.user,
+                        category=category
+                    )
+                    
+                    # Handle rally registration
+                    if category.code == 'RALLY':
+                        selected_laps = serializer.validated_data.get('rally_laps', [])
+                        
+                        if not selected_laps:
+                            registration.delete()  # Clean up if validation fails
+                            return Response(
+                                {"error": "At least one lap must be selected."}, 
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                        
+                        # Get selected laps
+                        rally_laps = BhintunaRallyLap.objects.filter(lap_id__in=selected_laps, rally_option=rally_option)
+                        
+                        if not rally_laps.exists():
+                            registration.delete()  # Clean up if validation fails
+                            return Response({"error": "Invalid laps selected."}, status=status.HTTP_400_BAD_REQUEST)
+                        
+                        # Deduct a seat from the rally option - this is now done once per registration
+                        rally_option.available_seats -= 1
+                        rally_option.save()
+                    
+                    # Handle volunteer registration
+                    elif category.code == 'Volunteer':
+                        selected_volunteer_laps = serializer.validated_data.get('volunteer_laps', [])
+                        
+                        if not selected_volunteer_laps:
+                            registration.delete()  # Clean up if validation fails
+                            return Response(
+                                {"error": "At least one volunteer lap must be selected."}, 
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                        
+                        # Get selected volunteer laps
+                        volunteer_laps = VolunteerLap.objects.filter(lap_id__in=selected_volunteer_laps)
+                        
+                        if not volunteer_laps.exists():
+                            registration.delete()  # Clean up if validation fails
+                            return Response({"error": "Invalid volunteer laps selected."}, status=status.HTTP_400_BAD_REQUEST)
+                        
+                        # FIX: For music volunteers, properly deduct instrument seat for each registration
+                        if volunteer_type.code == 'Music' and newari_instrument:
+                            # Re-fetch the instrument to get latest available_seats count
+                            fresh_instrument = NewariInstrument.objects.get(pk=newari_instrument.instrument_id)
+                            if fresh_instrument.available_seats < 1:
+                                registration.delete()  # Clean up if validation fails
+                                return Response(
+                                    {"error": "No available positions left for this instrument."}, 
+                                    status=status.HTTP_400_BAD_REQUEST
+                                )
+                            
+                            # Deduct one seat from the instrument and save
+                            fresh_instrument.available_seats -= 1
+                            fresh_instrument.save()
+                            
+                            # Update our reference to the instrument with the fresh one
+                            newari_instrument = fresh_instrument
+                    
+                    # Handle stall registration
+                    elif category.code == 'STALL':
+                        # Deduct a seat from the stall type
+                        fresh_stall_type = StallType.objects.get(pk=stall_type.type_id)
+                        if fresh_stall_type.available_seats < 1:
+                            registration.delete()  # Clean up if validation fails
+                            return Response(
+                                {"error": "No available spaces left for this stall type."}, 
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                        
+                        # Deduct one seat from the stall type and save
+                        fresh_stall_type.available_seats -= 1
+                        fresh_stall_type.save()
+                        
+                        # Update our reference to the stall type with the fresh one
+                        stall_type = fresh_stall_type
+                        
+                        # Deduct a seat from the stall location
+                        fresh_stall_location = StallLocation.objects.get(pk=stall_location.location_id)
+                        if fresh_stall_location.available_seats < 1:
+                            # Rollback the stall type seat deduction
+                            fresh_stall_type.available_seats += 1
+                            fresh_stall_type.save()
+                            
+                            registration.delete()  # Clean up if validation fails
+                            return Response(
+                                {"error": "No available spaces left at this location."}, 
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                        
+                        # Deduct one seat from the stall location and save
+                        fresh_stall_location.available_seats -= 1
+                        fresh_stall_location.save()
+                        
+                        # Update our reference to the stall location with the fresh one
+                        stall_location = fresh_stall_location
+                    
+                    # Create registration detail
+                    registration_detail = RegistrationDetail.objects.create(
+                        registration=registration,
+                        newari_instrument=newari_instrument,
+                        drinks=serializer.validated_data.get('drinks'),
+                        food_items=serializer.validated_data.get('food_items'),  # Added missing food_items
+                        rally_option=rally_option,
+                        volunteer_type=volunteer_type,
+                        stall_type=stall_type,  # Added missing stall_type
+                        stall_location=stall_location  # Added missing stall_location
+                    )
+                    
+                    # Assign laps based on category
+                    if category.code == 'RALLY' and 'rally_laps' in locals():
+                        registration_detail.rally_laps.set(rally_laps)
+                    
+                    if category.code == 'Volunteer' and 'volunteer_laps' in locals():
+                        registration_detail.volunteer_laps.set(volunteer_laps)
+                    
+                    registrations.append(registration.registration_id)
                 
+                # Return success response with all registration IDs
                 return Response({
-                    'message': 'Registration successful',
-                    'registration_id': registration.registration_id,
+                    'message': f'Successfully registered {seats_requested} seat(s)',
+                    'registration_ids': registrations,
                     'category': category.name,
                     'year': event_detail.year
                 }, status=status.HTTP_201_CREATED)
-                
+
+        except EventDetail.DoesNotExist:
+            return Response({'error': 'Event detail not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Category.DoesNotExist:
+            return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-    
+
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -315,3 +582,46 @@ def get_rallyoptions(request):
     serializer = RallySerializer(categories, many=True)  # Serialize the data (many=True means multiple items)
     return Response(serializer.data)  # Return the serialized data in a Response object
 
+@api_view(['GET'])
+@permission_classes([AllowAny]) 
+def get_rally_laps(request):
+    laps = BhintunaRallyLap.objects.all()
+    serializer = RallyLapSerializer(laps, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_volunteer_types(request):
+    volunteer_types = VolunteerType.objects.filter(is_active=True)
+    serializer = VolunteerTypeSerializer(volunteer_types, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_newari_instruments(request):
+    instruments = NewariInstrument.objects.filter(is_active=True)
+    serializer = NewariInstrumentSerializer(instruments, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_volunteer_laps(request):
+    laps = VolunteerLap.objects.filter(is_active=True)
+    serializer = VolunteerLapSerializer(laps, many=True)
+    return Response(serializer.data)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_stall_types(request):
+    stall_types = StallType.objects.filter(is_active=True)
+    serializer = StallTypeSerializer(stall_types, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_stall_locations(request):
+    stall_locations = StallLocation.objects.filter(is_active=True)
+    serializer = StallLocationSerializer(stall_locations, many=True)
+    return Response(serializer.data)

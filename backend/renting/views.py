@@ -139,6 +139,13 @@ def add_size_variant(request, item_id):
     """Add a size variant to an existing rental item."""
     rental_item = get_object_or_404(RentalItem, item_id=item_id)
     
+    # Check if the item belongs to the "Ornaments" category
+    if rental_item.category and rental_item.category == "Ornaments":
+        return Response(
+            {'error': 'Size variants cannot be added to items in the Ornaments category'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+        
     serializer = ItemSizeVariantSerializer(data=request.data)
     
     if serializer.is_valid():

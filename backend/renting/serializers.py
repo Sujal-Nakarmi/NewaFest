@@ -4,6 +4,7 @@ from .models import RentalItem, ItemSizeVariant, DeliveryLocation
 class ItemSizeVariantSerializer(serializers.ModelSerializer):
     actual_price = serializers.DecimalField(source='get_price', max_digits=10, decimal_places=2, read_only=True)
     
+    
     class Meta:
         model = ItemSizeVariant
         fields = ['variant_id', 'size', 'quantity', 'price', 'actual_price', 'is_default']

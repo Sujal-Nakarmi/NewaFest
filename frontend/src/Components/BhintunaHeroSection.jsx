@@ -86,7 +86,7 @@ function Bhintuna() {
               />
               <div className="event-title">Volunteer</div>
               <div className="event-subtitle">(For Music)</div>
-              <button className="btn register-btn" onClick={() => handleRegisterClick("music")}>
+              <button className="btn register-btn" onClick={() => handleRegisterClick("volunteer")}>
                 Register
               </button>
             </div>
