@@ -247,9 +247,12 @@ const EventSection = () => {
                         </Link>
                         
                         {eventDetailId && (
-                          <Link to={`/register/${eventDetailId}`} className="forest-event-register-btn">
-                            Get Involved
-                          </Link>
+                           <Link 
+                           to={`/register/${event.event_detail_id}`} 
+                           className="forest-event-register-btn"
+                         >
+                           Get Involved
+                         </Link>
                         )}
                       </div>
                     </div>

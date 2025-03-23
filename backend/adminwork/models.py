@@ -4,6 +4,7 @@ from django.conf import settings
 
 
 class Event(models.Model):
+    # Unchanged
     event_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     description = models.TextField()
@@ -15,7 +16,9 @@ class Event(models.Model):
     def __str__(self):
         return self.name
 
+
 class EventDetail(models.Model):
+    # Unchanged
     event_detail_id = models.AutoField(primary_key=True)
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='details')
     location = models.CharField(max_length=200)
@@ -30,12 +33,17 @@ class EventDetail(models.Model):
         current_year = timezone.now().year
         self.is_active = (self.year == current_year)
         super().save(*args, **kwargs)
+        
+    def __str__(self):
+        return f"{self.event.name} - {self.year}"
 
 
+# Update the models to make event_detail nullable first
 class VolunteerType(models.Model):
     type_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)  # "Music", "Photographer", "General"
-    code = models.CharField(max_length=20)   # "MUSIC", "PHOTO", "GENERAL"
+    event_detail = models.ForeignKey(EventDetail, on_delete=models.CASCADE, related_name='volunteer_types', null=True, blank=True)
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=20)
     description = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     
@@ -44,11 +52,14 @@ class VolunteerType(models.Model):
         verbose_name_plural = 'VolunteerTypes'
     
     def __str__(self):
-        return self.name
+        event_info = self.event_detail if self.event_detail else "No Event"
+        return f"{event_info} - {self.name}"
+
 
 class NewariInstrument(models.Model):
     instrument_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)  # "Dhime", "Bhusya", "Taa", etc.
+    event_detail = models.ForeignKey(EventDetail, on_delete=models.CASCADE, related_name='instruments', null=True, blank=True)
+    name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
     available_seats = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
@@ -57,26 +68,32 @@ class NewariInstrument(models.Model):
         db_table = 'NewariInstrument'
     
     def __str__(self):
-        return f"{self.name} (Available: {self.available_seats})"
+        event_info = self.event_detail if self.event_detail else "No Event"
+        return f"{event_info} - {self.name} (Available: {self.available_seats})"
+
 
 class VolunteerLap(models.Model):
     lap_id = models.AutoField(primary_key=True)
-    lap_number = models.PositiveIntegerField()
+    event_detail = models.ForeignKey(EventDetail, on_delete=models.CASCADE, related_name='volunteer_laps', null=True, blank=True)
+    lap_number = models.PositiveIntegerField(null=True)
     route_description = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
-    time = models.TimeField(null=True)  # Allow NULL initially
-  # This field will store the time in HH:MM:SS format
+    time = models.TimeField(null=True)
     
     class Meta:
         db_table = 'VolunteerLap'
     
     def __str__(self):
-        return f"Lap {self.lap_number}: {self.route_description} at {self.time.strftime('%I:%M %p')}"
+        time_str = self.time.strftime('%I:%M %p') if self.time else "TBD"
+        event_info = self.event_detail if self.event_detail else "No Event"
+        return f"{event_info} - Lap {self.lap_number}: {self.route_description} at {time_str}"
+
 
 class Category(models.Model):
+    # Unchanged
     category_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)  # "Volunteer Music" or "Volunteer Stall"
-    code = models.CharField(max_length=20)   # "MUSIC" or "STALL"
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=20)
     description = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     
@@ -88,12 +105,10 @@ class Category(models.Model):
         return self.name
 
 
-
-
-
 class BhintunaRally(models.Model):
     option_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50)  # Walk, Bike, Car
+    event_detail = models.ForeignKey(EventDetail, on_delete=models.CASCADE, related_name='rally_options', null=True, blank=True)
+    name = models.CharField(max_length=50)
     available_seats = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
 
@@ -101,15 +116,16 @@ class BhintunaRally(models.Model):
         db_table = 'BhintunaRally'
 
     def __str__(self):
-        return f"{self.name} (Seats: {self.available_seats})"
+        event_info = self.event_detail if self.event_detail else "No Event"
+        return f"{event_info} - {self.name} (Seats: {self.available_seats})"
 
 
 class BhintunaRallyLap(models.Model):
+    # Unchanged
     lap_id = models.AutoField(primary_key=True)
     rally_option = models.ForeignKey(BhintunaRally, on_delete=models.CASCADE)
     lap_number = models.PositiveIntegerField()
     route_description = models.CharField(max_length=255)
-    # Remove the available_seats field or mark it as deprecated
     
     class Meta:
         db_table = 'BhintunaRallyLap'
@@ -119,30 +135,11 @@ class BhintunaRallyLap(models.Model):
         return f"Lap {self.lap_number}: {self.route_description}"
 
 
-class EventRegistration(models.Model):
-    registration_id = models.AutoField(primary_key=True)
-    event_detail = models.ForeignKey('EventDetail', on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    category = models.ForeignKey(Category, on_delete=models.PROTECT)
-    registration_date = models.DateTimeField(auto_now_add=True)
-    is_deleted = models.BooleanField(default=False)
-    deleted_at = models.DateTimeField(null=True, blank=True)
-    
-    class Meta:
-        db_table = 'EventRegistration'
-        # Allow same user to register for different categories in different years
-       
-    
-    def soft_delete(self):
-        self.is_deleted = True
-        self.deleted_at = timezone.now()
-        self.save()
-
-
 class StallType(models.Model):
     type_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)  # "Food", "Drinks", "Flag", "Ornaments"
-    code = models.CharField(max_length=20)   # "FOOD", "DRINKS", "FLAG", "ORNAMENTS"
+    event_detail = models.ForeignKey(EventDetail, on_delete=models.CASCADE, related_name='stall_types', null=True, blank=True)
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=20)
     description = models.TextField(null=True, blank=True)
     available_seats = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
@@ -152,11 +149,14 @@ class StallType(models.Model):
         verbose_name_plural = 'StallTypes'
     
     def __str__(self):
-        return f"{self.name} (Available: {self.available_seats})"
-    
+        event_info = self.event_detail if self.event_detail else "No Event"
+        return f"{event_info} - {self.name} (Available: {self.available_seats})"
+
+
 class StallLocation(models.Model):
     location_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)  # "Sankata Mandir", "Madhyapur Thimi"
+    event_detail = models.ForeignKey(EventDetail, on_delete=models.CASCADE, related_name='stall_locations', null=True, blank=True)
+    name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
     available_seats = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
@@ -165,9 +165,31 @@ class StallLocation(models.Model):
         db_table = 'StallLocation'
     
     def __str__(self):
-        return f"{self.name} (Available: {self.available_seats})"
+        event_info = self.event_detail if self.event_detail else "No Event"
+        return f"{event_info} - {self.name} (Available: {self.available_seats})"
+
+
+class EventRegistration(models.Model):
+    # Unchanged
+    registration_id = models.AutoField(primary_key=True)
+    event_detail = models.ForeignKey(EventDetail, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.PROTECT)
+    registration_date = models.DateTimeField(auto_now_add=True)
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
     
+    class Meta:
+        db_table = 'EventRegistration'
+    
+    def soft_delete(self):
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save()
+
+
 class RegistrationDetail(models.Model):
+    # Unchanged
     detail_id = models.AutoField(primary_key=True)
     registration = models.OneToOneField(EventRegistration, on_delete=models.CASCADE)
     # Stall-specific fields
@@ -185,4 +207,3 @@ class RegistrationDetail(models.Model):
     
     class Meta:
         db_table = 'RegistrationDetail'
-

@@ -114,70 +114,78 @@ const LoginPage = () => {
   };
   
   return (
-    <div className="login-container">
+    <div className="user-login-container">
       <Container fluid>
         <Row className="h-100">
           <Col md={6} className="p-0">
-            <div className="login-left-panel">
-             <Link to="/"> <img src={logo} className="login-logo" alt="Logo" /></Link>
+            <div className="user-login-left-panel">
+              <Link to="/"> 
+                <img src={logo} className="user-login-logo" alt="Logo" />
+              </Link>
               <h1>Log In Now</h1>
               <p>Stay connected with everything that matters to you.</p>
             </div>
           </Col>
-          <Col md={6} className="login-right d-flex align-items-center">
-            <img src={Design1} className="design1" alt="Design element 1" />
-            <img src={Design2} className="design2" alt="Design element 2" />
-            <div className="login-form-container">
-              <h1 className="login-title">Log in to your Account</h1>
-              <p className="login-subtitle">Welcome back! Select a method to log in</p>
-              {error && <p className="error-message">{error}</p>}
+          <Col md={6} className="user-login-right d-flex align-items-center">
+            <img src={Design1} className="user-login-design1" alt="Design element 1" />
+            <img src={Design2} className="user-login-design2" alt="Design element 2" />
+            <div className="user-login-form-container">
+              <h1 className="user-login-title">Log in to your Account</h1>
+              <p className="user-login-subtitle">Welcome back! Select a method to log in</p>
+              
+              {error && <p className="user-login-error-message">{error}</p>}
+              
               <Form onSubmit={handleLogin}>
-                <div className="form-group position-relative">
-                  <div className="input-icon">
+                <div className="user-login-form-group position-relative">
+                  <div className="user-login-input-icon">
                     <FaEnvelope />
                   </div>
                   <Form.Control
                     type="email"
                     placeholder="Email"
-                    className="custom-input"
+                    className="user-login-custom-input"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                   />
                 </div>
-                <div className="form-group position-relative">
-                  <div className="input-icon">
+                
+                <div className="user-login-form-group position-relative">
+                  <div className="user-login-input-icon">
                     <FaLock />
                   </div>
                   <Form.Control
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
-                    className="custom-input"
+                    className="user-login-custom-input"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                   <button 
                     type="button" 
-                    className="password-toggle" 
+                    className="user-login-password-toggle" 
                     onClick={togglePasswordVisibility}
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
+                
                 <div className="text-end mb-3">
-                  <a href="/forgot-password" className="forgot-password">
+                  <a href="/forgot-password" className="user-login-forgot-password">
                     Forgot Password?
                   </a>
                 </div>
-                <Button className="login-btn w-100" type="submit">
+                
+                <Button className="user-login-btn" type="submit">
                   Log In
                 </Button>
               </Form>
-              <p className="Bottom-Link-Login">
+              
+              <p className="user-login-bottom-link">
                 Don't have an account?{" "}
-                <Link to="/register/user" className="register-link">
+                <Link to="/register/user" className="user-login-register-link">
                   Create One
                 </Link>
               </p>

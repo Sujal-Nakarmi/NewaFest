@@ -1,6 +1,9 @@
 
 
 import "../CSS/BhintunaCelebration.css"
+import Bhintuna1 from "../Assests/Bhintuna1.png";
+import Bhintuna2 from "../Assests/Bhintuna2.png";
+import Bhintuna3 from "../Assests/Bhintuna3.png";
 
 function BhintunaCelebration() {
   const expectations = [
@@ -65,21 +68,21 @@ function BhintunaCelebration() {
         <div className="row g-4 mt-4">
           <div className="col-md-4">
             <img
-              src="https://v0.dev/placeholder.svg?height=200&width=300"
+              src= {Bhintuna1}
               alt="Cultural event 1"
               className="img-fluid rounded"
             />
           </div>
           <div className="col-md-4">
             <img
-              src="https://v0.dev/placeholder.svg?height=200&width=300"
+              src= {Bhintuna2}
               alt="Cultural event 2"
               className="img-fluid rounded"
             />
           </div>
           <div className="col-md-4">
             <img
-              src="https://v0.dev/placeholder.svg?height=200&width=300"
+              src= {Bhintuna3}
               alt="Cultural event 3"
               className="img-fluid rounded"
             />

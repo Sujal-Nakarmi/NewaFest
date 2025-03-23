@@ -27,6 +27,8 @@ import UserReviews from './Components/UserReview';
 import RentingPage from './Pages/RentingPage';
 import CartPage from './Components/Cart';
 import GaiJatra from './Pages/GaiJatra';
+import EventRegistrationRouter from './Components/EventRegistrationRouter';
+
 // Import other pages as needed
 
 function App() {
@@ -47,7 +49,10 @@ function App() {
           <Route path="/PanditBookingForm" element={<PanditBookingForm />} />
           <Route path="/cart" element={<CartPage />} /> 
 
-          <Route path="/register/:eventDetailId" element={<BhintunaDetail />} />
+          {/* Dynamic event registration router */}
+          <Route path="/register/:eventDetailId" element={<EventRegistrationRouter />} />
+          
+        
           <Route path="/GaiJatra" element={<GaiJatra />} />
           
 

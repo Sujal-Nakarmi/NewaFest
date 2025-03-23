@@ -206,7 +206,7 @@
   margin-bottom: 25px;
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  height: 200px; /* Fixed height for consistency */
+  height: 220px; /* Fixed height for consistency */
 }
 
 .forest-event-card:hover {
@@ -315,12 +315,8 @@
   margin-bottom: 15px;
   color: #666;
   line-height: 1.6;
-  flex-grow: 1;
-  display: -webkit-box;
- 
-  -webkit-box-orient: vertical;
+  min-height: 3.2em;  /* Ensures at least 2 lines of space */
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .forest-event-actions {

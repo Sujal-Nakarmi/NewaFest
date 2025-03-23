@@ -131,6 +131,39 @@ def public_list_events(request):
     
     return Response(response_data, status=status.HTTP_200_OK)
 
+# In your views.py
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_event_detail(request, event_detail_id):
+    """Retrieve specific event details by event_detail_id."""
+    try:
+        event_detail = EventDetail.objects.get(pk=event_detail_id)
+        event = event_detail.event
+        
+        # Build photo URL if available
+        photo_url = None
+        if event.photo:
+            photo_url = request.build_absolute_uri(settings.MEDIA_URL + event.photo.name)
+        
+        response_data = {
+            'event_id': event.event_id,
+            'event_detail_id': event_detail.event_detail_id,
+            'name': event.name,
+            'description': event.description,
+            'photo': photo_url,
+            'location': event_detail.location,
+            'start_time': event_detail.start_time,
+            'year': event_detail.year,
+            'is_active': event_detail.is_active
+        }
+        
+        return Response(response_data, status=status.HTTP_200_OK)
+        
+    except EventDetail.DoesNotExist:
+        return Response({'error': 'Event detail not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['PUT'])
 @permission_classes([IsAdmin])
@@ -223,7 +256,7 @@ def register_for_event(request):
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 
-                # Count existing registrations for this user in this category
+                # Count existing registrations for this user in this category for this specific event
                 existing_registrations_count = EventRegistration.objects.filter(
                     event_detail=event_detail,
                     user=request.user,
@@ -235,7 +268,7 @@ def register_for_event(request):
                 if existing_registrations_count + seats_requested > max_seats_per_user:
                     remaining_slots = max_seats_per_user - existing_registrations_count
                     return Response(
-                        {'error': f'You already have {existing_registrations_count} registrations for {category.name}. Maximum allowed is {max_seats_per_user}. You can register {remaining_slots} more seats.'},
+                        {'error': f'You already have {existing_registrations_count} registrations for {category.name} in {event_detail}. Maximum allowed is {max_seats_per_user}. You can register {remaining_slots} more seats.'},
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 
@@ -251,11 +284,18 @@ def register_for_event(request):
                             status=status.HTTP_400_BAD_REQUEST
                         )
                     
-                    # Get the rally option
+                    # Get the rally option - ensure it's for this specific event
                     try:
-                        rally_option = BhintunaRally.objects.get(pk=rally_option_id)
+                        rally_option = BhintunaRally.objects.get(
+                            pk=rally_option_id,
+                            event_detail=event_detail,
+                            is_active=True
+                        )
                     except BhintunaRally.DoesNotExist:
-                        return Response({"error": "Invalid rally option."}, status=status.HTTP_404_NOT_FOUND)
+                        return Response(
+                            {"error": f"Invalid rally option for {event_detail}."}, 
+                            status=status.HTTP_404_NOT_FOUND
+                        )
                     
                     # Check if there are enough available seats in the rally option
                     if rally_option.available_seats < seats_requested:
@@ -275,11 +315,18 @@ def register_for_event(request):
                             status=status.HTTP_400_BAD_REQUEST
                         )
                     
-                    # Get the volunteer type
+                    # Get the volunteer type - ensure it's for this specific event
                     try:
-                        volunteer_type = VolunteerType.objects.get(pk=volunteer_type_id)
+                        volunteer_type = VolunteerType.objects.get(
+                            pk=volunteer_type_id,
+                            event_detail=event_detail,
+                            is_active=True
+                        )
                     except VolunteerType.DoesNotExist:
-                        return Response({"error": "Invalid volunteer type."}, status=status.HTTP_404_NOT_FOUND)
+                        return Response(
+                            {"error": f"Invalid volunteer type for {event_detail}."}, 
+                            status=status.HTTP_404_NOT_FOUND
+                        )
                     
                     # Handle music volunteer type with instrument selection
                     if volunteer_type.code == 'Music':
@@ -290,11 +337,18 @@ def register_for_event(request):
                                 status=status.HTTP_400_BAD_REQUEST
                             )
                         
-                        # Get the instrument
+                        # Get the instrument - ensure it's for this specific event
                         try:
-                            newari_instrument = NewariInstrument.objects.get(pk=instrument_id)
+                            newari_instrument = NewariInstrument.objects.get(
+                                pk=instrument_id,
+                                event_detail=event_detail,
+                                is_active=True
+                            )
                         except NewariInstrument.DoesNotExist:
-                            return Response({"error": "Invalid musical instrument."}, status=status.HTTP_404_NOT_FOUND)
+                            return Response(
+                                {"error": f"Invalid musical instrument for {event_detail}."}, 
+                                status=status.HTTP_404_NOT_FOUND
+                            )
                         
                         # Check if there are enough available seats for this instrument
                         if newari_instrument.available_seats < seats_requested:
@@ -314,11 +368,18 @@ def register_for_event(request):
                             status=status.HTTP_400_BAD_REQUEST
                         )
                     
-                    # Get the stall type
+                    # Get the stall type - ensure it's for this specific event
                     try:
-                        stall_type = StallType.objects.get(pk=stall_type_id)
+                        stall_type = StallType.objects.get(
+                            pk=stall_type_id,
+                            event_detail=event_detail,
+                            is_active=True
+                        )
                     except StallType.DoesNotExist:
-                        return Response({"error": "Invalid stall type."}, status=status.HTTP_404_NOT_FOUND)
+                        return Response(
+                            {"error": f"Invalid stall type for {event_detail}."}, 
+                            status=status.HTTP_404_NOT_FOUND
+                        )
                     
                     # Check if there are enough available seats for this stall type
                     if stall_type.available_seats < seats_requested:
@@ -334,10 +395,18 @@ def register_for_event(request):
                              status=status.HTTP_400_BAD_REQUEST
                         )
 
+                    # Get the stall location - ensure it's for this specific event
                     try:
-                        stall_location = StallLocation.objects.get(pk=stall_location_id)
+                        stall_location = StallLocation.objects.get(
+                            pk=stall_location_id,
+                            event_detail=event_detail,
+                            is_active=True
+                        )
                     except StallLocation.DoesNotExist:
-                        return Response({"error": "Invalid stall location."}, status=status.HTTP_404_NOT_FOUND)
+                        return Response(
+                            {"error": f"Invalid stall location for {event_detail}."}, 
+                            status=status.HTTP_404_NOT_FOUND
+                        )
                     
                     # Check if there are enough available seats at this location
                     if stall_location.available_seats < seats_requested:
@@ -379,12 +448,18 @@ def register_for_event(request):
                                 status=status.HTTP_400_BAD_REQUEST
                             )
                         
-                        # Get selected laps
-                        rally_laps = BhintunaRallyLap.objects.filter(lap_id__in=selected_laps, rally_option=rally_option)
+                        # Get selected laps - ensure they're for this specific rally option
+                        rally_laps = BhintunaRallyLap.objects.filter(
+                            lap_id__in=selected_laps, 
+                            rally_option=rally_option
+                        )
                         
-                        if not rally_laps.exists():
+                        if not rally_laps.exists() or rally_laps.count() != len(selected_laps):
                             registration.delete()  # Clean up if validation fails
-                            return Response({"error": "Invalid laps selected."}, status=status.HTTP_400_BAD_REQUEST)
+                            return Response(
+                                {"error": f"Invalid laps selected for {rally_option.name}."}, 
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
                         
                         # Deduct a seat from the rally option - this is now done once per registration
                         rally_option.available_seats -= 1
@@ -401,14 +476,21 @@ def register_for_event(request):
                                 status=status.HTTP_400_BAD_REQUEST
                             )
                         
-                        # Get selected volunteer laps
-                        volunteer_laps = VolunteerLap.objects.filter(lap_id__in=selected_volunteer_laps)
+                        # Get selected volunteer laps - ensure they're for this specific event
+                        volunteer_laps = VolunteerLap.objects.filter(
+                            lap_id__in=selected_volunteer_laps,
+                            event_detail=event_detail,
+                            is_active=True
+                        )
                         
-                        if not volunteer_laps.exists():
+                        if not volunteer_laps.exists() or volunteer_laps.count() != len(selected_volunteer_laps):
                             registration.delete()  # Clean up if validation fails
-                            return Response({"error": "Invalid volunteer laps selected."}, status=status.HTTP_400_BAD_REQUEST)
+                            return Response(
+                                {"error": f"Invalid volunteer laps selected for {event_detail}."}, 
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
                         
-                        # FIX: For music volunteers, properly deduct instrument seat for each registration
+                        # For music volunteers, properly deduct instrument seat for each registration
                         if volunteer_type.code == 'Music' and newari_instrument:
                             # Re-fetch the instrument to get latest available_seats count
                             fresh_instrument = NewariInstrument.objects.get(pk=newari_instrument.instrument_id)
@@ -428,7 +510,7 @@ def register_for_event(request):
                     
                     # Handle stall registration
                     elif category.code == 'STALL':
-                        # Deduct a seat from the stall type
+                        # Deduct a seat from the stall type - ensure we get the fresh instance
                         fresh_stall_type = StallType.objects.get(pk=stall_type.type_id)
                         if fresh_stall_type.available_seats < 1:
                             registration.delete()  # Clean up if validation fails
@@ -444,7 +526,7 @@ def register_for_event(request):
                         # Update our reference to the stall type with the fresh one
                         stall_type = fresh_stall_type
                         
-                        # Deduct a seat from the stall location
+                        # Deduct a seat from the stall location - ensure we get the fresh instance
                         fresh_stall_location = StallLocation.objects.get(pk=stall_location.location_id)
                         if fresh_stall_location.available_seats < 1:
                             # Rollback the stall type seat deduction
@@ -469,11 +551,11 @@ def register_for_event(request):
                         registration=registration,
                         newari_instrument=newari_instrument,
                         drinks=serializer.validated_data.get('drinks'),
-                        food_items=serializer.validated_data.get('food_items'),  # Added missing food_items
+                        food_items=serializer.validated_data.get('food_items'),
                         rally_option=rally_option,
                         volunteer_type=volunteer_type,
-                        stall_type=stall_type,  # Added missing stall_type
-                        stall_location=stall_location  # Added missing stall_location
+                        stall_type=stall_type,
+                        stall_location=stall_location
                     )
                     
                     # Assign laps based on category
@@ -490,7 +572,7 @@ def register_for_event(request):
                     'message': f'Successfully registered {seats_requested} seat(s)',
                     'registration_ids': registrations,
                     'category': category.name,
-                    'year': event_detail.year
+                    'event': f"{event_detail.event.name} - {event_detail.year}"
                 }, status=status.HTTP_201_CREATED)
 
         except EventDetail.DoesNotExist:
@@ -576,16 +658,48 @@ def get_category(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny]) 
-def get_rallyoptions(request):
-    categories = BhintunaRally.objects.all()  # Get all categories from the Category model
-    serializer = RallySerializer(categories, many=True)  # Serialize the data (many=True means multiple items)
-    return Response(serializer.data)  # Return the serialized data in a Response object
+@permission_classes([AllowAny])
+def get_rally_options(request):
+    """
+    Get rally options, optionally filtered by event_detail_id
+    """
+    event_detail_id = request.query_params.get('event_detail_id')
+    
+    if event_detail_id:
+        try:
+            # Validate event_detail_id exists
+            EventDetail.objects.get(pk=event_detail_id)
+            rally_options = BhintunaRally.objects.filter(
+                event_detail_id=event_detail_id,
+                is_active=True
+            )
+        except EventDetail.DoesNotExist:
+            return Response({"error": "Event detail not found"}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        rally_options = BhintunaRally.objects.filter(is_active=True)
+    
+    serializer = RallySerializer(rally_options, many=True)
+    return Response(serializer.data)
+
 
 @api_view(['GET'])
-@permission_classes([AllowAny]) 
+@permission_classes([AllowAny])
 def get_rally_laps(request):
-    laps = BhintunaRallyLap.objects.all()
+    """
+    Get rally laps, optionally filtered by rally_option_id
+    """
+    rally_option_id = request.query_params.get('rally_option_id')
+    
+    if rally_option_id:
+        try:
+            # Validate rally_option_id exists
+            BhintunaRally.objects.get(pk=rally_option_id)
+            laps = BhintunaRallyLap.objects.filter(rally_option_id=rally_option_id)
+        except BhintunaRally.DoesNotExist:
+            return Response({"error": "Rally option not found"}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        laps = BhintunaRallyLap.objects.all()
+    
     serializer = RallyLapSerializer(laps, many=True)
     return Response(serializer.data)
 
@@ -593,21 +707,74 @@ def get_rally_laps(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_volunteer_types(request):
-    volunteer_types = VolunteerType.objects.filter(is_active=True)
+    """
+    Get volunteer types, optionally filtered by event_detail_id
+    """
+    event_detail_id = request.query_params.get('event_detail_id')
+    
+    if event_detail_id:
+        try:
+            # Validate event_detail_id exists
+            EventDetail.objects.get(pk=event_detail_id)
+            volunteer_types = VolunteerType.objects.filter(
+                event_detail_id=event_detail_id,
+                is_active=True
+            )
+        except EventDetail.DoesNotExist:
+            return Response({"error": "Event detail not found"}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        volunteer_types = VolunteerType.objects.filter(is_active=True)
+    
     serializer = VolunteerTypeSerializer(volunteer_types, many=True)
     return Response(serializer.data)
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_newari_instruments(request):
-    instruments = NewariInstrument.objects.filter(is_active=True)
+    """
+    Get Newari instruments, optionally filtered by event_detail_id
+    """
+    event_detail_id = request.query_params.get('event_detail_id')
+    
+    if event_detail_id:
+        try:
+            # Validate event_detail_id exists
+            EventDetail.objects.get(pk=event_detail_id)
+            instruments = NewariInstrument.objects.filter(
+                event_detail_id=event_detail_id,
+                is_active=True
+            )
+        except EventDetail.DoesNotExist:
+            return Response({"error": "Event detail not found"}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        instruments = NewariInstrument.objects.filter(is_active=True)
+    
     serializer = NewariInstrumentSerializer(instruments, many=True)
     return Response(serializer.data)
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_volunteer_laps(request):
-    laps = VolunteerLap.objects.filter(is_active=True)
+    """
+    Get volunteer laps for a specific event
+    """
+    event_detail_id = request.query_params.get('event_detail_id')
+    
+    if not event_detail_id:
+        return Response({"error": "event_detail_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Validate event_detail_id exists
+        EventDetail.objects.get(pk=event_detail_id)
+        laps = VolunteerLap.objects.filter(
+            event_detail_id=event_detail_id,
+            is_active=True
+        )
+    except EventDetail.DoesNotExist:
+        return Response({"error": "Event detail not found"}, status=status.HTTP_404_NOT_FOUND)
+    
     serializer = VolunteerLapSerializer(laps, many=True)
     return Response(serializer.data)
 
@@ -615,13 +782,90 @@ def get_volunteer_laps(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_stall_types(request):
-    stall_types = StallType.objects.filter(is_active=True)
+    """
+    Get stall types for a specific event
+    """
+    event_detail_id = request.query_params.get('event_detail_id')
+    
+    if not event_detail_id:
+        return Response({"error": "event_detail_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Validate event_detail_id exists
+        EventDetail.objects.get(pk=event_detail_id)
+        stall_types = StallType.objects.filter(
+            event_detail_id=event_detail_id,
+            is_active=True
+        )
+    except EventDetail.DoesNotExist:
+        return Response({"error": "Event detail not found"}, status=status.HTTP_404_NOT_FOUND)
+    
     serializer = StallTypeSerializer(stall_types, many=True)
     return Response(serializer.data)
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def get_stall_locations(request):
-    stall_locations = StallLocation.objects.filter(is_active=True)
+    """
+    Get stall locations for a specific event
+    """
+    event_detail_id = request.query_params.get('event_detail_id')
+    
+    if not event_detail_id:
+        return Response({"error": "event_detail_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Validate event_detail_id exists
+        EventDetail.objects.get(pk=event_detail_id)
+        stall_locations = StallLocation.objects.filter(
+            event_detail_id=event_detail_id,
+            is_active=True
+        )
+    except EventDetail.DoesNotExist:
+        return Response({"error": "Event detail not found"}, status=status.HTTP_404_NOT_FOUND)
+    
     serializer = StallLocationSerializer(stall_locations, many=True)
     return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_event_options(request):
+    """
+    Get all options for a specific event in a single API call
+    """
+    event_detail_id = request.query_params.get('event_detail_id')
+    
+    if not event_detail_id:
+        return Response({"error": "event_detail_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Validate event_detail exists
+        event_detail = EventDetail.objects.get(pk=event_detail_id)
+        
+        # Get all options for this event
+        rally_options = BhintunaRally.objects.filter(event_detail=event_detail, is_active=True)
+        
+        # Get all rally laps for the rally options
+        rally_option_ids = rally_options.values_list('option_id', flat=True)
+        rally_laps = BhintunaRallyLap.objects.filter(rally_option_id__in=rally_option_ids)
+        
+        volunteer_types = VolunteerType.objects.filter(event_detail=event_detail, is_active=True)
+        instruments = NewariInstrument.objects.filter(event_detail=event_detail, is_active=True)
+        volunteer_laps = VolunteerLap.objects.filter(event_detail=event_detail, is_active=True)
+        stall_types = StallType.objects.filter(event_detail=event_detail, is_active=True)
+        stall_locations = StallLocation.objects.filter(event_detail=event_detail, is_active=True)
+        
+        # Serialize the data
+        return Response({
+            "rally_options": RallySerializer(rally_options, many=True).data,
+            "rally_laps": RallyLapSerializer(rally_laps, many=True).data,
+            "volunteer_types": VolunteerTypeSerializer(volunteer_types, many=True).data,
+            "instruments": NewariInstrumentSerializer(instruments, many=True).data,
+            "volunteer_laps": VolunteerLapSerializer(volunteer_laps, many=True).data,
+            "stall_types": StallTypeSerializer(stall_types, many=True).data,
+            "stall_locations": StallLocationSerializer(stall_locations, many=True).data,
+        })
+        
+    except EventDetail.DoesNotExist:
+        return Response({"error": "Event detail not found"}, status=status.HTTP_404_NOT_FOUND)
