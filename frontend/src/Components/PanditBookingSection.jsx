@@ -83,7 +83,7 @@ const PanditBooking = () => {
         <div>
           {/* Replace Link components with buttons that check authentication */}
           <button 
-            className="btn btn-outline-primary me-2"
+            className="btn history-booking me-2"
             onClick={() => handleAuthRequiredAction(
               "viewBookings", 
               "Please log in to view and manage your bookings."

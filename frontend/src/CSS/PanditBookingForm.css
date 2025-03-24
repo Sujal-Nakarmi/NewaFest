@@ -1,79 +1,407 @@
+/* PanditBookingForm.css */
+.booking-page-wrapper {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  padding-top: 2rem;
+  padding-bottom: 4rem;
+}
+
 .booking-form-container {
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 2rem;
+  max-width: 1000px;
+  margin: 2rem auto;
+}
+
+.card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+.card-title {
+  color: #5d1e00;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+}
+
+/* Step indicators */
+.step-circle {
+  width: 48px;
+  height: 48px;
+  background-color: #ffa500;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.4rem;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(255, 165, 0, 0.3);
+}
+
+.step-heading {
+  color: #5d1e00;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+}
+
+/* Date picker styling */
+.date-picker-container .react-datepicker-wrapper {
+  width: 100%;
+}
+
+.date-picker-container .react-datepicker {
+  font-family: 'Roboto', sans-serif;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.date-picker-container .react-datepicker__header {
+  background-color: #5d1e00;
+  border-bottom: none;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding-top: 12px;
+}
+
+.date-picker-container .react-datepicker__day-name, 
+.date-picker-container .react-datepicker__current-month {
+  color: white;
+}
+
+.date-picker-container .react-datepicker__day--selected {
+  background-color: #ffa500;
+  border-radius: 50%;
+}
+
+.date-picker-container .react-datepicker__day:hover {
+  background-color: #fff0d9;
+  border-radius: 50%;
+}
+
+.date-picker-container .react-datepicker__day--disabled {
+  color: #ccc;
+}
+
+/* Time slot styling */
+.time-slot-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.time-slot-btn {
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 30px;
+  background-color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.time-slot-btn:hover {
+  background-color: #fff0d9;
+  border-color: #ffa500;
+}
+
+.time-slot-btn.active {
+  background-color: #ffa500;
+  border-color: #ffa500;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 2px 5px rgba(255, 165, 0, 0.3);
+}
+
+/* Description textarea */
+.description-textarea {
+  resize: none;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  padding: 15px;
+  transition: all 0.3s ease;
+}
+
+.description-textarea:focus {
+  box-shadow: 0 0 0 3px rgba(93, 30, 0, 0.1);
+  border-color: #5d1e00;
+}
+
+.divider {
+  border-top: 1px solid #e9ecef;
+  margin: 2.5rem 0;
+}
+
+/* Pandit profile card */
+.pandit-profile-card {
+  background-color: #fff;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+  padding: 2rem 1.5rem;
+  height: 100%;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.pandit-profile-card:hover {
+  transform: translateY(-5px);
+}
+
+.pandit-avatar {
+  width: 120px;
+  height: 120px;
+  background-color: #f0f0f0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #ffa500;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.pandit-name {
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.pandit-address {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.pandit-rating {
+  margin: 1rem 0;
+}
+
+.stars {
+  color: #ffc107;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+  margin-right: 5px;
+}
+
+.rating-number {
+  font-weight: 600;
+  color: #333;
+}
+
+.pandit-services {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 1rem;
+}
+
+.service-tag {
+  background-color: #f8f9fa;
+  color: #5d1e00;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  border: 1px solid #eee;
+}
+
+/* Booking summary section */
+.booking-summary {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #ffa500;
+}
+
+.summary-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #5d1e00;
+  margin-bottom: 1rem;
+}
+
+.summary-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+}
+
+.summary-label {
+  font-weight: 600;
+  color: #666;
+  width: 80px;
+}
+
+.summary-value {
+  color: #333;
+}
+
+/* Button styling */
+.submit-btn {
+  background-color: #5d1e00;
+  color: white;
+  border: none;
+  padding: 0.9rem 2.5rem;
+  font-size: 1.1rem;
+  min-width: 200px;
+  border-radius: 30px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(93, 30, 0, 0.2);
+}
+
+.submit-btn:hover {
+  background-color: #4a1800;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(93, 30, 0, 0.25);
+}
+
+.submit-btn:active {
+  transform: translateY(-1px);
+}
+
+.submit-btn:disabled {
+  background-color: #b38068;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.cancel-btn {
+  background-color: white;
+  color: #5d1e00;
+  border: 2px solid #5d1e00;
+  padding: 0.85rem 2.5rem;
+  font-size: 1.1rem;
+  min-width: 200px;
+  border-radius: 30px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background-color: #f8f8f8;
+  color: #4a1800;
+  border-color: #4a1800;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Alert styling */
+.booking-alert {
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  position: relative;
+  animation: slideDown 0.3s ease forwards;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.alert-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.alert-icon.success {
+  background-color: rgba(25, 135, 84, 0.1);
+  color: #198754;
+}
+
+.alert-icon.error {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+/* Input field styling */
+.form-control {
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  border-color: #dee2e6;
+  font-size: 1rem;
+}
+
+.form-control:focus {
+  box-shadow: 0 0 0 3px rgba(93, 30, 0, 0.1);
+  border-color: #5d1e00;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .pandit-profile-card {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .time-slot-container {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .card-title {
+    font-size: 1.8rem;
   }
   
   .step-circle {
     width: 40px;
     height: 40px;
-    background-color: #FFD700;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
     font-size: 1.2rem;
   }
   
   .step-heading {
-    color: #8B2500;
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin: 0;
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .submit-btn, .cancel-btn {
+    width: 100%;
+    margin: 0.5rem 0;
+    min-width: unset;
   }
   
- 
-  
-  .description-textarea {
-    resize: none;
+  .card-body {
+    padding: 1.5rem !important;
   }
   
-  .divider {
-    border-top: 1px solid #e0e0e0;
-    margin: 1.5rem 0;
+  .ps-5 {
+    padding-left: 1rem !important;
   }
   
-  .pandit-avatar {
-    width: 120px;
-    height: 120px;
-    background-color: #e0e0e0;
-    border-radius: 50%;
+  .time-slot-btn {
+    padding: 8px 12px;
+    font-size: 0.85rem;
   }
-  
-  .pandit-name {
-    font-weight: bold;
-    font-size: 1.1rem;
-    color: #333;
-  }
-  
-  .pandit-address {
-    font-size: 0.9rem;
-    color: #555;
-  }
-  
-  .submit-btn {
-    background-color: #8B2500;
-    color: white;
-    border: none;
-    padding: 0.5rem 2rem;
-    font-size: 1.1rem;
-    min-width: 120px;
-  }
-  
-  .submit-btn:hover {
-    background-color: #6B1D00;
-  }
-  
-  .cancel-btn {
-    background-color: white;
-    color: #8B2500;
-    border: 1px solid #8B2500;
-    padding: 0.5rem 2rem;
-    font-size: 1.1rem;
-    min-width: 120px;
-  }
-  
-  .cancel-btn:hover {
-    background-color: #f8f8f8;
-  }
+}

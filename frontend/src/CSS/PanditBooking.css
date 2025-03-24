@@ -22,7 +22,7 @@
   }
   
   .rating-display:hover {
-    color: #0d6efd;
+    color: #8B0000;
   }
   
   /* Create Review form styling */
@@ -61,3 +61,7 @@
   }
 
   
+  .history-booking {
+    outline: 1px solid #8B0000; /* Correct syntax */
+    color: #8B0000;
+}
