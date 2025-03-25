@@ -52,7 +52,7 @@ function Bhintuna() {
       {/* Main Content */}
       <div className="container py-5">
         <div className="text-center mb-5">
-          <h2>Become a part of this event</h2>
+          <h2>Become a part of Bhintuna</h2>
           <p className="lead">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
             dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
@@ -69,7 +69,7 @@ function Bhintuna() {
                 className="img-fluid"
               />
               <div className="event-title">Participation Rally</div>
-              <div className="event-subtitle">(Walk, Bike, Car)</div>
+              <div className="event-subtitle">(Rally Registration)</div>
               <button className="btn register-btn" onClick={() => handleRegisterClick("rally")}>
                 Register
               </button>
@@ -85,7 +85,7 @@ function Bhintuna() {
                 className="img-fluid"
               />
               <div className="event-title">Volunteer</div>
-              <div className="event-subtitle">(For Music)</div>
+              <div className="event-subtitle">(Volunteer Registration)</div>
               <button className="btn register-btn" onClick={() => handleRegisterClick("volunteer")}>
                 Register
               </button>
@@ -97,7 +97,7 @@ function Bhintuna() {
             <div className="event-card">
               <img src= {VStall} alt="Food stalls" className="img-fluid" />
               <div className="event-title">Stalls</div>
-              <div className="event-subtitle">(Foods, Item)</div>
+              <div className="event-subtitle">(Stall Registration)</div>
               <button className="btn register-btn" onClick={() => handleRegisterClick("stall")}>
                 Register
               </button>

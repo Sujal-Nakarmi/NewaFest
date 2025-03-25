@@ -71,7 +71,7 @@ function GaiJatraHeroSection() {
                 className="img-fluid"
               />
               <div className="event-title">Volunteer</div>
-              <div className="event-subtitle">(For Music)</div>
+              <div className="event-subtitle">(Volunteer Registration)</div>
               <button className="btn register-btn" onClick={() => handleRegisterClick("volunteer")}>
                 Register
               </button>
@@ -83,7 +83,7 @@ function GaiJatraHeroSection() {
             <div className="event-card">
               <img src= {VStall} alt="Food stalls" className="img-fluid" />
               <div className="event-title">Stalls</div>
-              <div className="event-subtitle">(Foods, Item)</div>
+              <div className="event-subtitle">(Stall Registration)</div>
               <button className="btn register-btn" onClick={() => handleRegisterClick("stall")}>
                 Register
               </button>

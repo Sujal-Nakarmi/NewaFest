@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FiHome, FiUsers, FiCalendar, FiBookOpen, FiLogOut, FiEdit, FiTrash2, FiEye } from 'react-icons/fi';
 import logo from "../Assests/Logo.png";
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -14,7 +14,23 @@ const Users = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [formData, setFormData] = useState({
+    full_name: '',
+    email: '',
+    phone_number: '',
+    user_role: 'normal_user',
+    address: '',
+    country: '',
+    password: '',
+  });
   const navigate = useNavigate();
+  
+  // Base API URL
+  const API_BASE_URL = 'http://localhost:8000/registerlogin';
 
   // Authentication check
   useEffect(() => {
@@ -25,33 +41,36 @@ const Users = () => {
   }, [navigate]);
 
   // Fetch users from API
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem("access_token");
-        const response = await axios.get('http://localhost:8000/registerlogin/api/admin/dashboard/', {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        setUsers(response.data.users);
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching users:', err);
-        setError('Failed to load users. Please try again later.');
-        setLoading(false);
-        
-        // If unauthorized, redirect to login
-        if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-          localStorage.removeItem("access_token");
-          navigate('/login');
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await axios.get(`${API_BASE_URL}/api/admin/dashboard/`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        params: {
+          search: searchTerm
         }
+      });
+      setUsers(response.data.users);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      setError('Failed to load users. Please try again later.');
+      setLoading(false);
+      
+      // If unauthorized, redirect to login
+      if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+        localStorage.removeItem("access_token");
+        navigate('/login');
       }
-    };
+    }
+  };
 
+  useEffect(() => {
     fetchUsers();
-  }, [navigate]);
+  }, [navigate, searchTerm]);
 
   // Logout handler
   const handleLogout = () => {
@@ -59,18 +78,11 @@ const Users = () => {
     navigate('/login');
   };
 
-  // Search functionality
-  const filteredUsers = users.filter(user => 
-    user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.user_role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   // Pagination logic
   const indexOfLastUser = currentPage * itemsPerPage;
   const indexOfFirstUser = indexOfLastUser - itemsPerPage;
-  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(users.length / itemsPerPage);
 
   // Generate page numbers
   const pageNumbers = [];
@@ -89,26 +101,115 @@ const Users = () => {
     return roleClasses[role] || 'badge bg-secondary';
   };
 
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  // Handle add user form submission
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("access_token");
+      await axios.post(`${API_BASE_URL}/api/admin/users/create/`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setShowAddModal(false);
+      setFormData({
+        full_name: '',
+        email: '',
+        phone_number: '',
+        user_role: 'normal_user',
+        address: '',
+        country: '',
+        password: '',
+      });
+      fetchUsers();
+    } catch (err) {
+      console.error('Error adding user:', err);
+      setError('Failed to add user. Please try again.');
+    }
+  };
+
   // Handle edit user
-  const handleEditUser = (userId) => {
-    console.log(`Edit user ${userId}`);
-    // Navigate to edit page or open modal
+  const handleEditUser = async (userId) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const response = await axios.get(`${API_BASE_URL}/api/admin/users/${userId}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setCurrentUser(response.data);
+      // Set form data without password (we don't want to update password necessarily)
+      const { password, ...userData } = response.data;
+      setFormData(userData);
+      setShowEditModal(true);
+    } catch (err) {
+      console.error(`Error fetching user ${userId}:`, err);
+      setError('Failed to load user details. Please try again.');
+    }
+  };
+
+  // Handle update user form submission
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("access_token");
+      // Remove password if it's empty (don't update password)
+      const updateData = {...formData};
+      if (!updateData.password) {
+        delete updateData.password;
+      }
+      
+      await axios.put(`${API_BASE_URL}/api/admin/users/${currentUser.id}/`, updateData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setShowEditModal(false);
+      fetchUsers();
+    } catch (err) {
+      console.error('Error updating user:', err);
+      setError('Failed to update user. Please try again.');
+    }
   };
 
   // Handle delete user
   const handleDeleteUser = (userId) => {
-    console.log(`Delete user ${userId}`);
-    // Show confirmation modal and delete if confirmed
+    setCurrentUser({id: userId});
+    setShowDeleteModal(true);
   };
 
- 
+  // Confirm delete user
+  const confirmDeleteUser = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      await axios.delete(`${API_BASE_URL}/api/admin/users/${currentUser.id}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setShowDeleteModal(false);
+      fetchUsers();
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setError('Failed to delete user. Please try again.');
+    }
+  };
 
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
       <div className="sidebar">
         <div className="logo-container">
-         <Link to="/"><img src={logo} className="dashboard-logo" alt="Logo" /></Link>
+          <Link to="/"><img src={logo} className="dashboard-logo" alt="Logo" /></Link>
         </div>
         <nav className="nav-menu">
           <a href="#" className="nav-item">
@@ -117,15 +218,13 @@ const Users = () => {
           <a href="#" className="nav-item active">
             <FiUsers size={18} /> Users
           </a>
-          <a href="#" className="nav-item">
-            <FiBookOpen size={18} /> Pandits
-          </a>
+       
           <Link to="/admin/dashboard/events" className="nav-item">
-                <FiCalendar size={18} /> Events
-        </Link>
-           <Link to="/admin/dashboard/registrations" className="nav-item ">
-                      <FiCalendar size={18} /> Event Registration
-                    </Link>
+            <FiCalendar size={18} /> Events
+          </Link>
+          <Link to="/admin/dashboard/registrations" className="nav-item">
+            <FiCalendar size={18} /> Event Registration
+          </Link>
         </nav>
         <div className="logout">
           <a href="#" className="nav-item logout-btn" onClick={handleLogout}>
@@ -166,7 +265,7 @@ const Users = () => {
                 </select>
               </div>
               
-              <button className="btn btn-primary">Add New User</button>
+              <button className="btn btn-primary" onClick={() => setShowAddModal(true)}>Add New User</button>
             </div>
           </div>
 
@@ -219,7 +318,6 @@ const Users = () => {
                             >
                               <FiTrash2 size={16} />
                             </button>
-                        
                           </div>
                         </td>
                       </tr>
@@ -266,6 +364,243 @@ const Users = () => {
           )}
         </div>
       </div>
+
+      {/* Add User Modal */}
+      {showAddModal && (
+        <div className="modal show d-block" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Add New User</h5>
+                <button type="button" className="btn-close" onClick={() => setShowAddModal(false)}></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleAddUser}>
+                  <div className="mb-3">
+                    <label htmlFor="full_name" className="form-label">Full Name</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      id="full_name"
+                      name="full_name"
+                      value={formData.full_name}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="email" className="form-label">Email</label>
+                    <input 
+                      type="email" 
+                      className="form-control" 
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="phone_number" className="form-label">Phone Number</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      id="phone_number"
+                      name="phone_number"
+                      value={formData.phone_number}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="user_role" className="form-label">Role</label>
+                    <select 
+                      className="form-select" 
+                      id="user_role"
+                      name="user_role"
+                      value={formData.user_role}
+                      onChange={handleInputChange}
+                    >
+                      <option value="normal_user">Normal User</option>
+                      <option value="pandit">Pandit</option>
+                      <option value="vendor">Vendor</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="address" className="form-label">Address</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      id="address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="country" className="form-label">Country</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      id="country"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="password" className="form-label">Password</label>
+                    <input 
+                      type="password" 
+                      className="form-control" 
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setShowAddModal(false)}>Cancel</button>
+                    <button type="submit" className="btn btn-primary">Add User</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {showEditModal && (
+        <div className="modal show d-block" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Edit User</h5>
+                <button type="button" className="btn-close" onClick={() => setShowEditModal(false)}></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleUpdateUser}>
+                  <div className="mb-3">
+                    <label htmlFor="edit_full_name" className="form-label">Full Name</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      id="edit_full_name"
+                      name="full_name"
+                      value={formData.full_name}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="edit_email" className="form-label">Email</label>
+                    <input 
+                      type="email" 
+                      className="form-control" 
+                      id="edit_email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="edit_phone_number" className="form-label">Phone Number</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      id="edit_phone_number"
+                      name="phone_number"
+                      value={formData.phone_number}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="edit_user_role" className="form-label">Role</label>
+                    <select 
+                      className="form-select" 
+                      id="edit_user_role"
+                      name="user_role"
+                      value={formData.user_role}
+                      onChange={handleInputChange}
+                    >
+                      <option value="normal_user">Normal User</option>
+                      <option value="pandit">Pandit</option>
+                      <option value="vendor">Vendor</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="edit_address" className="form-label">Address</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      id="edit_address"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="edit_country" className="form-label">Country</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      id="edit_country"
+                      name="country"
+                      value={formData.country}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="edit_password" className="form-label">Password (Leave blank to keep unchanged)</label>
+                    <input 
+                      type="password" 
+                      className="form-control" 
+                      id="edit_password"
+                      name="password"
+                      value={formData.password || ''}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setShowEditModal(false)}>Cancel</button>
+                    <button type="submit" className="btn btn-primary">Update User</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="modal show d-block" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Confirm Delete</h5>
+                <button type="button" className="btn-close" onClick={() => setShowDeleteModal(false)}></button>
+              </div>
+              <div className="modal-body">
+                <p>Are you sure you want to delete this user? This action cannot be undone.</p>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>Cancel</button>
+                <button type="button" className="btn btn-danger" onClick={confirmDeleteUser}>Delete User</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Background overlay for modals */}
+      {(showAddModal || showEditModal || showDeleteModal) && (
+        <div className="modal-backdrop show"></div>
+      )}
     </div>
   );
 };

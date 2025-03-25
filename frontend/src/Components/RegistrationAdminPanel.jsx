@@ -124,15 +124,19 @@ const EventRegistrations = () => {
           <Link to="/admin/dashboard/users" className="nav-item">
             <FiUsers size={18} /> Users
           </Link>
-          <Link to="/admin/dashboard/pandits" className="nav-item">
-            <FiBookOpen size={18} /> Pandits
-          </Link>
+        
           <Link to="/admin/dashboard/events" className="nav-item">
             <FiCalendar size={18} /> Events
           </Link>
           <Link to="/admin/dashboard/registrations" className="nav-item active">
             <FiCalendar size={18} /> Event Registration
           </Link>
+          <Link to="/admin/dashboard/rentals" className="nav-item">
+            <FiCalendar size={18} /> Rental Items
+          </Link>
+          
+
+
         </nav>
         <div className="logout">
           <a href="#" className="nav-item logout-btn" onClick={handleLogout}>

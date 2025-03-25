@@ -1,7 +1,8 @@
 from django.urls import path, include
-from .views import list_events, manage_event, update_event, delete_event, register_for_event, get_user_registrations, public_list_events, get_category, get_rally_options, get_all_user_registrations, get_rally_laps, get_newari_instruments, get_volunteer_laps, get_volunteer_types, get_stall_types, get_stall_locations, get_event_detail, get_event_options
+from .views import list_events, manage_event, update_event, delete_event, register_for_event, get_user_registrations, public_list_events, get_category, get_rally_options, get_all_user_registrations, get_rally_laps, get_newari_instruments, get_volunteer_laps, get_volunteer_types, get_stall_types, get_stall_locations, get_event_detail, get_event_options, initiate_ticket_payment, verify_ticket_payment, ticket_history
 from django.conf import settings
 from django.conf.urls.static import static
+from . import views
 
 urlpatterns = [
     path('admin/events/', list_events, name='list_events'),
@@ -28,7 +29,9 @@ urlpatterns = [
 
     path('api/event-options/', get_event_options, name='event-options'),
 
-
+    path('tickets/initiate_payment/', views.initiate_ticket_payment, name='initiate_ticket_payment'),
+    path('tickets/verify-payment/', verify_ticket_payment, name='verify_ticket_payment'),
+    path('tickets/history/', ticket_history, name='ticket_history'),
 
 
 ]

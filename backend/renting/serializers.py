@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import RentalItem, ItemSizeVariant, DeliveryLocation
+from .models import RentalItem, ItemSizeVariant, DeliveryLocation, Order
 
 class ItemSizeVariantSerializer(serializers.ModelSerializer):
     actual_price = serializers.DecimalField(source='get_price', max_digits=10, decimal_places=2, read_only=True)
@@ -117,3 +117,33 @@ class CartSerializer(serializers.ModelSerializer):
         if obj.delivery_location:
             return DeliveryLocationSerializer(obj.delivery_location).data
         return None
+    
+class OrderHistorySerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField()
+    total_price = serializers.SerializerMethodField()
+    delivery_address = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
+        fields = [
+            'order_id',
+            'status',
+            'created_at',
+            'payment_method',
+            'items',
+            'total_price',
+            'delivery_address',
+            'transaction_id'
+        ]
+
+    def get_items(self, obj):
+        cart_items = obj.cart.items.all()
+        return CartItemSerializer(cart_items, many=True).data
+
+    def get_total_price(self, obj):
+        return obj.cart.total_price
+
+    def get_delivery_address(self, obj):
+        if obj.cart.delivery_location:
+            return str(obj.cart.delivery_location)
+        return "Not specified"

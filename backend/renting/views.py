@@ -5,12 +5,14 @@ from rest_framework import status
 from django.conf import settings
 import os
 from .models import RentalItem, ItemSizeVariant, DeliveryLocation
-from .serializers import RentalItemSerializer, RentalItemCreateSerializer, ItemSizeVariantSerializer
+from .serializers import RentalItemSerializer, RentalItemCreateSerializer, ItemSizeVariantSerializer, OrderHistorySerializer
 from rest_framework.permissions import AllowAny
 from backend.permissions import IsAdminOrVendor
 from rest_framework.permissions import IsAuthenticated
-from .models import CartItem, Cart, RentalItem, ItemSizeVariant
+from .models import CartItem, Cart, RentalItem, ItemSizeVariant, Order
 from .serializers import CartItemSerializer, CartSerializer, DeliveryLocationSerializer
+import time
+import requests
 
 @api_view(['POST'])
 @permission_classes([IsAdminOrVendor])
@@ -470,3 +472,168 @@ def list_all_delivery_locations(request):
     locations = DeliveryLocation.objects.filter(is_available=True)
     serializer = DeliveryLocationSerializer(locations, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def initiate_payment(request):
+    cart_id = request.data.get('cart_id')
+    cart = get_object_or_404(Cart, cart_id=cart_id, user=request.user, is_active=True)
+    
+    # Check if cart has items
+    if cart.items.count() == 0:
+        return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+    # Create payment payload for Khalti
+    frontend_success_url = "http://localhost:5173/payment/success"
+    payload = {
+        "return_url": request.data.get('return_url', frontend_success_url),
+        "website_url": "http://127.0.0.1:8000",
+        "amount": int(cart.total_price * 100),  # Convert to paisa
+        "purchase_order_id": f"order_{cart.cart_id}_{int(time.time())}",
+        "purchase_order_name": f"Rental Order {cart.cart_id}",
+        "customer_info": {
+             "name": request.user.full_name,  # Use full_name directly
+            "email": request.user.email,
+            "phone": request.user.phone_number  # Use phone_number directly
+        }
+    }
+    
+    # Make request to Khalti API
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    response = requests.post(
+        "https://dev.khalti.com/api/v2/epayment/initiate/", 
+        json=payload,
+        headers=headers
+    )
+    
+    if response.status_code == 200:
+        data = response.json()
+        
+        # Create order
+        order = Order.objects.create(
+            user=request.user,
+            cart=cart,
+            payment_method="khalti",
+            transaction_id=data.get('pidx')
+        )
+        
+        # Deactivate cart
+        cart.is_active = False
+        cart.save()
+        
+        return Response({
+            'payment_url': data.get('payment_url'),
+            'pidx': data.get('pidx'),
+            'order_id': order.order_id
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'Failed to initiate payment'}, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def verify_payment(request):
+    pidx = request.data.get('pidx')
+    
+    if not pidx:
+        return Response({'error': 'Payment identifier (pidx) is required'}, 
+                        status=status.HTTP_400_BAD_REQUEST)
+    
+    # Make request to Khalti verification API
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "pidx": pidx
+    }
+    
+    response = requests.post(
+        "https://dev.khalti.com/api/v2/epayment/lookup/",
+        json=payload,
+        headers=headers
+    )
+    
+    if response.status_code == 200:
+        payment_data = response.json()
+        transaction_id = payment_data.get('transaction_id', '')
+        payment_status = payment_data.get('status', '')
+        
+        try:
+            # Find the order associated with this payment
+            order = Order.objects.get(transaction_id=pidx)
+            
+            # Update order status based on payment status
+            if payment_status == "Completed":
+                order.status = "completed"
+                order.khalti_data = payment_data
+                order.save()
+                
+                # Update cart status (mark as inactive since order is completed)
+                cart = order.cart
+                cart.is_active = False
+                cart.save()
+                
+                # Update inventory quantities if needed
+                for cart_item in cart.items.all():
+                    size_variant = cart_item.size_variant
+                    size_variant.quantity -= cart_item.quantity
+                    size_variant.save()
+                
+                return Response({
+                    'success': True,
+                    'message': 'Payment verified successfully',
+                    'order_id': order.order_id
+                }, status=status.HTTP_200_OK)
+            else:
+                order.status = "failed"
+                order.khalti_data = payment_data
+                order.save()
+                
+                # Reactivate the cart as payment failed
+                cart = order.cart
+                cart.is_active = True
+                cart.save()
+                
+                return Response({
+                    'success': False,
+                    'message': f'Payment verification failed. Status: {payment_status}',
+                    'order_id': order.order_id
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+        except Order.DoesNotExist:
+            return Response({
+                'error': 'Order not found for this payment'
+            }, status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response({
+            'error': 'Failed to verify payment with Khalti',
+            'details': response.json() if response.content else 'No details available'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def order_history(request):
+    """
+    Get the authenticated user's order history.
+    Returns:
+        - List of orders with cart items and total prices
+    """
+    try:
+        orders = Order.objects.filter(user=request.user).order_by('-created_at')
+        serializer = OrderHistorySerializer(orders, many=True)
+        return Response({
+            'success': True,
+            'orders': serializer.data
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

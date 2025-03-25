@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../CSS/UserBooking.css";
 import NavBar from "./NavBar";
+import { Button } from 'react-bootstrap'; // Ensure this is imported
+import { FaArrowLeft } from 'react-icons/fa'; // Ensure this is imported
+
 
 const UserBookings = () => {
   const [bookings, setBookings] = useState([]);
@@ -173,6 +176,14 @@ const UserBookings = () => {
     <div className="container user-bookings-container">
         <NavBar /><br/><br/><br/>
       <h1 className="bookings-heading mb-5">My Pandit Bookings</h1>
+      <Button 
+              variant="outline-secondary" 
+              onClick={() => navigate("/Ihi")}
+              className="d-flex align-items-center"
+            >
+              <FaArrowLeft className="me-2" />
+              Back to Bookings
+            </Button>
       
       {cancelError && (
         <div className="alert alert-danger" role="alert">

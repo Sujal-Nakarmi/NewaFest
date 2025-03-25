@@ -6,11 +6,13 @@ from backend.permissions import IsAdmin
 from django.utils import timezone
 from .serializers import CombinedEventSerializer
 from .serializers import RegistrationSerializer, CategorySerializer, RallySerializer, RallyLapSerializer, VolunteerLapSerializer, VolunteerTypeSerializer, NewariInstrumentSerializer, StallTypeSerializer, StallLocationSerializer
-from .models import Event, EventDetail, Category, EventRegistration, RegistrationDetail, BhintunaRally, BhintunaRallyLap, VolunteerLap, VolunteerType, NewariInstrument, StallType, StallLocation
+from .models import Event, EventDetail, Category, EventRegistration, RegistrationDetail, BhintunaRally, BhintunaRallyLap, VolunteerLap, VolunteerType, NewariInstrument, StallType, StallLocation, BhintunaTicket
 from django.db import transaction
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
 from django.conf import settings
+import requests
+import time
 
 
 
@@ -246,29 +248,46 @@ def register_for_event(request):
                 # Get number of seats requested (default to 1 if not specified)
                 seats_requested = serializer.validated_data.get('seats_requested', 1)
                 
-                # Check if maximum allowed seats per user is defined for this category
-                max_seats_per_user = getattr(category, 'max_seats_per_user', 5)  # Default to 5 if not set
-                
+                # SPECIAL CASE: For stalls, always set max_seats_per_user to 1 and force seats_requested to 1
+                if category.code == 'STALL':
+                    max_seats_per_user = 1
+                    seats_requested = 1  # Force to 1 regardless of input
+                else:
+                    # Check if maximum allowed seats per user is defined for this category
+                    max_seats_per_user = getattr(category, 'max_seats_per_user', 5)  # Default to 5 if not set
+
                 # Check if user is trying to register more than allowed seats
                 if seats_requested > max_seats_per_user:
+                    error_msg = (
+                        f'Maximum 1 stall allowed per user for {category.name}' 
+                        if category.code == 'STALL' 
+                        else f'Maximum {max_seats_per_user} seats allowed per user for {category.name}'
+                    )
                     return Response(
-                        {'error': f'Maximum {max_seats_per_user} seats allowed per user for {category.name}'},
+                        {'error': error_msg},
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 
                 # Count existing registrations for this user in this category for this specific event
-                existing_registrations_count = EventRegistration.objects.filter(
+                existing_registrations = EventRegistration.objects.filter(
                     event_detail=event_detail,
                     user=request.user,
                     category=category,
                     is_deleted=False
-                ).count()
+                )
+                existing_registrations_count = existing_registrations.count()
                 
                 # Check if user will exceed maximum allowed registrations
                 if existing_registrations_count + seats_requested > max_seats_per_user:
-                    remaining_slots = max_seats_per_user - existing_registrations_count
+                    error_msg = (
+                        f'You can only register 1 stall for {event_detail}. '
+                        f'You already have an existing stall registration.'
+                        if category.code == 'STALL' 
+                        else f'You already have {existing_registrations_count} registrations for {category.name} in {event_detail}. '
+                             f'Maximum allowed is {max_seats_per_user}.'
+                    )
                     return Response(
-                        {'error': f'You already have {existing_registrations_count} registrations for {category.name} in {event_detail}. Maximum allowed is {max_seats_per_user}. You can register {remaining_slots} more seats.'},
+                        {'error': error_msg},
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 
@@ -284,7 +303,6 @@ def register_for_event(request):
                             status=status.HTTP_400_BAD_REQUEST
                         )
                     
-                    # Get the rally option - ensure it's for this specific event
                     try:
                         rally_option = BhintunaRally.objects.get(
                             pk=rally_option_id,
@@ -297,7 +315,6 @@ def register_for_event(request):
                             status=status.HTTP_404_NOT_FOUND
                         )
                     
-                    # Check if there are enough available seats in the rally option
                     if rally_option.available_seats < seats_requested:
                         return Response(
                             {"error": f"Not enough available seats for this rally option. Only {rally_option.available_seats} remaining."}, 
@@ -315,7 +332,6 @@ def register_for_event(request):
                             status=status.HTTP_400_BAD_REQUEST
                         )
                     
-                    # Get the volunteer type - ensure it's for this specific event
                     try:
                         volunteer_type = VolunteerType.objects.get(
                             pk=volunteer_type_id,
@@ -328,7 +344,6 @@ def register_for_event(request):
                             status=status.HTTP_404_NOT_FOUND
                         )
                     
-                    # Handle music volunteer type with instrument selection
                     if volunteer_type.code == 'Music':
                         instrument_id = serializer.validated_data.get('newari_instrument')
                         if not instrument_id:
@@ -337,7 +352,6 @@ def register_for_event(request):
                                 status=status.HTTP_400_BAD_REQUEST
                             )
                         
-                        # Get the instrument - ensure it's for this specific event
                         try:
                             newari_instrument = NewariInstrument.objects.get(
                                 pk=instrument_id,
@@ -350,7 +364,6 @@ def register_for_event(request):
                                 status=status.HTTP_404_NOT_FOUND
                             )
                         
-                        # Check if there are enough available seats for this instrument
                         if newari_instrument.available_seats < seats_requested:
                             return Response(
                                 {"error": f"Not enough available positions for this instrument. Only {newari_instrument.available_seats} remaining."}, 
@@ -368,7 +381,6 @@ def register_for_event(request):
                             status=status.HTTP_400_BAD_REQUEST
                         )
                     
-                    # Get the stall type - ensure it's for this specific event
                     try:
                         stall_type = StallType.objects.get(
                             pk=stall_type_id,
@@ -381,10 +393,9 @@ def register_for_event(request):
                             status=status.HTTP_404_NOT_FOUND
                         )
                     
-                    # Check if there are enough available seats for this stall type
-                    if stall_type.available_seats < seats_requested:
+                    if stall_type.available_seats < 1:  # Always check for 1 seat for stalls
                         return Response(
-                            {"error": f"Not enough available spaces for this stall type. Only {stall_type.available_seats} remaining."}, 
+                            {"error": f"No available spaces for this stall type."}, 
                             status=status.HTTP_400_BAD_REQUEST
                         )
                     
@@ -395,7 +406,6 @@ def register_for_event(request):
                              status=status.HTTP_400_BAD_REQUEST
                         )
 
-                    # Get the stall location - ensure it's for this specific event
                     try:
                         stall_location = StallLocation.objects.get(
                             pk=stall_location_id,
@@ -408,10 +418,9 @@ def register_for_event(request):
                             status=status.HTTP_404_NOT_FOUND
                         )
                     
-                    # Check if there are enough available seats at this location
-                    if stall_location.available_seats < seats_requested:
+                    if stall_location.available_seats < 1:  # Always check for 1 seat for stalls
                         return Response(
-                            {"error": f"Not enough available spaces at this location. Only {stall_location.available_seats} remaining."}, 
+                            {"error": f"No available spaces at this location."}, 
                             status=status.HTTP_400_BAD_REQUEST
                         )
                     
@@ -428,9 +437,8 @@ def register_for_event(request):
                             status=status.HTTP_400_BAD_REQUEST
                         )
 
-                # Process registrations for each seat
+                # Process registrations
                 for _ in range(seats_requested):
-                    # Create event registration
                     registration = EventRegistration.objects.create(
                         event_detail=event_detail,
                         user=request.user,
@@ -442,26 +450,24 @@ def register_for_event(request):
                         selected_laps = serializer.validated_data.get('rally_laps', [])
                         
                         if not selected_laps:
-                            registration.delete()  # Clean up if validation fails
+                            registration.delete()
                             return Response(
                                 {"error": "At least one lap must be selected."}, 
                                 status=status.HTTP_400_BAD_REQUEST
                             )
                         
-                        # Get selected laps - ensure they're for this specific rally option
                         rally_laps = BhintunaRallyLap.objects.filter(
                             lap_id__in=selected_laps, 
                             rally_option=rally_option
                         )
                         
                         if not rally_laps.exists() or rally_laps.count() != len(selected_laps):
-                            registration.delete()  # Clean up if validation fails
+                            registration.delete()
                             return Response(
                                 {"error": f"Invalid laps selected for {rally_option.name}."}, 
                                 status=status.HTTP_400_BAD_REQUEST
                             )
                         
-                        # Deduct a seat from the rally option - this is now done once per registration
                         rally_option.available_seats -= 1
                         rally_option.save()
                     
@@ -470,13 +476,12 @@ def register_for_event(request):
                         selected_volunteer_laps = serializer.validated_data.get('volunteer_laps', [])
                         
                         if not selected_volunteer_laps:
-                            registration.delete()  # Clean up if validation fails
+                            registration.delete()
                             return Response(
                                 {"error": "At least one volunteer lap must be selected."}, 
                                 status=status.HTTP_400_BAD_REQUEST
                             )
                         
-                        # Get selected volunteer laps - ensure they're for this specific event
                         volunteer_laps = VolunteerLap.objects.filter(
                             lap_id__in=selected_volunteer_laps,
                             event_detail=event_detail,
@@ -484,66 +489,51 @@ def register_for_event(request):
                         )
                         
                         if not volunteer_laps.exists() or volunteer_laps.count() != len(selected_volunteer_laps):
-                            registration.delete()  # Clean up if validation fails
+                            registration.delete()
                             return Response(
                                 {"error": f"Invalid volunteer laps selected for {event_detail}."}, 
                                 status=status.HTTP_400_BAD_REQUEST
                             )
                         
-                        # For music volunteers, properly deduct instrument seat for each registration
                         if volunteer_type.code == 'Music' and newari_instrument:
-                            # Re-fetch the instrument to get latest available_seats count
                             fresh_instrument = NewariInstrument.objects.get(pk=newari_instrument.instrument_id)
                             if fresh_instrument.available_seats < 1:
-                                registration.delete()  # Clean up if validation fails
+                                registration.delete()
                                 return Response(
                                     {"error": "No available positions left for this instrument."}, 
                                     status=status.HTTP_400_BAD_REQUEST
                                 )
                             
-                            # Deduct one seat from the instrument and save
                             fresh_instrument.available_seats -= 1
                             fresh_instrument.save()
-                            
-                            # Update our reference to the instrument with the fresh one
                             newari_instrument = fresh_instrument
                     
                     # Handle stall registration
                     elif category.code == 'STALL':
-                        # Deduct a seat from the stall type - ensure we get the fresh instance
                         fresh_stall_type = StallType.objects.get(pk=stall_type.type_id)
                         if fresh_stall_type.available_seats < 1:
-                            registration.delete()  # Clean up if validation fails
+                            registration.delete()
                             return Response(
                                 {"error": "No available spaces left for this stall type."}, 
                                 status=status.HTTP_400_BAD_REQUEST
                             )
                         
-                        # Deduct one seat from the stall type and save
                         fresh_stall_type.available_seats -= 1
                         fresh_stall_type.save()
-                        
-                        # Update our reference to the stall type with the fresh one
                         stall_type = fresh_stall_type
                         
-                        # Deduct a seat from the stall location - ensure we get the fresh instance
                         fresh_stall_location = StallLocation.objects.get(pk=stall_location.location_id)
                         if fresh_stall_location.available_seats < 1:
-                            # Rollback the stall type seat deduction
                             fresh_stall_type.available_seats += 1
                             fresh_stall_type.save()
-                            
-                            registration.delete()  # Clean up if validation fails
+                            registration.delete()
                             return Response(
                                 {"error": "No available spaces left at this location."}, 
                                 status=status.HTTP_400_BAD_REQUEST
                             )
                         
-                        # Deduct one seat from the stall location and save
                         fresh_stall_location.available_seats -= 1
                         fresh_stall_location.save()
-                        
-                        # Update our reference to the stall location with the fresh one
                         stall_location = fresh_stall_location
                     
                     # Create registration detail
@@ -567,9 +557,14 @@ def register_for_event(request):
                     
                     registrations.append(registration.registration_id)
                 
-                # Return success response with all registration IDs
+                # Return success response
+                success_msg = (
+                    'Successfully registered your stall' 
+                    if category.code == 'STALL' 
+                    else f'Successfully registered {seats_requested} seat(s)'
+                )
                 return Response({
-                    'message': f'Successfully registered {seats_requested} seat(s)',
+                    'message': success_msg,
                     'registration_ids': registrations,
                     'category': category.name,
                     'event': f"{event_detail.event.name} - {event_detail.year}"
@@ -583,7 +578,6 @@ def register_for_event(request):
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -869,3 +863,185 @@ def get_event_options(request):
         
     except EventDetail.DoesNotExist:
         return Response({"error": "Event detail not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def initiate_ticket_payment(request):
+    # Add logging for debugging
+    print(f"Authenticated User: {request.user}")
+    print(f"Registration ID: {request.data.get('registration_id')}")
+
+    registration_id = request.data.get('registration_id')
+    
+    try:
+        registration = EventRegistration.objects.get(
+            registration_id=registration_id, 
+            user=request.user
+        )
+    except EventRegistration.DoesNotExist:
+        # More detailed error response
+        return Response({
+            'error': 'No registration found',
+            'details': {
+                'user_id': request.user.id,
+                'registration_id': registration_id,
+                'existing_registrations': list(EventRegistration.objects.filter(user=request.user).values_list('registration_id', flat=True))
+            }
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    # Create payment payload for Khalti
+    frontend_success_url = "http://localhost:5173/ticket/payment/success"
+    payload = {
+        "return_url": request.data.get('return_url', frontend_success_url),
+        "website_url": "http://127.0.0.1:8000",
+        "amount": 20000,  # 200 * 100 to convert to paisa
+        "purchase_order_id": f"ticket_{registration.registration_id}_{int(time.time())}",
+        "purchase_order_name": f"Bhintuna Rally Ticket {registration.registration_id}",
+        "customer_info": {
+            "name": request.user.full_name,
+            "email": request.user.email,
+            "phone": request.user.phone_number
+        }
+    }
+    
+    # Make request to Khalti API
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    response = requests.post(
+        "https://dev.khalti.com/api/v2/epayment/initiate/", 
+        json=payload,
+        headers=headers
+    )
+    
+    if response.status_code == 200:
+        data = response.json()
+        
+        # Create ticket
+        ticket = BhintunaTicket.objects.create(
+            user=request.user,
+            event_registration=registration,
+            transaction_id=data.get('pidx'),
+            price=200,
+            status='pending'
+        )
+        
+        return Response({
+            'payment_url': data.get('payment_url'),
+            'pidx': data.get('pidx'),
+            'ticket_id': ticket.ticket_id
+        }, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'Failed to initiate payment'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def verify_ticket_payment(request):
+    pidx = request.data.get('pidx')
+    
+    if not pidx:
+        return Response({'error': 'Payment identifier (pidx) is required'}, 
+                        status=status.HTTP_400_BAD_REQUEST)
+    
+    # Make request to Khalti verification API
+    headers = {
+        "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "pidx": pidx
+    }
+    
+    response = requests.post(
+        "https://dev.khalti.com/api/v2/epayment/lookup/",
+        json=payload,
+        headers=headers
+    )
+    
+    if response.status_code == 200:
+        payment_data = response.json()
+        transaction_id = payment_data.get('transaction_id', '')
+        payment_status = payment_data.get('status', '')
+        
+        try:
+            # Find the ticket associated with this payment
+            ticket = BhintunaTicket.objects.get(transaction_id=pidx)
+            
+            # Update ticket status based on payment status
+            if payment_status == "Completed":
+                ticket.status = "completed"
+                ticket.khalti_data = payment_data
+                ticket.save()
+                
+                return Response({
+                    'success': True,
+                    'message': 'Ticket payment verified successfully',
+                    'ticket_id': ticket.ticket_id,
+                    'event_registration_id': ticket.event_registration.registration_id
+                }, status=status.HTTP_200_OK)
+            else:
+                ticket.status = "failed"
+                ticket.khalti_data = payment_data
+                ticket.save()
+                
+                return Response({
+                    'success': False,
+                    'message': f'Ticket payment verification failed. Status: {payment_status}',
+                    'ticket_id': ticket.ticket_id
+                }, status=status.HTTP_400_BAD_REQUEST)
+                
+                
+        except BhintunaTicket.DoesNotExist:
+            return Response({
+                'error': 'Ticket not found for this payment'
+            }, status=status.HTTP_404_NOT_FOUND)
+    else:
+        return Response({
+            'error': 'Failed to verify ticket payment with Khalti',
+            'details': response.json() if response.content else 'No details available'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def ticket_history(request):
+    """
+    Get the authenticated user's ticket history.
+    Returns:
+        - List of tickets with event registration details
+    """
+    try:
+        tickets = BhintunaTicket.objects.filter(
+            user=request.user
+        ).select_related(
+            'event_registration', 
+            'event_registration__event_detail', 
+            'event_registration__event_detail__event'
+        ).order_by('-created_at')
+        
+        ticket_data = []
+        for ticket in tickets:
+            ticket_info = {
+                'ticket_id': ticket.ticket_id,
+                'event_name': ticket.event_registration.event_detail.event.name,
+                'event_date': ticket.event_registration.event_detail.start_time,
+                'price': ticket.price,
+                'status': ticket.status,
+                'created_at': ticket.created_at
+            }
+            ticket_data.append(ticket_info)
+        
+        return Response({
+            'success': True,
+            'tickets': ticket_data
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        return Response({
+            'success': False,
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

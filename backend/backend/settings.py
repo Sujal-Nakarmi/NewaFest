@@ -20,6 +20,12 @@ import os
 
 from pathlib import Path
 
+# Khalti Payment Gateway Settings
+KHALTI_SECRET_KEY = '2adfadee1a4e47bbbccef15d6eb1c858'  # Your sandbox key from the image
+KHALTI_PUBLIC_KEY = 'e89d7227f80d4a2191cff14ea3d42f90'  # Your public key from the image
+
+ALLOWED_HOSTS = ['yourdomain.com', 'localhost', '127.0.0.1']
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

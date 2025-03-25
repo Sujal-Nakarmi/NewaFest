@@ -97,6 +97,55 @@
     background-color: #7b2110;
     clip-path: polygon(100% 0, 0% 100%, 100% 100%);
   }
+
+  /* Additional styles for lap selection */
+.lap-selection-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.lap-card {
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+}
+
+.lap-card:hover {
+  border-color: #8B0000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.lap-card.selected {
+  border-color: #FFE4E1;
+  background-color: #FFE4E1;
+  border-color: #8B0000;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.lap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.lap-number {
+  font-weight: bold;
+  color: #333;
+}
+
+.lap-checkbox {
+  transform: scale(1.2);
+}
+
+.lap-description {
+  color: #666;
+  font-size: 0.9em;
+}
   
   /* Responsive adjustments */
   @media (max-width: 768px) {

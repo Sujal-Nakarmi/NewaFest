@@ -253,6 +253,16 @@ const ClothingGrid = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="clothing-title">Rent Items</h1>
         <div className="d-flex align-items-center">
+        {isLoggedIn && (
+      <Button 
+        variant="outline-primary"
+        onClick={() => window.location.href = '/orders/history'}
+        className="order-history-btn"
+      >
+        My Orders
+      </Button>
+    )}
+    
           <Button 
             variant="outline-secondary" 
             className="me-2 filter-toggle-btn"

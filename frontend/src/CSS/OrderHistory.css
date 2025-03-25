@@ -1,0 +1,40 @@
+.order-history-container {
+    max-width: 1200px;
+  }
+  
+  .order-history-title {
+    color: #333;
+    font-weight: 600;
+  }
+  
+  .order-table {
+    margin-top: 20px;
+  }
+  
+  .order-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+  }
+  
+  .status-badge {
+    font-size: 0.8rem;
+    padding: 0.35em 0.65em;
+    text-transform: capitalize;
+  }
+  
+  .empty-orders {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 40px;
+  }
+  
+  @media (max-width: 768px) {
+    .order-table {
+      font-size: 0.9rem;
+    }
+    
+    .order-table th, 
+    .order-table td {
+      padding: 0.5rem;
+    }
+  }

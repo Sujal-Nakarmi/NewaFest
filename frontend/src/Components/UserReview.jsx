@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { Button } from 'react-bootstrap'; // Ensure this is imported
+import { FaArrowLeft } from 'react-icons/fa'; // Ensure this is imported
+import { useNavigate } from 'react-router-dom'; 
+import NavBar from "./NavBar";
 
 const UserReviews = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate(); // Initialize navigate
 
   useEffect(() => {
     const fetchUserReviews = async () => {
@@ -39,7 +44,16 @@ const UserReviews = () => {
 
   return (
     <div className="container mt-4">
+       <NavBar /><br/><br/><br/>
       <h2 className="mb-4">Your Reviews</h2>
+      <Button 
+              variant="outline-secondary" 
+              onClick={() => navigate("/Ihi")}
+              className="d-flex align-items-center"
+            >
+              <FaArrowLeft className="me-2" />
+              Back to Bookings
+            </Button><br/>
       {reviews.length === 0 ? (
         <div className="alert alert-info">You haven't written any reviews yet.</div>
       ) : (

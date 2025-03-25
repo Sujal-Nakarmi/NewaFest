@@ -151,3 +151,47 @@ class CartItem(models.Model):
         super().save(*args, **kwargs)
 
 
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    ]
+    
+    PAYMENT_METHODS = [
+        ('khalti', 'Khalti'),
+        ('cash', 'Cash on Delivery'),
+    ]
+
+    order_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    cart = models.OneToOneField(Cart, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)  # Track updates
+    status = models.CharField(
+        max_length=50, 
+        choices=STATUS_CHOICES, 
+        default='pending'
+    )
+    transaction_id = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True,
+        unique=True  # Ensure pidx uniqueness
+    )
+    payment_method = models.CharField(
+        max_length=50,
+        choices=PAYMENT_METHODS
+    )
+    khalti_data = models.JSONField(blank=True, null=True)  # Store full Khalti response
+    
+    class Meta:
+        db_table = 'Order'
+        indexes = [
+            models.Index(fields=['transaction_id']),
+            models.Index(fields=['status']),
+        ]
+        
+    def __str__(self):
+        return f"Order {self.order_id} ({self.status})"

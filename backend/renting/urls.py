@@ -29,7 +29,15 @@ urlpatterns = [
     path('delivery/provinces/<str:province>/areas/', views.list_areas, name='list_areas_by_province'),
     path('cart/update-delivery-location/', views.update_cart_delivery_location, name='update_cart_delivery_location'),
     path('delivery/locations/', views.list_all_delivery_locations, name='list_all_delivery_locations'),
+
+
+    path('api/initiate-payment/', views.initiate_payment, name='initiate_payment'),
+    path('api/verify-payment/', views.verify_payment, name='verify_payment'),
+
+
+    path('orders/history/', views.order_history, name='order-history'),
 ]
+
 
 
 

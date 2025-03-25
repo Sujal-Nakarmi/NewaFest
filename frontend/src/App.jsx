@@ -28,6 +28,12 @@ import RentingPage from './Pages/RentingPage';
 import CartPage from './Components/Cart';
 import GaiJatra from './Pages/GaiJatra';
 import EventRegistrationRouter from './Components/EventRegistrationRouter';
+import Checkout from './Components/CheckOut';
+import PaymentSuccess from './Components/PaymentSuccess';
+import OrderHistory from './Components/OrderHistory';
+import RentalItemsAdminPanel from './Components/RentalItemsDashboard';
+import BhintunaTicketHistory from './Components/BhintunaTicketHistory';
+import BhintunaTicketPayment from './Components/BhintunaTicketPayment';
 
 // Import other pages as needed
 
@@ -54,6 +60,9 @@ function App() {
           
         
           <Route path="/GaiJatra" element={<GaiJatra />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/payment/success" element={<PaymentSuccess />} />
+
           
 
           <Route path="/book-pandit/:panditId" element={<PanditBookingForm />} />
@@ -65,6 +74,18 @@ function App() {
           <Route path="/pandit-reviews/:panditId" element={<PanditReviews />} />
           <Route path="/create-review/:bookingId" element={<CreateReview />} />
           <Route path="/my-reviews" element={<UserReviews />} />
+          // In your router configuration
+          <Route path="/orders/history" element={<OrderHistory />} />
+
+          <Route 
+          path="/ticket/payment/:eventRegistrationId" 
+          element={<BhintunaTicketPayment />} 
+        />
+        <Route 
+          path="/ticket/history" 
+          element={<BhintunaTicketHistory />} 
+        />
+    
 
 
 
@@ -74,6 +95,7 @@ function App() {
           <Route path="/admin/dashboard/users" element={<Users />} />
           <Route path="/admin/dashboard/events" element={<Events />} />
           <Route path="/admin/dashboard/registrations" element={<EventRegistrations />} />
+          <Route path="/admin/dashboard/rentals" element={<RentalItemsAdminPanel />} />
         </Route>
         
         <Route element={<ProtectedRoute allowedRoles={["pandit"]} />}>

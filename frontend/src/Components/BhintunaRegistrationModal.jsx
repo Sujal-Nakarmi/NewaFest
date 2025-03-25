@@ -8,6 +8,7 @@ import "../CSS/BhintunaRegistrationModal.css";
 import Rally from "../Assests/ParticipationRally.png";
 import Music from "../Assests/ParticipationMusic.png";
 import Stall from "../Assests/ParticipationStall.png";
+import BhintunaTicketPayment from "./BhintunaTicketPayment";
 
 function RegistrationModal({ show, handleClose, eventType, categoryId }) {
   const { eventDetailId } = useParams();
@@ -31,6 +32,9 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
   const [showFoodInput, setShowFoodInput] = useState(false);
   const [showDrinksInput, setShowDrinksInput] = useState(false);
   const [showInstrumentSelect, setShowInstrumentSelect] = useState(false);
+
+  const [showTicketPaymentModal, setShowTicketPaymentModal] = useState(false);
+  const [registeredEventRegistrationId, setRegisteredEventRegistrationId] = useState(null);
 
   // Load all event options when component mounts or event type changes
   useEffect(() => {
@@ -171,11 +175,20 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
         }
       );
       
-      toast.success(`Successfully registered ${formData.seats} seat(s)!`);
-      setTimeout(() => {
-        handleClose();
-        window.location.reload();
-      }, 2000);
+      // Store the event registration ID for ticket payment
+      setRegisteredEventRegistrationId(response.data.registration_ids[0]);  // Take the first registration ID
+      
+      // Different behavior based on event type
+      if (eventType === "rally") {
+        // For rally, show the ticket payment modal
+        setShowTicketPaymentModal(true);
+      } else {
+        // For volunteer and stall, just show success message
+        toast.success(`Successfully registered ${formData.seats} seat(s)!`);
+        setTimeout(() => {
+          handleClose();
+        }, 2000);
+      }
     } catch (error) {
       console.error("Registration error:", error);
       const errorMessage = error.response?.data 
@@ -189,10 +202,21 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
       setIsSubmitting(false);
     }
   };
+
+  // Close ticket payment modal
+  const handleCloseTicketPayment = () => {
+    setShowTicketPaymentModal(false);
+    setRegisteredEventRegistrationId(null);
+    handleClose(); // Close the registration modal as well
+  };
   
   // Validate form based on event type
   const validateForm = () => {
     if (eventType === "rally") {
+      if (formData.seats > 5) {
+        toast.error("Maximum 5 seats allowed for Rally");
+        return false;
+      }
       if (!formData.rallyOption) {
         toast.error("Please select a rally option");
         return false;
@@ -202,6 +226,10 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
         return false;
       }
     } else if (eventType === "volunteer") {
+      if (formData.seats > 5) {
+        toast.error("Maximum 5 seats allowed for Volunteer");
+        return false;
+      }
       if (!formData.volunteerType) {
         toast.error("Please select a volunteer type");
         return false;
@@ -215,6 +243,10 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
         return false;
       }
     } else if (eventType === "stall") {
+      if (formData.seats > 1) {
+        toast.error("Only 1 seat allowed for Stall");
+        return false;
+      }
       if (!formData.stallType) {
         toast.error("Please select a stall type");
         return false;
@@ -274,21 +306,23 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
   const renderForm = () => {
     return (
       <Form onSubmit={handleSubmit}>
-        {/* Seats input (common for all event types) */}
+        {/* Seats input with dynamic max value */}
         <Form.Group className="mb-3">
-          <Form.Label>Number of Seats</Form.Label>
+          <Form.Label>Number of Seats</Form.Label><br/>
+          <Form.Text className="text-muted">
+            {eventType === "stall" 
+              ? "Only 1 seat allowed for Stall" 
+              : "Maximum 5 seats allowed "}
+          </Form.Text>
           <Form.Control
             type="number"
             className="form-input"
             name="seats"
             min="1"
-            max="10"
+            max={eventType === "stall" ? 1 : 5}
             value={formData.seats || 1}
             onChange={handleInputChange}
           />
-          <Form.Text className="text-muted">
-            How many seats do you want to register? (Maximum allowed 5 seats)
-          </Form.Text>
         </Form.Group>
         
         {/* Event-specific inputs */}
@@ -317,11 +351,11 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
     );
   };
   
-  // Render rally-specific form
+  // Render rally-specific form with improved lap display
   const renderRallyForm = () => {
     const { rallyOptions, rallyLaps } = eventOptions;
-    // Change this line in renderRallyForm() function
-const filteredLaps = rallyLaps.filter(lap => lap.rally_option === parseInt(formData.rallyOption));
+    const filteredLaps = rallyLaps.filter(lap => lap.rally_option === parseInt(formData.rallyOption));
+    
     return (
       <>
         <Form.Group className="mb-3">
@@ -348,21 +382,40 @@ const filteredLaps = rallyLaps.filter(lap => lap.rally_option === parseInt(formD
         {formData.rallyOption && (
           <Form.Group className="mb-3">
             <Form.Label>Select Laps</Form.Label>
-            {filteredLaps.length > 0 ? (
-              filteredLaps.map((lap) => (
-                <Form.Check
-                  key={lap.lap_id}
-                  type="checkbox"
-                  label={`Lap ${lap.lap_number} - ${lap.route_description}`}
-                  name="rallyLaps"
-                  value={lap.lap_id}
-                  checked={(formData.rallyLaps || []).includes(lap.lap_id)}
-                  onChange={handleInputChange}
-                />
-              ))
-            ) : (
-              <p>No laps available for this option</p>
-            )}
+            <div className="lap-selection-container">
+              {filteredLaps.length > 0 ? (
+                filteredLaps.map((lap) => (
+                  <div 
+                    key={lap.lap_id} 
+                    className={`lap-card ${(formData.rallyLaps || []).includes(lap.lap_id) ? 'selected' : ''}`}
+                    onClick={() => {
+                      const currentLaps = formData.rallyLaps || [];
+                      const newLaps = currentLaps.includes(lap.lap_id)
+                        ? currentLaps.filter(id => id !== lap.lap_id)
+                        : [...currentLaps, lap.lap_id];
+                      setFormData({...formData, rallyLaps: newLaps});
+                    }}
+                  >
+                    <div className="lap-header">
+                      <span className="lap-number">Lap {lap.lap_number}</span>
+                      <input 
+                        type="checkbox" 
+                        name="rallyLaps"
+                        value={lap.lap_id}
+                        checked={(formData.rallyLaps || []).includes(lap.lap_id)}
+                        onChange={() => {}} // Prevent default checkbox behavior
+                        className="lap-checkbox"
+                      />
+                    </div>
+                    <div className="lap-description">
+                      {lap.route_description}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>No laps available for this option</p>
+              )}
+            </div>
           </Form.Group>
         )}
       </>
@@ -418,27 +471,51 @@ const filteredLaps = rallyLaps.filter(lap => lap.rally_option === parseInt(formD
         {formData.volunteerType && (
           <Form.Group className="mb-3">
             <Form.Label>Select Volunteer Laps</Form.Label>
-            {volunteerLaps.length > 0 ? (
-              volunteerLaps.map((lap) => (
-                <Form.Check
-                  key={lap.lap_id}
-                  type="checkbox"
-                  label={`Lap ${lap.lap_number} - ${lap.route_description} ${lap.time ? `- Time: ${new Date(lap.time).toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'})}` : ''}`}
-                  name="volunteerLaps"
-                  value={lap.lap_id}
-                  checked={(formData.volunteerLaps || []).includes(lap.lap_id)}
-                  onChange={handleInputChange}
-                />
-              ))
-            ) : (
-              <p>No volunteer laps available</p>
-            )}
+            <div className="lap-selection-container">
+              {volunteerLaps.length > 0 ? (
+                volunteerLaps.map((lap) => (
+                  <div 
+                    key={lap.lap_id} 
+                    className={`lap-card ${(formData.volunteerLaps || []).includes(lap.lap_id) ? 'selected' : ''}`}
+                    onClick={() => {
+                      const currentLaps = formData.volunteerLaps || [];
+                      const newLaps = currentLaps.includes(lap.lap_id)
+                        ? currentLaps.filter(id => id !== lap.lap_id)
+                        : [...currentLaps, lap.lap_id];
+                      setFormData({...formData, volunteerLaps: newLaps});
+                    }}
+                  >
+                    <div className="lap-header">
+                      <span className="lap-number">Lap {lap.lap_number}</span>
+                      <input 
+                        type="checkbox" 
+                        name="volunteerLaps"
+                        value={lap.lap_id}
+                        checked={(formData.volunteerLaps || []).includes(lap.lap_id)}
+                        onChange={() => {}} // Prevent default checkbox behavior
+                        className="lap-checkbox"
+                      />
+                    </div>
+                    <div className="lap-description">
+                      {lap.route_description}
+                      {lap.time && (
+                        <div className="lap-time">
+                          Time: {new Date(lap.time).toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'})}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p>No volunteer laps available</p>
+              )}
+            </div>
           </Form.Group>
         )}
       </>
     );
   };
-  
+
   // Render stall-specific form
   const renderStallForm = () => {
     const { stallTypes, stallLocations } = eventOptions;
@@ -551,6 +628,13 @@ const filteredLaps = rallyLaps.filter(lap => lap.rally_option === parseInt(formD
           {renderForm()}
         </Modal.Body>
       </Modal>
+      
+      {/* Ticket Payment Modal - Only shown for rally registration */}
+      <BhintunaTicketPayment 
+        show={showTicketPaymentModal}
+        handleClose={handleCloseTicketPayment}
+        eventRegistrationId={registeredEventRegistrationId}
+      />
     </>
   );
 }
