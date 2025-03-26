@@ -33,7 +33,9 @@ import PaymentSuccess from './Components/PaymentSuccess';
 import OrderHistory from './Components/OrderHistory';
 import RentalItemsAdminPanel from './Components/RentalItemsDashboard';
 import BhintunaTicketHistory from './Components/BhintunaTicketHistory';
+import TicketPaymentSuccess from './Components/TicketSuccess';
 import BhintunaTicketPayment from './Components/BhintunaTicketPayment';
+import ContactPage from './Pages/ContactPage';
 
 // Import other pages as needed
 
@@ -62,7 +64,9 @@ function App() {
           <Route path="/GaiJatra" element={<GaiJatra />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
+          <Route path="/ticket/payment/success" element={<TicketPaymentSuccess />} />
 
+          <Route path="/contact" element={<ContactPage />} />
           
 
           <Route path="/book-pandit/:panditId" element={<PanditBookingForm />} />

@@ -214,7 +214,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
   const validateForm = () => {
     if (eventType === "rally") {
       if (formData.seats > 5) {
-        toast.error("Maximum 5 seats allowed for Rally");
+        toast.error("Maximum 5 slots allowed for Rally");
         return false;
       }
       if (!formData.rallyOption) {
@@ -227,7 +227,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
       }
     } else if (eventType === "volunteer") {
       if (formData.seats > 5) {
-        toast.error("Maximum 5 seats allowed for Volunteer");
+        toast.error("Maximum 5 slots allowed for Volunteer");
         return false;
       }
       if (!formData.volunteerType) {
@@ -244,7 +244,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
       }
     } else if (eventType === "stall") {
       if (formData.seats > 1) {
-        toast.error("Only 1 seat allowed for Stall");
+        toast.error("Only 1 slot allowed for Stall");
         return false;
       }
       if (!formData.stallType) {
@@ -373,7 +373,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
                 value={option.option_id}
                 disabled={option.available_seats < formData.seats}
               >
-                {option.name} (Available Seats: {option.available_seats})
+                {option.name} (Available Slots: {option.available_seats})
               </option>
             ))}
           </Form.Select>

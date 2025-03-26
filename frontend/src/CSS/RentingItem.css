@@ -128,7 +128,7 @@
     background-color: #f8f9fa;
   }
 
-  /* Existing RentingItem.css styles - keep them and add these new styles */
+  
 
 /* Filter Panel */
 .filter-card {
@@ -178,22 +178,7 @@
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Enhance search bar */
-.search-bar {
-  min-width: 250px;
-  border-radius: 20px;
-  overflow: hidden;
-}
 
-.search-bar .form-control,
-.search-bar .input-group-text {
-  border-color: #e9ecef;
-}
-
-.search-bar .form-control:focus {
-  box-shadow: none;
-  border-color: #ced4da;
-}
 
 /* No results state */
 .no-results {
@@ -240,4 +225,112 @@
 .form-select:focus,
 .form-control:focus {
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+}
+
+
+.renting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.renting-actions {
+  display: flex;
+  align-items: center;
+}
+
+.search-filter-container {
+  display: flex;
+  align-items: center;
+}
+
+.search-bar {
+  min-width: 300px;
+  max-width: 400px;
+  margin-right: 0.5rem;
+}
+
+.my-orders-btn {
+  margin-right: 1rem;
+}
+
+.filter-toggle-btn {
+  display: flex;
+  align-items: center;
+}
+
+.no-results {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.order-history-btn {
+  background-color: white;    /* Keep the black background color */
+  border: 2px solid #6b0000;    /* Add a white outline (you can change the color/thickness) */
+  color: #6b0000;               /* Set text color to white to maintain visibility on the black background */
+  padding: 10px 20px;         /* Add padding for better button appearance */
+  border-radius: 5px;         /* Optional: Add rounded corners for the button */
+  font-size: 16px;            /* Optional: Adjust font size */
+}
+
+.order-history-btn:hover {
+  background-color: transparent;  /* Make the background transparent on hover */
+  color: black;                   /* Change text color to black on hover */
+  border: 2px solid black;        /* Change the border to black when hovered */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  
+
+  .renting-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ced4da;
+    border-radius: 25px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  
+  .search-bar .form-control {
+    border: none;
+    box-shadow: none;
+    padding: 0.5rem 1rem;
+    flex-grow: 1;
+  }
+  
+  .search-bar .form-control:focus {
+    outline: none;
+    box-shadow: none;
+  }
+  
+  .search-bar .input-group-text {
+    background-color: #8b0000;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .search-bar .input-group-text:hover {
+    background-color: #6b0000;
+  }
+  
+  .search-bar .input-group-text svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .my-orders-btn {
+    margin-right: 0;
+    margin-bottom: 0.5rem;
+  }
 }

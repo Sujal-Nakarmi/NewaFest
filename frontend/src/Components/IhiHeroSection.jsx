@@ -1,4 +1,5 @@
 import '../CSS/IhiHeroSection.css'
+import IhiHead from '../Assests/IhiHead.png';
 
 const IhiHeroSection = () => {
   return (
@@ -29,7 +30,8 @@ const IhiHeroSection = () => {
       <div className="event-card">
         <div className="row align-items-center">
           <div className="col-lg-5">
-            <img src="https://v0.dev/placeholder.svg?height=400&width=600" alt="Ihi Ceremony" className="event-image" />
+          <img src={IhiHead} style={{ width: "400px", height: "400px" }} />
+
           </div>
           <div className="col-lg-7">
             <h3 className="event-title">Ihi</h3>

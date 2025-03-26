@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { Container, Row, Col, Card, Button, Form, InputGroup, Modal, Toast, Dropdown } from "react-bootstrap"
+import { Container, Row, Col, Card, Button, Form, InputGroup, Modal, Toast } from "react-bootstrap"
 import { Search, Filter } from "react-bootstrap-icons"
 import { FaCalendarAlt } from "react-icons/fa"
 import axios from "axios"
@@ -43,12 +43,11 @@ const ClothingGrid = () => {
     
     const fetchData = async () => {
       try {
-        // Apply category filter if selected
         const categoryParam = selectedCategory && selectedCategory !== "All" 
           ? `?category=${selectedCategory}` 
           : "";
           
-          const response = await fetch(`http://localhost:8000/renting/renting/public/rental-items/${categoryParam}`)
+        const response = await fetch(`http://localhost:8000/renting/renting/public/rental-items/${categoryParam}`)
         if (!response.ok) {
           throw new Error("Failed to fetch data")
         }
@@ -65,19 +64,16 @@ const ClothingGrid = () => {
     fetchData()
   }, [selectedCategory])
 
-  // Apply filters whenever search query or price range changes
   useEffect(() => {
     if (clothingItems.length > 0) {
       let filtered = [...clothingItems];
       
-      // Apply search filter
       if (searchQuery.trim() !== "") {
         filtered = filtered.filter(item => 
           item.name.toLowerCase().includes(searchQuery.toLowerCase())
         );
       }
       
-      // Apply price filter
       filtered = filtered.filter(item => {
         const price = item.base_price;
         return price >= priceRange.min && price <= priceRange.max;
@@ -99,13 +95,11 @@ const ClothingGrid = () => {
     let defaultVariant = null;
     
     if (item.has_size_variants && item.size_variants && item.size_variants.length > 0) {
-      // Find a default variant or use the first one
       defaultVariant = item.size_variants.find(v => v.is_default) || item.size_variants[0];
       setSelectedVariant(defaultVariant);
     }
     
     setQuantity(1);
-    // Reset dates
     setRentalStartDate(new Date());
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -126,7 +120,6 @@ const ClothingGrid = () => {
 
   const handleStartDateChange = (date) => {
     setRentalStartDate(date);
-    // If start date is after end date, update end date to start date + 1
     if (date >= rentalEndDate) {
       const newEndDate = new Date(date);
       newEndDate.setDate(newEndDate.getDate() + 1);
@@ -138,13 +131,12 @@ const ClothingGrid = () => {
     setRentalEndDate(date);
   }
 
-  // Calculate rental days between two dates
   const calculateDays = (startDate, endDate) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
     const diffTime = Math.abs(end - start);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays === 0 ? 1 : diffDays; // Minimum 1 day
+    return diffDays === 0 ? 1 : diffDays;
   }
 
   const handleSubmitAddToCart = async () => {
@@ -181,7 +173,6 @@ const ClothingGrid = () => {
       setShowToast(true);
       setShowModal(false);
       
-      // This will dispatch a custom event that NavBar can listen for
       const event = new CustomEvent('cartUpdated', { 
         detail: { items: response.data.items } 
       });
@@ -197,7 +188,6 @@ const ClothingGrid = () => {
     }
   }
 
-  // Function to get the availability status and count
   const getAvailabilityInfo = (item) => {
     if (item.has_size_variants && item.size_variants && item.size_variants.length > 0) {
       const totalQuantity = item.total_quantity || 
@@ -214,7 +204,6 @@ const ClothingGrid = () => {
     }
   }
 
-  // Function to get available sizes text
   const getAvailableSizes = (item) => {
     if (item.has_size_variants && item.size_variants && item.size_variants.length > 0) {
       const sizes = item.size_variants.map(v => v.size).join(', ');
@@ -223,7 +212,6 @@ const ClothingGrid = () => {
     return null;
   }
 
-  // Handle price range change
   const handlePriceRangeChange = (e, type) => {
     const value = parseInt(e.target.value);
     setPriceRange({
@@ -232,7 +220,6 @@ const ClothingGrid = () => {
     });
   }
 
-  // Reset all filters
   const handleResetFilters = () => {
     setSearchQuery("");
     setSelectedCategory("");
@@ -240,59 +227,54 @@ const ClothingGrid = () => {
     setFilteredItems(clothingItems);
   }
 
-  if (loading) {
-    return <div>Loading...</div>
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>
-  }
+  if (loading) return <div>Loading...</div>
+  if (error) return <div>Error: {error}</div>
 
   return (
     <Container className="py-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="clothing-title">Rent Items</h1>
-        <div className="d-flex align-items-center">
-        {isLoggedIn && (
-      <Button 
-        variant="outline-primary"
-        onClick={() => window.location.href = '/orders/history'}
-        className="order-history-btn"
-      >
-        My Orders
-      </Button>
-    )}
-    
+      <div className="rent-items-header d-flex justify-content-between align-items-center mb-4">
+        <h1 className="rent-items-title">Rent Items</h1>
+        
+        <div className="rent-items-actions d-flex align-items-center">
+          {isLoggedIn && (
+            <Button 
+              
+              onClick={() => window.location.href = '/orders/history'}
+              className="me-3 order-history-btn"
+            >
+              My Orders
+            </Button>
+          )}
+          
+          <InputGroup className="search-bar me-3" style={{ width: '250px' }}>
+            <Form.Control 
+              placeholder="Search items..." 
+              aria-label="Search" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <InputGroup.Text>
+              <Search />
+            </InputGroup.Text>
+          </InputGroup>
+          
           <Button 
             variant="outline-secondary" 
-            className="me-2 filter-toggle-btn"
+            className="filter-toggle-btn"
             onClick={() => setShowFilters(!showFilters)}
           >
             <Filter className="me-1" /> Filters
           </Button>
-          <InputGroup className="search-bar">
-            <InputGroup.Text className="bg-white border-end-0">
-              <Search />
-            </InputGroup.Text>
-            <Form.Control 
-              placeholder="Search" 
-              aria-label="Search" 
-              className="border-start-0" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </InputGroup>
         </div>
       </div>
 
-      {/* Filters Panel */}
-      <div className={`filters-panel mb-4 ${showFilters ? 'd-block' : 'd-none'}`}>
-        <Card className="filter-card">
+      {showFilters && (
+        <Card className="filter-panel mb-4">
           <Card.Body>
             <Row>
               <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label><strong>Category</strong></Form.Label>
+                  <Form.Label>Category</Form.Label>
                   <Form.Select 
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
@@ -307,7 +289,7 @@ const ClothingGrid = () => {
               </Col>
               <Col md={8}>
                 <Form.Group className="mb-3">
-                  <Form.Label><strong>Price Range (Rs)</strong></Form.Label>
+                  <Form.Label>Price Range (Rs)</Form.Label>
                   <div className="d-flex align-items-center">
                     <Form.Control 
                       type="number" 
@@ -330,21 +312,21 @@ const ClothingGrid = () => {
                 </Form.Group>
               </Col>
             </Row>
-            <div className="d-flex justify-content-end">
-              <Button variant="outline-secondary" onClick={handleResetFilters}>
+            <div className="d-flex justify-content-between align-items-center">
+              <span className="text-muted">
+                Showing {filteredItems.length} items
+              </span>
+              <Button 
+                variant="outline-secondary" 
+                onClick={handleResetFilters}
+              >
                 Reset Filters
               </Button>
             </div>
           </Card.Body>
         </Card>
-      </div>
+      )}
 
-      {/* Results count */}
-      <div className="mb-3 results-count">
-        <span className="text-muted">Showing {filteredItems.length} items</span>
-      </div>
-
-      {/* Items Grid */}
       {filteredItems.length === 0 ? (
         <div className="text-center py-5">
           <h4>No items match your filters</h4>
@@ -408,7 +390,6 @@ const ClothingGrid = () => {
         </Row>
       )}
 
-      {/* Add to Cart Modal */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Add to Cart</Modal.Title>
@@ -519,7 +500,6 @@ const ClothingGrid = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Toast Notification */}
       <Toast
         show={showToast}
         onClose={() => setShowToast(false)}

@@ -1,0 +1,110 @@
+.contact-container {
+    padding: 40px 0;
+  }
+  
+  .contact-title {
+    color: #7a1a1a;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
+  
+  .contact-subtitle {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .contact-info-row {
+    margin-top: 40px;
+  }
+  
+  .contact-icon-wrapper {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background-color: #f8e1e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+  }
+  
+  .contact-icon {
+    color: #7a1a1a;
+    font-size: 24px;
+  }
+  
+  .contact-label {
+    color: #cca5a5;
+    letter-spacing: 1px;
+  }
+  
+  .get-in-touch {
+    color: #7a1a1a;
+    font-weight: bold;
+    margin-bottom: 15px;
+  }
+  
+  .contact-description {
+    max-width: 800px;
+    margin-bottom: 20px;
+  }
+  
+  .contact-input {
+    background-color: #f8e1e1;
+    border: none;
+    padding: 12px 15px;
+    border-radius: 5px;
+  }
+  
+  .contact-input::placeholder {
+    color: #333;
+  }
+  
+  .send-message-btn {
+    background-color: #7a1a1a;
+    border: none;
+    padding: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  
+  .send-message-btn:hover {
+    background-color: #5a1313;
+  }
+  
+  .contact-image-container {
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  .contact-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 5px;
+  }
+  
+  .register-events-section {
+    background-color: #f8e1e1;
+    padding: 40px 20px;
+    border-radius: 10px;
+    margin-top: 40px;
+  }
+  
+  .register-description {
+    max-width: 600px;
+    margin: 20px auto 30px;
+  }
+  
+  .register-btn {
+    background-color: #7a1a1a;
+    border: none;
+    padding: 10px 30px;
+    font-weight: bold;
+  }
+  
+  .register-btn:hover {
+    background-color: #5a1313;
+  }
+  
+  

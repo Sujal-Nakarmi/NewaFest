@@ -12,8 +12,7 @@ const PanditBookingForm = () => {
   const { panditId } = useParams();
   const location = useLocation();
   const pandit = location.state?.pandit || {};
-  const navigate = useNavigate(); // Initialize navigate
-
+  const navigate = useNavigate();
 
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState("");
@@ -86,17 +85,17 @@ const PanditBookingForm = () => {
 
   const showSuccessMessage = (message) => {
     const successAlert = document.createElement("div");
-    successAlert.className = "alert alert-success booking-alert";
-    successAlert.innerHTML = `<div class="d-flex align-items-center"><span class="alert-icon success me-2"><Check size={18} /></span>${message}</div>`;
-    document.querySelector(".booking-form-container").prepend(successAlert);
+    successAlert.className = "pandit-booking-alert pandit-booking-alert-success";
+    successAlert.innerHTML = `<div class="pandit-booking-alert-content"><span class="pandit-booking-alert-icon success me-2"><Check size={18} /></span>${message}</div>`;
+    document.querySelector(".pandit-booking-form-container").prepend(successAlert);
     setTimeout(() => successAlert.remove(), 5000);
   };
 
   const showErrorMessage = (message) => {
     const errorAlert = document.createElement("div");
-    errorAlert.className = "alert alert-danger booking-alert";
-    errorAlert.innerHTML = `<div class="d-flex align-items-center"><span class="alert-icon error me-2">❌</span>${message}</div>`;
-    document.querySelector(".booking-form-container").prepend(errorAlert);
+    errorAlert.className = "pandit-booking-alert pandit-booking-alert-danger";
+    errorAlert.innerHTML = `<div class="pandit-booking-alert-content"><span class="pandit-booking-alert-icon error me-2">❌</span>${message}</div>`;
+    document.querySelector(".pandit-booking-form-container").prepend(errorAlert);
     setTimeout(() => errorAlert.remove(), 5000);
   };
 
@@ -115,29 +114,29 @@ const PanditBookingForm = () => {
   };
 
   return (
-    <div className="booking-page-wrapper">
+    <div className="pandit-booking-page-wrapper">
       <NavBar /><br/><br/><br/>
-      <div className="container booking-form-container">
-        <div className="card shadow">
+      <div className="container pandit-booking-form-container">
+        <div className="card pandit-booking-card shadow">
           <div className="card-body p-4 p-md-5">
-            <h1 className="card-title text-center mb-4">Book a Pandit</h1>
+            <h1 className="pandit-booking-card-title text-center mb-4">Book a Pandit</h1>
             
             <form onSubmit={handleSubmit}>
               <div className="row mb-5">
                 <div className="col-lg-8">
                   {/* Step 1 */}
                   <div className="d-flex align-items-center mb-4">
-                    <div className="step-circle">1</div>
-                    <h2 className="step-heading ms-3">Select Date and Time</h2>
+                    <div className="pandit-booking-step-circle">1.</div>
+                    <h2 className="pandit-booking-step-heading ms-3">Select Date and Time</h2>
                   </div>
 
                   <div className="ps-5">
                     {/* Date Selection */}
                     <div className="form-group mb-4">
-                      <label htmlFor="bookingDate" className="form-label d-flex align-items-center">
+                      <label htmlFor="bookingDate" className="pandit-booking-form-label d-flex align-items-center">
                         <Calendar size={18} className="me-2" /> Select Date
                       </label>
-                      <div className="date-picker-container">
+                      <div className="pandit-booking-date-picker-container">
                         <DatePicker
                           selected={selectedDate}
                           onChange={date => setSelectedDate(date)}
@@ -145,7 +144,7 @@ const PanditBookingForm = () => {
                           dateFormat="MMMM d, yyyy"
                           minDate={new Date()}
                           placeholderText="Select a date"
-                          className="form-control form-control-lg"
+                          className="form-control pandit-booking-form-control"
                           id="bookingDate"
                           required
                         />
@@ -154,15 +153,15 @@ const PanditBookingForm = () => {
                     
                     {/* Time Selection */}
                     <div className="form-group mb-4">
-                      <label htmlFor="bookingTime" className="form-label d-flex align-items-center">
+                      <label htmlFor="bookingTime" className="pandit-booking-form-label d-flex align-items-center">
                         <Clock size={18} className="me-2" /> Select Time
                       </label>
-                      <div className="time-slot-container">
+                      <div className="pandit-booking-time-slot-container">
                         {timeSlots.map((time, index) => (
                           <button
                             key={index}
                             type="button"
-                            className={`time-slot-btn ${selectedTime === time ? 'active' : ''}`}
+                            className={`pandit-booking-time-slot-btn ${selectedTime === time ? 'active' : ''}`}
                             onClick={() => setSelectedTime(time)}
                           >
                             {time}
@@ -173,56 +172,54 @@ const PanditBookingForm = () => {
                   </div>
                 </div>
 
+                {/* Pandit Profile Card */}
                 <div className="col-lg-4">
-                  <div className="pandit-profile-card text-center">
-                    <div className="pandit-avatar mx-auto mb-3">
+                  <div className="pandit-booking-profile-card text-center">
+                    <div className="pandit-booking-avatar mx-auto mb-3">
                       <img 
                         src="/api/placeholder/120/120" 
                         alt="Pandit" 
                         className="rounded-circle img-fluid"
                       />
                     </div>
-                    <h3 className="pandit-name mb-2">{pandit.user?.full_name || "Pandit Baje Nepal"}</h3>
-                    <p className="pandit-address mb-3">{pandit.user?.address || "Patan, Nepal"}</p>
+                    <h3 className="pandit-booking-name mb-2">{pandit.user?.full_name || "Pandit Baje Nepal"}</h3>
+                    <p className="pandit-booking-address mb-3">{pandit.user?.address || "Patan, Nepal"}</p>
                     <p>
-  <strong>Experience Years:</strong> <span className="pandit-address">{pandit.experience_years || "Patan, Nepal"}</span>
-</p>
-
+                      <strong>Experience Years:</strong> <span className="pandit-booking-address">{pandit.experience_years || "N/A"}</span>
+                    </p>
                     
-                    <div className="pandit-rating mb-2">
-                    <span>Rating: </span>
-                    <span className="rating-value">
-                      {pandit.average_rating ? pandit.average_rating.toFixed(1) : "No ratings"}
-                    </span>
-                    {pandit.average_rating ? (
-                      <span className="rating-stars text-warning">★</span>
-                    ) : null}
-                    <span className="review-count">
-                      ({pandit.total_reviews} reviews)
-                    </span>
+                    <div className="pandit-booking-rating mb-2">
+                      <span>Rating: </span>
+                      <span className="pandit-booking-rating-value">
+                        {pandit.average_rating ? pandit.average_rating.toFixed(1) : "No ratings"}
+                      </span>
+                      {pandit.average_rating ? (
+                        <span className="pandit-booking-rating-stars text-warning">★</span>
+                      ) : null}
+                      <span className="pandit-booking-review-count">
+                        ({pandit.total_reviews} reviews)
+                      </span>
                     </div>
-                    
-                    
                   </div>
                 </div>
               </div>
 
-              <hr className="divider" />
+              <hr className="pandit-booking-divider" />
 
               {/* Step 2 */}
               <div className="mb-5">
                 <div className="d-flex align-items-center mb-4">
-                  <div className="step-circle">2</div>
-                  <h2 className="step-heading ms-3">Description</h2>
+                  <div className="pandit-booking-step-circle">2.</div>
+                  <h2 className="pandit-booking-step-heading ms-3">Description</h2>
                 </div>
 
                 <div className="form-group ps-5">
-                  <label htmlFor="description" className="form-label d-flex align-items-center">
+                  <label htmlFor="description" className="pandit-booking-form-label d-flex align-items-center">
                     <FileText size={18} className="me-2" /> Please describe your requirements
                   </label>
                   <textarea 
                     id="description"
-                    className="form-control description-textarea" 
+                    className="form-control pandit-booking-description-textarea" 
                     rows="6" 
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -234,19 +231,19 @@ const PanditBookingForm = () => {
 
               {/* Summary Section */}
               {(selectedDate || selectedTime || description) && (
-                <div className="booking-summary mb-5">
-                  <h3 className="summary-title">Booking Summary</h3>
-                  <div className="summary-details">
+                <div className="pandit-booking-summary mb-5">
+                  <h3 className="pandit-booking-summary-title">Booking Summary</h3>
+                  <div className="pandit-booking-summary-details">
                     {selectedDate && (
-                      <div className="summary-item">
-                        <span className="summary-label">Date:</span>
-                        <span className="summary-value">{selectedDate.toLocaleDateString('en-US', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}</span>
+                      <div className="pandit-booking-summary-item">
+                        <span className="pandit-booking-summary-label">Date:</span>
+                        <span className="pandit-booking-summary-value">{selectedDate.toLocaleDateString('en-US', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}</span>
                       </div>
                     )}
                     {selectedTime && (
-                      <div className="summary-item">
-                        <span className="summary-label">Time:</span>
-                        <span className="summary-value">{selectedTime}</span>
+                      <div className="pandit-booking-summary-item">
+                        <span className="pandit-booking-summary-label">Time:</span>
+                        <span className="pandit-booking-summary-value">{selectedTime}</span>
                       </div>
                     )}
                   </div>
@@ -255,7 +252,7 @@ const PanditBookingForm = () => {
 
               {/* Buttons */}
               <div className="text-center mt-5">
-                <button type="submit" className="btn submit-btn me-3" disabled={loading || !selectedDate || !selectedTime}>
+                <button type="submit" className="btn pandit-booking-submit-btn me-3" disabled={loading || !selectedDate || !selectedTime}>
                   {loading ? (
                     <>
                       <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -263,7 +260,7 @@ const PanditBookingForm = () => {
                     </>
                   ) : "Confirm Booking"}
                 </button>
-                <button type="button" className="btn cancel-btn" onClick={handleCancel}>
+                <button type="button" className="btn pandit-booking-cancel-btn" onClick={handleCancel}>
                   Cancel
                 </button>
               </div>

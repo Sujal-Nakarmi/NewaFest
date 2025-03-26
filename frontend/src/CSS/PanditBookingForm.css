@@ -1,23 +1,23 @@
-/* PanditBookingForm.css */
-.booking-page-wrapper {
+/* PanditBookingFormUpdated.css */
+.pandit-booking-page-wrapper {
   background-color: #f8f9fa;
   min-height: 100vh;
   padding-top: 2rem;
   padding-bottom: 4rem;
 }
 
-.booking-form-container {
+.pandit-booking-form-container {
   max-width: 1000px;
   margin: 2rem auto;
 }
 
-.card {
+.pandit-booking-card {
   border-radius: 12px;
   border: none;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
 }
 
-.card-title {
+.pandit-booking-card-title {
   color: #5d1e00;
   font-weight: 700;
   margin-bottom: 1.5rem;
@@ -25,10 +25,10 @@
 }
 
 /* Step indicators */
-.step-circle {
+.pandit-booking-step-circle {
   width: 48px;
   height: 48px;
-  background-color: #ffa500;
+  background-color: #FFD700;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -40,14 +40,14 @@
   box-shadow: 0 4px 10px rgba(255, 165, 0, 0.3);
 }
 
-.step-heading {
+.pandit-booking-step-heading {
   color: #5d1e00;
   font-size: 1.5rem;
   font-weight: 600;
   margin: 0;
 }
 
-.form-label {
+.pandit-booking-form-label {
   font-weight: 500;
   color: #333;
   margin-bottom: 0.75rem;
@@ -55,18 +55,33 @@
 }
 
 /* Date picker styling */
-.date-picker-container .react-datepicker-wrapper {
+.pandit-booking-date-picker-container .react-datepicker-wrapper {
   width: 100%;
 }
 
-.date-picker-container .react-datepicker {
+.pandit-booking-form-control {
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  border-color: #dee2e6;
+  font-size: 1rem;
+  position: relative;
+  z-index: 1;
+}
+
+.pandit-booking-form-control:focus {
+  box-shadow: 0 0 0 3px rgba(93, 30, 0, 0.1);
+  border-color: #5d1e00;
+  z-index: 2;
+}
+
+.pandit-booking-date-picker-container .react-datepicker {
   font-family: 'Roboto', sans-serif;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border: none;
 }
 
-.date-picker-container .react-datepicker__header {
+.pandit-booking-date-picker-container .react-datepicker__header {
   background-color: #5d1e00;
   border-bottom: none;
   border-top-left-radius: 8px;
@@ -74,34 +89,34 @@
   padding-top: 12px;
 }
 
-.date-picker-container .react-datepicker__day-name, 
-.date-picker-container .react-datepicker__current-month {
+.pandit-booking-date-picker-container .react-datepicker__day-name, 
+.pandit-booking-date-picker-container .react-datepicker__current-month {
   color: white;
 }
 
-.date-picker-container .react-datepicker__day--selected {
+.pandit-booking-date-picker-container .react-datepicker__day--selected {
   background-color: #ffa500;
   border-radius: 50%;
 }
 
-.date-picker-container .react-datepicker__day:hover {
+.pandit-booking-date-picker-container .react-datepicker__day:hover {
   background-color: #fff0d9;
   border-radius: 50%;
 }
 
-.date-picker-container .react-datepicker__day--disabled {
+.pandit-booking-date-picker-container .react-datepicker__day--disabled {
   color: #ccc;
 }
 
 /* Time slot styling */
-.time-slot-container {
+.pandit-booking-time-slot-container {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 10px;
 }
 
-.time-slot-btn {
+.pandit-booking-time-slot-btn {
   padding: 10px 15px;
   border: 1px solid #ddd;
   border-radius: 30px;
@@ -111,12 +126,12 @@
   transition: all 0.2s ease;
 }
 
-.time-slot-btn:hover {
+.pandit-booking-time-slot-btn:hover {
   background-color: #fff0d9;
   border-color: #ffa500;
 }
 
-.time-slot-btn.active {
+.pandit-booking-time-slot-btn.active {
   background-color: #ffa500;
   border-color: #ffa500;
   color: white;
@@ -125,7 +140,7 @@
 }
 
 /* Description textarea */
-.description-textarea {
+.pandit-booking-description-textarea {
   resize: none;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -134,18 +149,18 @@
   transition: all 0.3s ease;
 }
 
-.description-textarea:focus {
+.pandit-booking-description-textarea:focus {
   box-shadow: 0 0 0 3px rgba(93, 30, 0, 0.1);
   border-color: #5d1e00;
 }
 
-.divider {
+.pandit-booking-divider {
   border-top: 1px solid #e9ecef;
   margin: 2.5rem 0;
 }
 
 /* Pandit profile card */
-.pandit-profile-card {
+.pandit-booking-profile-card {
   background-color: #fff;
   border-radius: 15px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
@@ -155,11 +170,11 @@
   transition: transform 0.3s ease;
 }
 
-.pandit-profile-card:hover {
+.pandit-booking-profile-card:hover {
   transform: translateY(-5px);
 }
 
-.pandit-avatar {
+.pandit-booking-avatar {
   width: 120px;
   height: 120px;
   background-color: #f0f0f0;
@@ -170,54 +185,37 @@
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-.pandit-name {
+.pandit-booking-name {
   font-weight: 700;
   font-size: 1.3rem;
   color: #333;
   margin-bottom: 0.5rem;
 }
 
-.pandit-address {
+.pandit-booking-address {
   font-size: 1rem;
   color: #666;
   margin-bottom: 1rem;
 }
 
-.pandit-rating {
+.pandit-booking-rating {
   margin: 1rem 0;
 }
 
-.stars {
+.pandit-booking-rating-stars {
   color: #ffc107;
   font-size: 1.2rem;
   letter-spacing: 2px;
   margin-right: 5px;
 }
 
-.rating-number {
+.pandit-booking-rating-value {
   font-weight: 600;
   color: #333;
 }
 
-.pandit-services {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 1rem;
-}
-
-.service-tag {
-  background-color: #f8f9fa;
-  color: #5d1e00;
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  border: 1px solid #eee;
-}
-
 /* Booking summary section */
-.booking-summary {
+.pandit-booking-summary {
   background-color: #fff;
   border-radius: 10px;
   padding: 1.5rem;
@@ -226,36 +224,36 @@
   border-left: 4px solid #ffa500;
 }
 
-.summary-title {
+.pandit-booking-summary-title {
   font-size: 1.3rem;
   font-weight: 600;
   color: #5d1e00;
   margin-bottom: 1rem;
 }
 
-.summary-details {
+.pandit-booking-summary-details {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.summary-item {
+.pandit-booking-summary-item {
   display: flex;
   align-items: center;
 }
 
-.summary-label {
+.pandit-booking-summary-label {
   font-weight: 600;
   color: #666;
   width: 80px;
 }
 
-.summary-value {
+.pandit-booking-summary-value {
   color: #333;
 }
 
 /* Button styling */
-.submit-btn {
+.pandit-booking-submit-btn {
   background-color: #5d1e00;
   color: white;
   border: none;
@@ -268,23 +266,23 @@
   box-shadow: 0 4px 10px rgba(93, 30, 0, 0.2);
 }
 
-.submit-btn:hover {
+.pandit-booking-submit-btn:hover {
   background-color: #4a1800;
   transform: translateY(-3px);
   box-shadow: 0 6px 15px rgba(93, 30, 0, 0.25);
 }
 
-.submit-btn:active {
+.pandit-booking-submit-btn:active {
   transform: translateY(-1px);
 }
 
-.submit-btn:disabled {
+.pandit-booking-submit-btn:disabled {
   background-color: #b38068;
   cursor: not-allowed;
   transform: none !important;
 }
 
-.cancel-btn {
+.pandit-booking-cancel-btn {
   background-color: white;
   color: #5d1e00;
   border: 2px solid #5d1e00;
@@ -296,7 +294,7 @@
   transition: all 0.3s ease;
 }
 
-.cancel-btn:hover {
+.pandit-booking-cancel-btn:hover {
   background-color: #f8f8f8;
   color: #4a1800;
   border-color: #4a1800;
@@ -305,15 +303,15 @@
 }
 
 /* Alert styling */
-.booking-alert {
+.pandit-booking-alert {
   border-radius: 8px;
   margin-bottom: 1.5rem;
   padding: 1rem;
   position: relative;
-  animation: slideDown 0.3s ease forwards;
+  animation: pandit-booking-slideDown 0.3s ease forwards;
 }
 
-@keyframes slideDown {
+@keyframes pandit-booking-slideDown {
   from {
     transform: translateY(-20px);
     opacity: 0;
@@ -324,7 +322,7 @@
   }
 }
 
-.alert-icon {
+.pandit-booking-alert-icon {
   width: 24px;
   height: 24px;
   display: flex;
@@ -334,59 +332,46 @@
   margin-right: 10px;
 }
 
-.alert-icon.success {
+.pandit-booking-alert-icon.success {
   background-color: rgba(25, 135, 84, 0.1);
   color: #198754;
 }
 
-.alert-icon.error {
+.pandit-booking-alert-icon.error {
   background-color: rgba(220, 53, 69, 0.1);
   color: #dc3545;
 }
 
-/* Input field styling */
-.form-control {
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  border-color: #dee2e6;
-  font-size: 1rem;
-}
-
-.form-control:focus {
-  box-shadow: 0 0 0 3px rgba(93, 30, 0, 0.1);
-  border-color: #5d1e00;
-}
-
 /* Responsive adjustments */
 @media (max-width: 992px) {
-  .pandit-profile-card {
+  .pandit-booking-profile-card {
     margin-top: 2rem;
     margin-bottom: 1rem;
   }
   
-  .time-slot-container {
+  .pandit-booking-time-slot-container {
     justify-content: center;
   }
 }
 
 @media (max-width: 768px) {
-  .card-title {
+  .pandit-booking-card-title {
     font-size: 1.8rem;
   }
   
-  .step-circle {
+  .pandit-booking-step-circle {
     width: 40px;
     height: 40px;
     font-size: 1.2rem;
   }
   
-  .step-heading {
+  .pandit-booking-step-heading {
     font-size: 1.3rem;
   }
 }
 
 @media (max-width: 576px) {
-  .submit-btn, .cancel-btn {
+  .pandit-booking-submit-btn, .pandit-booking-cancel-btn {
     width: 100%;
     margin: 0.5rem 0;
     min-width: unset;
@@ -400,7 +385,7 @@
     padding-left: 1rem !important;
   }
   
-  .time-slot-btn {
+  .pandit-booking-time-slot-btn {
     padding: 8px 12px;
     font-size: 0.85rem;
   }
