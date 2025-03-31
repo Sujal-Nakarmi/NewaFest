@@ -236,3 +236,32 @@ class BhintunaTicket(models.Model):
 
     def __str__(self):
         return f"Ticket {self.ticket_id} - {self.user.full_name}"
+    
+
+# models.py
+class IhiLocation(models.Model):
+    id = models.AutoField(primary_key=True)
+    event_detail = models.ForeignKey(EventDetail, on_delete=models.CASCADE, related_name='ihi_locations')
+    address = models.CharField(max_length=200)
+    available_seats = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        db_table = 'IhiLocation'
+    
+    def __str__(self):
+        return f"{self.name} - {self.address} (Available: {self.available_seats})"
+
+class IhiRegistration(models.Model):
+    registration_id = models.AutoField(primary_key=True)
+    event_registration = models.OneToOneField(EventRegistration, on_delete=models.CASCADE)
+    location = models.ForeignKey(IhiLocation, on_delete=models.PROTECT)
+    seats = models.PositiveIntegerField(default=1)
+    phone = models.CharField(max_length=20)
+    description = models.CharField(max_length=200)
+  
+    class Meta:
+        db_table = 'IhiRegistration'
+    
+    def __str__(self):
+        return f"Ihi Registration - {self.event_registration.user.username}"

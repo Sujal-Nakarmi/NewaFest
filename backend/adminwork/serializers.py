@@ -332,3 +332,17 @@ class RegistrationDetailSerializer(serializers.ModelSerializer):
         model = RegistrationDetail
         fields = '__all__'
         read_only_fields = ('detail_id',)
+
+# serializers.py
+from rest_framework import serializers
+from .models import IhiLocation, IhiRegistration
+
+class IhiLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IhiLocation
+        fields = ['id', 'address', 'available_seats']
+
+class IhiRegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IhiRegistration
+        fields = ['registration_id', 'location', 'seats', 'phone', 'description']

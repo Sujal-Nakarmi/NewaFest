@@ -33,6 +33,9 @@ urlpatterns = [
     path('tickets/verify-payment/', verify_ticket_payment, name='verify_ticket_payment'),
     path('tickets/history/', ticket_history, name='ticket_history'),
 
+    path('api/ihi-locations/', views.get_ihi_locations, name='get_ihi_locations'),
+    path('events/register-ihi/', views.register_ihi, name='register_ihi'),
+
 
 ]
 

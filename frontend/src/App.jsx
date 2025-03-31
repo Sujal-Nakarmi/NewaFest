@@ -40,7 +40,8 @@ import GoogleAuthSuccess from './Pages/GoogleAuthSuccess';
 import RentalItemForm from './Components/RentalItemadd';
 import SizeVariantManager from './Components/SizeVariant';
 import VendorOrders from './Components/OrderLists';
-// Import other pages as needed
+import SizeVariantManagerAdmin from './Components/SizeVariantAdmin';
+
 
 function App() {
   return (
@@ -108,6 +109,9 @@ function App() {
           <Route path="/admin/dashboard/events" element={<Events />} />
           <Route path="/admin/dashboard/registrations" element={<EventRegistrations />} />
           <Route path="/admin/dashboard/rentals" element={<RentalItemsAdminPanel />} />
+          <Route path="/admin/size-variants" element={< SizeVariantManagerAdmin />} />
+
+      
         </Route>
         
         <Route element={<ProtectedRoute allowedRoles={["pandit"]} />}>

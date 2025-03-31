@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../CSS/UsersAdminPanel.css';
 import axios from 'axios';
@@ -12,7 +13,8 @@ import {
   FiEdit, 
   FiTrash2, 
   FiEye, 
-  FiPlus 
+  FiPlus,
+  FiUser
 } from 'react-icons/fi';
 import logo from "../Assests/Logo.png";
 import { Modal, Button, Form, Spinner, Alert } from 'react-bootstrap';
@@ -256,10 +258,10 @@ const RentalItemsAdminPanel = () => {
           <a href="#" className="nav-item">
             <FiHome size={18} /> Dashboard
           </a>
-          <a href="#" className="nav-item">
+          <a href="/admin/dashboard/users" className="nav-item">
             <FiUsers size={18} /> Users
           </a>
-          <a href="#" className="nav-item">
+          <a href="/admin/dashboard/events" className="nav-item">
             <FiCalendar size={18} /> Events
           </a>
           <a href="/admin/dashboard/registrations" className="nav-item">
@@ -268,6 +270,9 @@ const RentalItemsAdminPanel = () => {
           <a href="#" className="nav-item active">
             <FiBookOpen size={18} /> Rental Items
           </a>
+          <Link to="/admin/size-variants" className="nav-item ">
+            <FiUser size={18} /> Size Variants
+          </Link>
         </nav>
         <div className="logout">
           <a href="#" className="nav-item logout-btn" onClick={handleLogout}>

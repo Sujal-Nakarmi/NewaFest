@@ -615,33 +615,83 @@ def get_user_registrations(request, year=None):
 @api_view(['GET'])
 @permission_classes([IsAdmin])
 def get_all_user_registrations(request, year=None):
-    """Get all user registrations for admins."""
+    """Get all user registrations for admins with complete details."""
     registrations = EventRegistration.objects.filter(is_deleted=False)
     if year:
         registrations = registrations.filter(event_detail__year=year)
     
     data = []
-    for reg in registrations.select_related('event_detail', 'category', 'registrationdetail'):
+    for reg in registrations.select_related('event_detail', 'event_detail__event', 'category', 'registrationdetail', 'user'):
         reg_data = {
             'registration_id': reg.registration_id,
             'event_name': reg.event_detail.event.name,
             'category': reg.category.name,
             'year': reg.event_detail.year,
-            'registration_date': reg.registration_date
+            'registration_date': reg.registration_date,
+            'user_info': {
+                'id': reg.user.id,
+                'name': reg.user.full_name,  # Adjust based on your User model field
+                'phone_number': reg.user.phone_number,
+                # Add more user fields as needed
+            }
         }
         
-        # Add category-specific details
+        # Add category-specific details based on your model relationships
         if hasattr(reg, 'registrationdetail'):
+            detail = reg.registrationdetail
+            
+            # Common fields
+            reg_data['seats'] = detail.seats
+            
+            # Category-specific fields
             if reg.category.code == 'MUSIC':
-                reg_data['music_instrument'] = reg.registrationdetail.music_instrument
+                if detail.newari_instrument:
+                    reg_data['music_instrument'] = detail.newari_instrument.name
+                
             elif reg.category.code == 'STALL':
-                reg_data['drinks'] = reg.registrationdetail.drinks
-        
+                reg_data['drinks'] = detail.drinks
+                reg_data['food_items'] = detail.food_items
+                if detail.stall_location:
+                    reg_data['stall_location'] = detail.stall_location.name
+                if detail.stall_type:
+                    reg_data['stall_type'] = detail.stall_type.name
+                
+            elif reg.category.code == 'VOLUNTEER':
+                if detail.volunteer_type:
+                    reg_data['volunteer_type'] = detail.volunteer_type.name
+                # Add volunteer laps if needed
+                volunteer_laps = []
+                for lap in detail.volunteer_laps.all():
+                    volunteer_laps.append({
+                        'lap_number': lap.lap_number,
+                        'route': lap.route_description,
+                        'time': lap.time.strftime('%I:%M %p') if lap.time else "TBD"
+                    })
+                if volunteer_laps:
+                    reg_data['volunteer_laps'] = volunteer_laps
+                    
+            # Check for IhiRegistration if category is for Ihi
+            if hasattr(reg, 'ihiregistration'):
+                ihi = reg.ihiregistration
+                reg_data['ihi_info'] = {
+                    'location': ihi.location.address,
+                    'phone': ihi.phone,
+                    'description': ihi.description,
+                    'seats': ihi.seats
+                }
+                
+            # Check for BhintunaTicket
+            if hasattr(reg, 'bhintunaticket'):
+                ticket = reg.bhintunaticket
+                reg_data['ticket_info'] = {
+                    'price': str(ticket.price),
+                    'payment_status': ticket.status,
+                    'payment_method': ticket.payment_method
+                }
+            
         data.append(reg_data)
     
     return Response(data, status=status.HTTP_200_OK)
-
-
 
 @api_view(['GET'])
 @permission_classes([AllowAny]) 
@@ -1062,3 +1112,119 @@ def ticket_history(request):
             'success': False,
             'error': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+
+
+# views.py
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import EventDetail, IhiLocation, EventRegistration, IhiRegistration
+from .serializers import IhiLocationSerializer
+from django.db import transaction
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_ihi_locations(request):
+    """Get available ihi locations for an event."""
+    event_detail_id = request.GET.get('event_detail_id')
+    
+    if not event_detail_id:
+        return Response(
+            {'error': 'event_detail_id is required'}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        locations = IhiLocation.objects.filter(
+            event_detail_id=event_detail_id,
+            is_active=True
+        )
+        
+        serializer = IhiLocationSerializer(locations, many=True)
+        return Response({'locations': serializer.data})
+    
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def register_ihi(request):
+    """Register for Ihi event."""
+    data = request.data
+    user = request.user
+    
+    # Extract required fields
+    event_detail_id = data.get('event_detail')
+    location_id = data.get('location')
+    seats_requested = data.get('seats_requested', 1)
+    phone = data.get('phone')
+    description = data.get('description', '')
+    
+    # Validate input
+    if not event_detail_id:
+        return Response({'error': 'event_detail_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if not location_id:
+        return Response({'error': 'location is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if not phone:
+        return Response({'error': 'phone number is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if seats_requested < 1 or seats_requested > 3:
+        return Response({'error': 'Seats must be between 1 and 3'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        # Get event detail
+        event_detail = EventDetail.objects.get(event_detail_id=event_detail_id)
+        
+        # Get location and check availability
+        location = IhiLocation.objects.get(id=location_id)
+        
+        if location.available_seats < seats_requested:
+            return Response(
+                {'error': f'Not enough seats available at this location. Available: {location.available_seats}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Find Ihi category
+        ihi_category = Category.objects.get(code='IHI')
+        
+        with transaction.atomic():
+            # Create event registration
+            event_registration = EventRegistration.objects.create(
+                event_detail=event_detail,
+                user=user,
+                category=ihi_category
+            )
+            
+            # Create ihi registration with phone and description
+            ihi_registration = IhiRegistration.objects.create(
+                event_registration=event_registration,
+                location=location,
+                seats=seats_requested,
+                phone=phone,
+                description=description
+            )
+            
+            # Update available seats
+            location.available_seats -= seats_requested
+            location.save()
+            
+            return Response({
+                'message': 'Successfully registered for Ihi ceremony',
+                'registration_id': ihi_registration.registration_id
+            }, status=status.HTTP_201_CREATED)
+    
+    except EventDetail.DoesNotExist:
+        return Response({'error': 'Event detail not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    except IhiLocation.DoesNotExist:
+        return Response({'error': 'Location not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    except Category.DoesNotExist:
+        return Response({'error': 'Ihi category not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

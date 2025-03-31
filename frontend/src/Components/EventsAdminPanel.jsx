@@ -12,7 +12,8 @@ import {
   FiEdit, 
   FiTrash2, 
   FiEye, 
-  FiPlus 
+  FiPlus,
+  FiUser
 } from 'react-icons/fi';
 import logo from "../Assests/Logo.png";
 import { Link } from "react-router-dom";
@@ -262,6 +263,12 @@ const Events = () => {
           <Link to="/admin/dashboard/registrations" className="nav-item">
             <FiCalendar size={18} /> Event Registration
           </Link>
+          <Link to="/admin/dashboard/rentals" className="nav-item">
+                      <FiCalendar size={18} /> Rental Items
+                    </Link>
+           <Link to="/admin/size-variants" className="nav-item ">
+                      <FiUser size={18} /> Size Variants
+                    </Link>
         </nav>
         <div className="logout">
           <a href="#" className="nav-item logout-btn" onClick={handleLogout}>
