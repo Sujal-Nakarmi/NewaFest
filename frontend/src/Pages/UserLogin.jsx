@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
-import { FaEye, FaEyeSlash, FaEnvelope, FaLock } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
 import "../CSS/UserLogin.css";
 import Design1 from "../Assests/Design1.png";
 import Design2 from "../Assests/Design2.png";
 import logo from "../Assests/Logo.png";
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -19,6 +19,39 @@ const LoginPage = () => {
   // Extract returnUrl from query parameters if present
   const queryParams = new URLSearchParams(window.location.search);
   const returnUrl = queryParams.get("returnUrl") || "/";
+
+  // Check for Google auth success on component mount
+  useEffect(() => {
+    // Parse URL search params for auth data
+    const params = new URLSearchParams(window.location.search);
+    const authData = params.get("data");
+    
+    if (authData) {
+      try {
+        const parsedData = JSON.parse(authData);
+        
+        // Store tokens
+        localStorage.setItem("access_token", parsedData.access);
+        localStorage.setItem("refresh_token", parsedData.refresh);
+        
+        // Store user info
+        localStorage.setItem("user_role", parsedData.user_role);
+        localStorage.setItem("user_full_name", parsedData.full_name);
+        localStorage.setItem("user_email", parsedData.email);
+        
+        // Set default authorization header
+        axios.defaults.headers.common["Authorization"] = `Bearer ${parsedData.access}`;
+        
+        // Navigate based on role
+        navigateBasedOnRole(parsedData.user_role, returnUrl);
+        
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (err) {
+        console.error("Error parsing auth data:", err);
+      }
+    }
+  }, []);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -112,6 +145,11 @@ const LoginPage = () => {
       navigate(returnUrl);
     }
   };
+
+  // Handle Google Sign In
+  const handleGoogleLogin = () => {
+    window.location.href = "http://localhost:8000/accounts/google/login/";
+  };
   
   return (
     <div className="user-login-container">
@@ -132,6 +170,29 @@ const LoginPage = () => {
             <div className="user-login-form-container">
               <h1 className="user-login-title">Log in to your Account</h1>
               <p className="user-login-subtitle">Welcome back! Select a method to log in</p>
+              
+              {/* Google Login Button */}
+              <Button 
+                className="user-login-google-btn mb-3" 
+                onClick={handleGoogleLogin}
+                style={{
+                  backgroundColor: '#fff', 
+                  color: '#757575', 
+                  border: '1px solid #ddd',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  padding: '10px'
+                }}
+              >
+                <FaGoogle style={{ marginRight: '10px', color: '#4285F4' }} />
+                Sign in with Google
+              </Button>
+              
+              <div className="user-login-divider mb-3">
+                <span style={{ backgroundColor: '#fff', padding: '0 10px', color: '#757575' }}>OR</span>
+              </div>
               
               {error && <p className="user-login-error-message">{error}</p>}
               

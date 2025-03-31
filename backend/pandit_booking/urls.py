@@ -16,4 +16,9 @@ urlpatterns = [
     path('booking/reviews/pandit/<int:pandit_id>/', views.pandit_reviews, name='pandit-reviews'),
     path('booking/reviews/user/', views.user_reviews, name='user-reviews'),
 
+    path('pandits/availability/', views.list_pandit_availability, name='pandit-availability'),
+    path('pandits/<int:pandit_id>/availability/', views.list_pandit_availability, name='specific-pandit-availability'),
+    path('pandits/availability/create/', views.create_availability, name='create-availability'),
+    path('pandits/availability/<int:availability_id>/', views.update_delete_availability, name='update-delete-availability'),
+
 ]

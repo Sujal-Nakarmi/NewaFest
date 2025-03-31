@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import PanditBooking, PanditReview
+from .models import PanditBooking, PanditReview, PanditAvailability
 from django.utils import timezone
 
 from registerlogin.models import Pandit, User  # Updated import path
@@ -45,3 +45,23 @@ class CreateReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = PanditReview
         fields = ['booking_id', 'rating', 'comment']
+
+
+# In serializers.py
+class PanditAvailabilitySerializer(serializers.ModelSerializer):
+    day_name = serializers.CharField(source='get_day_of_week_display', read_only=True)
+    
+    class Meta:
+        model = PanditAvailability
+        fields = ['availability_id', 'pandit', 'day_of_week', 'day_name', 'start_time', 'end_time', 'is_available']
+        read_only_fields = ['availability_id']
+
+class CreatePanditAvailabilitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PanditAvailability
+        fields = ['day_of_week', 'start_time', 'end_time', 'is_available']
+    
+    def validate(self, data):
+        if data['start_time'] >= data['end_time']:
+            raise serializers.ValidationError("End time must be after start time")
+        return data

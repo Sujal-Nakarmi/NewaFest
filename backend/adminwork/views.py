@@ -879,6 +879,21 @@ def initiate_ticket_payment(request):
             registration_id=registration_id, 
             user=request.user
         )
+        
+        # Get the number of seats from the registration_detail
+        try:
+            registration_detail = RegistrationDetail.objects.get(registration=registration)
+            # Assuming seats_requested is stored somewhere in the registration process
+            # If not stored directly, you might need to add this field to your model
+            seats = request.data.get('seats', 1)  # Default to 1 if not provided
+        except RegistrationDetail.DoesNotExist:
+            seats = 1  # Default to 1 seat if detail not found
+            
+        # Calculate price based on number of seats
+        price_per_seat = 200  # Price per seat in NPR
+        total_price = price_per_seat * seats
+        total_paisa = total_price * 100  # Convert to paisa for Khalti
+        
     except EventRegistration.DoesNotExist:
         # More detailed error response
         return Response({
@@ -895,7 +910,7 @@ def initiate_ticket_payment(request):
     payload = {
         "return_url": request.data.get('return_url', frontend_success_url),
         "website_url": "http://127.0.0.1:8000",
-        "amount": 20000,  # 200 * 100 to convert to paisa
+        "amount": total_paisa,  # Calculated amount in paisa
         "purchase_order_id": f"ticket_{registration.registration_id}_{int(time.time())}",
         "purchase_order_name": f"Bhintuna Rally Ticket {registration.registration_id}",
         "customer_info": {
@@ -925,14 +940,16 @@ def initiate_ticket_payment(request):
             user=request.user,
             event_registration=registration,
             transaction_id=data.get('pidx'),
-            price=200,
+            price=total_price,  # Use the calculated total price
             status='pending'
         )
         
         return Response({
             'payment_url': data.get('payment_url'),
             'pidx': data.get('pidx'),
-            'ticket_id': ticket.ticket_id
+            'ticket_id': ticket.ticket_id,
+            'total_price': total_price,  # Return the total price to the frontend
+            'seats': seats  # Return the number of seats for confirmation
         }, status=status.HTTP_200_OK)
     else:
         return Response({'error': 'Failed to initiate payment'}, status=status.HTTP_400_BAD_REQUEST)

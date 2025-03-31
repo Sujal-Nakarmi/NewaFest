@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import PanditBooking, PanditReview
+from .models import PanditBooking, PanditReview, PanditAvailability
 from registerlogin.models import Pandit, User
 from rest_framework.permissions import AllowAny
 from django.utils import timezone
@@ -16,7 +16,8 @@ from .serializers import (
     BookingSerializer,
     CreateBookingSerializer,
     PanditReviewSerializer,
-    CreateReviewSerializer
+    CreateReviewSerializer,
+    CreatePanditAvailabilitySerializer, PanditAvailabilitySerializer
 )
 
 @api_view(['GET'])
@@ -27,6 +28,7 @@ def list_pandits(request):
     serializer = PanditDetailSerializer(pandits, many=True)
     return Response(serializer.data)
 
+# Add this to your create_booking view for better debugging
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_booking(request):
@@ -60,6 +62,46 @@ def create_booking(request):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
+            # Check if pandit is available at this time
+            day_of_week = requested_date.weekday()  # 0-6 (Monday-Sunday)
+            time_of_day = requested_date.time()
+            
+            # Log the requested day and time for debugging
+            print(f"Requested day_of_week: {day_of_week}, time: {time_of_day}")
+            
+            available_slots = PanditAvailability.objects.filter(
+                pandit=pandit,
+                day_of_week=day_of_week,
+                start_time__lte=time_of_day,
+                end_time__gte=time_of_day,
+                is_available=True
+            )
+            
+            is_available = available_slots.exists()
+            
+            if not is_available:
+                # Get all available slots for this pandit for better debugging
+                all_slots = PanditAvailability.objects.filter(
+                    pandit=pandit,
+                    is_available=True
+                ).values('day_of_week', 'start_time', 'end_time')
+                
+                return Response(
+                    {
+                        'error': 'Pandit is not available at the requested time',
+                        'details': {
+                            'requested_day': day_of_week,
+                            'requested_time': time_of_day.strftime('%H:%M:%S'),
+                            'available_slots': list(all_slots),
+                            'timezone_info': {
+                                'django_timezone': str(timezone.get_current_timezone()),
+                                'requested_date_tzinfo': str(requested_date.tzinfo)
+                            }
+                        }
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
             booking = serializer.save(
                 user=request.user,
                 status=PanditBooking.BookingStatus.PENDING
@@ -67,7 +109,17 @@ def create_booking(request):
             response_serializer = BookingSerializer(booking)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            # Log the full exception for server-side debugging
+            import traceback
+            print(traceback.format_exc())
+            
+            return Response(
+                {
+                    'error': str(e),
+                    'details': 'An unexpected error occurred. See server logs for details.'
+                }, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -255,3 +307,72 @@ def user_reviews(request):
     
     serializer = PanditReviewSerializer(paginated_reviews, many=True)
     return paginator.get_paginated_response(serializer.data)
+
+
+# In views.py
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_pandit_availability(request, pandit_id=None):
+    """List availability slots for a pandit."""
+    if pandit_id:
+        # List availability for a specific pandit
+        pandit = get_object_or_404(Pandit, pandit_id=pandit_id)
+        availabilities = PanditAvailability.objects.filter(pandit=pandit)
+    elif request.user.user_role == User.UserRole.PANDIT:
+        # List availability for the logged-in pandit
+        pandit = get_object_or_404(Pandit, user=request.user)
+        availabilities = PanditAvailability.objects.filter(pandit=pandit)
+    else:
+        return Response(
+            {'error': 'You must be a pandit or specify a pandit ID'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    serializer = PanditAvailabilitySerializer(availabilities, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_availability(request):
+    """Create availability slots for a pandit."""
+    if request.user.user_role != User.UserRole.PANDIT:
+        return Response(
+            {'error': 'Only pandits can set availability'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    pandit = get_object_or_404(Pandit, user=request.user)
+    serializer = CreatePanditAvailabilitySerializer(data=request.data)
+    
+    if serializer.is_valid():
+        availability = serializer.save(pandit=pandit)
+        response_serializer = PanditAvailabilitySerializer(availability)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def update_delete_availability(request, availability_id):
+    """Update or delete an availability slot."""
+    availability = get_object_or_404(PanditAvailability, availability_id=availability_id)
+    
+    # Check if the user is the owner of this availability
+    if request.user != availability.pandit.user:
+        return Response(
+            {'error': 'You can only modify your own availability'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    if request.method == 'DELETE':
+        availability.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    # For PUT requests
+    serializer = CreatePanditAvailabilitySerializer(availability, data=request.data)
+    if serializer.is_valid():
+        updated_availability = serializer.save()
+        response_serializer = PanditAvailabilitySerializer(updated_availability)
+        return Response(response_serializer.data)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

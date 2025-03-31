@@ -176,6 +176,7 @@ class EventRegistration(models.Model):
     registration_id = models.AutoField(primary_key=True)
     event_detail = models.ForeignKey(EventDetail, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
     registration_date = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
@@ -206,6 +207,7 @@ class RegistrationDetail(models.Model):
     volunteer_type = models.ForeignKey(VolunteerType, on_delete=models.PROTECT, null=True, blank=True)
     newari_instrument = models.ForeignKey(NewariInstrument, on_delete=models.PROTECT, null=True, blank=True)
     volunteer_laps = models.ManyToManyField(VolunteerLap, blank=True)
+    seats = models.PositiveIntegerField(default=1)
     
     class Meta:
         db_table = 'RegistrationDetail'
@@ -216,6 +218,7 @@ class BhintunaTicket(models.Model):
     event_registration = models.OneToOneField('EventRegistration', on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=200)
+    seats = models.PositiveIntegerField(default=1)
     transaction_id = models.CharField(max_length=255, null=True, blank=True)
     payment_method = models.CharField(max_length=50, default='khalti')
     status = models.CharField(max_length=50, choices=[
@@ -226,6 +229,7 @@ class BhintunaTicket(models.Model):
     khalti_data = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
     class Meta:
         db_table = 'BhintunaTicket'

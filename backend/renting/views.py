@@ -3,9 +3,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
+from rest_framework.pagination import PageNumberPagination
 import os
-from .models import RentalItem, ItemSizeVariant, DeliveryLocation
-from .serializers import RentalItemSerializer, RentalItemCreateSerializer, ItemSizeVariantSerializer, OrderHistorySerializer
+from .models import RentalItem, ItemSizeVariant, DeliveryLocation, OrderItem
+from .serializers import RentalItemSerializer, RentalItemCreateSerializer, ItemSizeVariantSerializer, OrderHistorySerializer, AdminOrderSerializer
 from rest_framework.permissions import AllowAny
 from backend.permissions import IsAdminOrVendor
 from rest_framework.permissions import IsAuthenticated
@@ -543,47 +544,49 @@ def verify_payment(request):
         return Response({'error': 'Payment identifier (pidx) is required'}, 
                         status=status.HTTP_400_BAD_REQUEST)
     
-    # Make request to Khalti verification API
     headers = {
         "Authorization": f"Key {settings.KHALTI_SECRET_KEY}",
         "Content-Type": "application/json"
     }
     
-    payload = {
-        "pidx": pidx
-    }
-    
     response = requests.post(
         "https://dev.khalti.com/api/v2/epayment/lookup/",
-        json=payload,
+        json={"pidx": pidx},
         headers=headers
     )
     
     if response.status_code == 200:
         payment_data = response.json()
-        transaction_id = payment_data.get('transaction_id', '')
-        payment_status = payment_data.get('status', '')
-        
         try:
-            # Find the order associated with this payment
             order = Order.objects.get(transaction_id=pidx)
+            cart = order.cart
             
-            # Update order status based on payment status
-            if payment_status == "Completed":
+            if payment_data.get('status') == "Completed":
+                # Create OrderItems before deactivating cart
+                for cart_item in cart.items.all():
+                    OrderItem.objects.create(
+                        order=order,
+                        rental_item=cart_item.rental_item,
+                        size_variant=cart_item.size_variant,
+                        quantity=cart_item.quantity,
+                        rental_start_date=cart_item.rental_start_date,
+                        rental_end_date=cart_item.rental_end_date,
+                        price=cart_item.price
+                    )
+                
+                # Update order status
                 order.status = "completed"
                 order.khalti_data = payment_data
                 order.save()
                 
-                # Update cart status (mark as inactive since order is completed)
-                cart = order.cart
-                cart.is_active = False
-                cart.save()
-                
-                # Update inventory quantities if needed
+                # Update inventory and deactivate cart
                 for cart_item in cart.items.all():
                     size_variant = cart_item.size_variant
                     size_variant.quantity -= cart_item.quantity
                     size_variant.save()
+                
+                cart.is_active = False
+                cart.save()
                 
                 return Response({
                     'success': True,
@@ -594,26 +597,17 @@ def verify_payment(request):
                 order.status = "failed"
                 order.khalti_data = payment_data
                 order.save()
-                
-                # Reactivate the cart as payment failed
-                cart = order.cart
-                cart.is_active = True
-                cart.save()
-                
                 return Response({
                     'success': False,
-                    'message': f'Payment verification failed. Status: {payment_status}',
-                    'order_id': order.order_id
+                    'message': f'Payment failed. Status: {payment_data.get("status")}',
                 }, status=status.HTTP_400_BAD_REQUEST)
                 
         except Order.DoesNotExist:
-            return Response({
-                'error': 'Order not found for this payment'
-            }, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
     else:
         return Response({
-            'error': 'Failed to verify payment with Khalti',
-            'details': response.json() if response.content else 'No details available'
+            'error': 'Failed to verify payment',
+            'details': response.json() if response.content else 'No details'
         }, status=status.HTTP_400_BAD_REQUEST)
     
 @api_view(['GET'])
@@ -636,4 +630,56 @@ def order_history(request):
         return Response({
             'success': False,
             'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+import logging
+logger = logging.getLogger(__name__)
+
+@api_view(['GET'])
+@permission_classes([IsAdminOrVendor])
+def all_orders(request):
+    """
+    Get all orders (admin view)
+    """
+    try:
+        # Get query parameters for filtering
+        status_filter = request.query_params.get('status')
+        payment_method = request.query_params.get('payment_method')
+        date_from = request.query_params.get('date_from')
+        date_to = request.query_params.get('date_to')
+        
+        # Start with base queryset
+        orders = Order.objects.all().select_related(
+            'user'
+        ).prefetch_related(
+            'order_items',
+            'order_items__rental_item',
+            'order_items__size_variant'
+        ).order_by('-created_at')
+        
+        # Apply filters if provided
+        if status_filter:
+            orders = orders.filter(status=status_filter)
+        if payment_method:
+            orders = orders.filter(payment_method=payment_method)
+        if date_from:
+            orders = orders.filter(created_at__gte=date_from)
+        if date_to:
+            orders = orders.filter(created_at__lte=date_to)
+        
+        # Serialize the data
+        serializer = AdminOrderSerializer(orders, many=True)  # Pass the queryset here
+        
+        # Return successful response
+        return Response({
+            'success': True,
+            'orders': serializer.data
+        }, status=status.HTTP_200_OK)
+        
+    except Exception as e:
+        logger.error(f"Error in all_orders view: {str(e)}", exc_info=True)
+        return Response({
+            'success': False,
+            'error': 'Failed to retrieve orders',
+            'details': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

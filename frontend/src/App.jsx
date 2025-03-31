@@ -36,7 +36,10 @@ import BhintunaTicketHistory from './Components/BhintunaTicketHistory';
 import TicketPaymentSuccess from './Components/TicketSuccess';
 import BhintunaTicketPayment from './Components/BhintunaTicketPayment';
 import ContactPage from './Pages/ContactPage';
-
+import GoogleAuthSuccess from './Pages/GoogleAuthSuccess';
+import RentalItemForm from './Components/RentalItemadd';
+import SizeVariantManager from './Components/SizeVariant';
+import VendorOrders from './Components/OrderLists';
 // Import other pages as needed
 
 function App() {
@@ -45,6 +48,10 @@ function App() {
      <ScrollToTop />
       <div className="min-vh-100 d-flex flex-column">
         <Routes>
+
+          <Route path="/google-auth-success" element={<GoogleAuthSuccess />} />
+          <Route path="vendor/products/add" element={<RentalItemForm />} />
+
           <Route path="/" element={<HomePage />} />
           <Route path="/register/user" element={<Registration />} />
           <Route path="/register/pandit" element={<RegistrationPandit />} />
@@ -78,7 +85,8 @@ function App() {
           <Route path="/pandit-reviews/:panditId" element={<PanditReviews />} />
           <Route path="/create-review/:bookingId" element={<CreateReview />} />
           <Route path="/my-reviews" element={<UserReviews />} />
-          // In your router configuration
+  
+
           <Route path="/orders/history" element={<OrderHistory />} />
 
           <Route 
@@ -108,6 +116,8 @@ function App() {
         
         <Route element={<ProtectedRoute allowedRoles={["vendor"]} />}>
           <Route path="/vendor/dashboard" element={<VendorDashboard />} />
+          <Route path="/vendor/size-variants" element={<SizeVariantManager />} />
+          <Route path="/vendor/orders" element={<VendorOrders />} />
         </Route>
         
         {/* Protected routes for normal users */}

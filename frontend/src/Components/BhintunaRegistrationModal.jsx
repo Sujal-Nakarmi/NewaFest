@@ -16,6 +16,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
     seats: 1,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registeredSeats, setRegisteredSeats] = useState(1);
   
   // Event options state
   const [eventOptions, setEventOptions] = useState({
@@ -85,12 +86,12 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
       const valueInt = parseInt(value);
       const currentValues = formData[name] || [];
       
-      setFormData({
-        ...formData,
+      setFormData(prev => ({
+        ...prev,
         [name]: checked 
           ? [...currentValues, valueInt] 
           : currentValues.filter(id => id !== valueInt)
-      });
+      }));
     } else if (name === "stallType") {
       // Special handling for stall type
       const typeId = parseInt(value);
@@ -99,10 +100,10 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
       setShowFoodInput(selectedType?.code === 'FOOD');
       setShowDrinksInput(selectedType?.code === 'DRINKS');
       
-      setFormData({
-        ...formData,
+      setFormData(prev => ({
+        ...prev,
         stallType: typeId
-      });
+      }));
     } else if (name === "volunteerType") {
       // Special handling for volunteer type
       const typeId = parseInt(value);
@@ -110,16 +111,16 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
       
       setShowInstrumentSelect(selectedType?.code === 'Music');
       
-      setFormData({
-        ...formData,
+      setFormData(prev => ({
+        ...prev,
         volunteerType: typeId
-      });
+      }));
     } else {
       // Handle all other inputs
-      setFormData({
-        ...formData,
-        [name]: type === "number" ? parseInt(value) : value
-      });
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === "number" ? parseInt(value) || 1 : value
+      }));
     }
   };
 
@@ -158,9 +159,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
       return;
     }
     
-    // Prepare registration data
     const registrationData = prepareRegistrationData();
-    
     setIsSubmitting(true);
     
     try {
@@ -176,7 +175,11 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
       );
       
       // Store the event registration ID for ticket payment
-      setRegisteredEventRegistrationId(response.data.registration_ids[0]);  // Take the first registration ID
+      setRegisteredEventRegistrationId(response.data.registration_ids[0]);
+      
+      // Store the number of seats for payment calculation
+      const seatsRequested = formData.seats || 1;
+      setRegisteredSeats(seatsRequested);
       
       // Different behavior based on event type
       if (eventType === "rally") {
@@ -191,9 +194,9 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
       }
     } catch (error) {
       console.error("Registration error:", error);
-      const errorMessage = error.response?.data 
-        ? (typeof error.response.data === 'object' 
-            ? JSON.stringify(error.response.data) 
+      const errorMessage = error.response?.data
+        ? (typeof error.response.data === 'object'
+            ? JSON.stringify(error.response.data)
             : error.response.data)
         : "There was an error registering for the event.";
       
@@ -273,15 +276,15 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
     const data = {
       event_detail: parseInt(eventDetailId),
       category: categoryId,
-      seats_requested: formData.seats
+      seats_requested: formData.seats || 1
     };
     
     if (eventType === "rally") {
       data.rally_option = formData.rallyOption;
-      data.rally_laps = formData.rallyLaps;
+      data.rally_laps = formData.rallyLaps || [];
     } else if (eventType === "volunteer") {
       data.volunteer_type = formData.volunteerType;
-      data.volunteer_laps = formData.volunteerLaps;
+      data.volunteer_laps = formData.volunteerLaps || [];
       
       if (showInstrumentSelect) {
         data.newari_instrument = formData.instrument;
@@ -322,6 +325,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
             max={eventType === "stall" ? 1 : 5}
             value={formData.seats || 1}
             onChange={handleInputChange}
+            required
           />
         </Form.Group>
         
@@ -343,6 +347,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
             className="cancel-button" 
             onClick={handleClose} 
             disabled={isSubmitting}
+            variant="secondary"
           >
             Cancel
           </Button>
@@ -365,6 +370,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
             name="rallyOption"
             value={formData.rallyOption || ""}
             onChange={handleInputChange}
+            required
           >
             <option value="">Select an option</option>
             {rallyOptions.map((option) => (
@@ -393,7 +399,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
                       const newLaps = currentLaps.includes(lap.lap_id)
                         ? currentLaps.filter(id => id !== lap.lap_id)
                         : [...currentLaps, lap.lap_id];
-                      setFormData({...formData, rallyLaps: newLaps});
+                      setFormData(prev => ({...prev, rallyLaps: newLaps}));
                     }}
                   >
                     <div className="lap-header">
@@ -435,6 +441,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
             name="volunteerType"
             value={formData.volunteerType || ""}
             onChange={handleInputChange}
+            required
           >
             <option value="">Select a volunteer type</option>
             {volunteerTypes.map((type) => (
@@ -453,6 +460,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
               name="instrument"
               value={formData.instrument || ""}
               onChange={handleInputChange}
+              required={showInstrumentSelect}
             >
               <option value="">Select an instrument</option>
               {instruments.map((instrument) => (
@@ -482,7 +490,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
                       const newLaps = currentLaps.includes(lap.lap_id)
                         ? currentLaps.filter(id => id !== lap.lap_id)
                         : [...currentLaps, lap.lap_id];
-                      setFormData({...formData, volunteerLaps: newLaps});
+                      setFormData(prev => ({...prev, volunteerLaps: newLaps}));
                     }}
                   >
                     <div className="lap-header">
@@ -529,6 +537,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
             name="stallType"
             value={formData.stallType || ""}
             onChange={handleInputChange}
+            required
           >
             <option value="">Select a stall type</option>
             {stallTypes.map((type) => (
@@ -550,6 +559,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
             name="stallLocation"
             value={formData.stallLocation || ""}
             onChange={handleInputChange}
+            required
           >
             <option value="">Select a location</option>
             {stallLocations.map((location) => (
@@ -577,6 +587,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
               name="foodItems"
               value={formData.foodItems || ""}
               onChange={handleInputChange}
+              required={showFoodInput}
             />
             <Form.Text className="text-muted">
               Please list the food items you'll be offering at your stall
@@ -594,6 +605,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
               name="drinks"
               value={formData.drinks || ""}
               onChange={handleInputChange}
+              required={showDrinksInput}
             />
             <Form.Text className="text-muted">
               Please list the drinks you'll be offering at your stall
@@ -606,7 +618,7 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
 
   return (
     <>
-      <ToastContainer />
+      <ToastContainer position="top-center" autoClose={5000} />
       
       <Modal show={show} onHide={handleClose} centered className="registration-modal" size="lg">
         <div
@@ -630,10 +642,11 @@ function RegistrationModal({ show, handleClose, eventType, categoryId }) {
       </Modal>
       
       {/* Ticket Payment Modal - Only shown for rally registration */}
-      <BhintunaTicketPayment 
+      <BhintunaTicketPayment
         show={showTicketPaymentModal}
         handleClose={handleCloseTicketPayment}
         eventRegistrationId={registeredEventRegistrationId}
+        seats={registeredSeats}
       />
     </>
   );

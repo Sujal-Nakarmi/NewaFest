@@ -4,33 +4,39 @@ import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function BhintunaTicketPayment({ 
-  show, 
-  handleClose, 
-  eventRegistrationId 
+function BhintunaTicketPayment({
+  show,
+  handleClose,
+  eventRegistrationId,
+  seats = 1  // Default to 1 seat if not provided
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const [ticketDetails, setTicketDetails] = useState(null);
   const [paymentError, setPaymentError] = useState(null);
+  
+  // Calculate price based on seats
+  const pricePerSeat = 200;
+  const totalPrice = pricePerSeat * seats;
 
   // Initiate ticket payment
   const initiatePayment = async () => {
     setIsLoading(true);
     setPaymentError(null);
-
+    
     const token = localStorage.getItem("access_token");
     if (!token) {
       toast.error('You must be logged in to purchase a ticket');
       setIsLoading(false);
       return;
     }
-
+    
     try {
       const response = await axios.post(
         'http://localhost:8000/adminwork/tickets/initiate_payment/',
-        { 
+        {
           registration_id: eventRegistrationId,
-          return_url: 'http://localhost:5173/ticket/payment/success'
+          return_url: 'http://localhost:5173/ticket/payment/success',
+          seats: seats  // Pass the number of seats to the backend
         },
         {
           headers: {
@@ -39,10 +45,10 @@ function BhintunaTicketPayment({
           }
         }
       );
-
+      
       // Store ticket details for later verification
       setTicketDetails(response.data);
-
+      
       // Redirect to Khalti payment URL
       window.location.href = response.data.payment_url;
     } catch (error) {
@@ -58,7 +64,7 @@ function BhintunaTicketPayment({
   const verifyPayment = async (pidx) => {
     setIsLoading(true);
     const token = localStorage.getItem('access_token');
-
+    
     try {
       const response = await axios.post(
         'http://localhost:8000/adminwork/tickets/verify-payment/',
@@ -70,7 +76,7 @@ function BhintunaTicketPayment({
           }
         }
       );
-
+      
       if (response.data.success) {
         toast.success('Ticket payment successful!');
         handleClose();
@@ -89,7 +95,7 @@ function BhintunaTicketPayment({
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const pidx = urlParams.get('pidx');
-
+    
     if (pidx) {
       verifyPayment(pidx);
     }
@@ -113,16 +119,18 @@ function BhintunaTicketPayment({
           
           <div className="payment-details">
             <p>Event: Bhintuna Rally</p>
-            <p>Ticket Price: NPR 200</p>
+            <p>Number of Seats: {seats}</p>
+            <p>Price per Seat: NPR {pricePerSeat}</p>
+            <p className="fw-bold">Total Price: NPR {totalPrice}</p>
           </div>
           
-          <Button 
-            variant="primary" 
-            onClick={initiatePayment} 
+          <Button
+            variant="primary"
+            onClick={initiatePayment}
             disabled={isLoading}
             className="w-100"
           >
-            {isLoading ? 'Processing...' : 'Pay with Khalti'}
+            {isLoading ? 'Processing...' : `Pay NPR ${totalPrice} with Khalti`}
           </Button>
         </Modal.Body>
       </Modal>

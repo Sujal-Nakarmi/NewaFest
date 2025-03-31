@@ -88,3 +88,33 @@ def update_pandit_rating(sender, instance, created, **kwargs):
         pandit.total_reviews = reviews.count()
         pandit.average_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0.0
         pandit.save()
+    
+
+class PanditAvailability(models.Model):
+    class DayOfWeek(models.IntegerChoices):
+        MONDAY = 0, "Monday"
+        TUESDAY = 1, "Tuesday"
+        WEDNESDAY = 2, "Wednesday"
+        THURSDAY = 3, "Thursday"
+        FRIDAY = 4, "Friday"
+        SATURDAY = 5, "Saturday"
+        SUNDAY = 6, "Sunday"
+    
+    availability_id = models.AutoField(primary_key=True)
+    pandit = models.ForeignKey(
+        'registerlogin.Pandit',
+        on_delete=models.CASCADE,
+        related_name='availabilities'
+    )
+    day_of_week = models.IntegerField(choices=DayOfWeek.choices)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    is_available = models.BooleanField(default=True)
+    
+    class Meta:
+        db_table = 'PanditAvailability'
+        ordering = ['day_of_week', 'start_time']
+        unique_together = ['pandit', 'day_of_week', 'start_time', 'end_time']
+    
+    def __str__(self):
+        return f"{self.pandit.user.get_full_name()} - {self.get_day_of_week_display()} {self.start_time}-{self.end_time}"

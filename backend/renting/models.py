@@ -195,3 +195,20 @@ class Order(models.Model):
         
     def __str__(self):
         return f"Order {self.order_id} ({self.status})"
+
+class OrderItem(models.Model):
+    order_item_id = models.AutoField(primary_key=True)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
+    rental_item = models.ForeignKey('renting.RentalItem', on_delete=models.PROTECT)
+    size_variant = models.ForeignKey('renting.ItemSizeVariant', on_delete=models.PROTECT)
+    quantity = models.PositiveIntegerField()
+    rental_start_date = models.DateField()
+    rental_end_date = models.DateField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'OrderItem'
+
+    def __str__(self):
+        return f"{self.quantity}x {self.rental_item.name} for Order {self.order.order_id}"

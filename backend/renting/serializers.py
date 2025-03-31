@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import RentalItem, ItemSizeVariant, DeliveryLocation, Order
+from .models import RentalItem, ItemSizeVariant, DeliveryLocation, Order, OrderItem
 
 class ItemSizeVariantSerializer(serializers.ModelSerializer):
     actual_price = serializers.DecimalField(source='get_price', max_digits=10, decimal_places=2, read_only=True)
@@ -61,6 +61,8 @@ class RentalItemCreateSerializer(serializers.ModelSerializer):
                 ItemSizeVariant.objects.create(rental_item=rental_item, **variant_data)
         
         return rental_item
+    
+
 
 from rest_framework import serializers
 from .models import Cart, CartItem, RentalItem, ItemSizeVariant
@@ -118,32 +120,58 @@ class CartSerializer(serializers.ModelSerializer):
             return DeliveryLocationSerializer(obj.delivery_location).data
         return None
     
-class OrderHistorySerializer(serializers.ModelSerializer):
-    items = serializers.SerializerMethodField()
-    total_price = serializers.SerializerMethodField()
-    delivery_address = serializers.SerializerMethodField()
+class OrderItemSerializer(serializers.ModelSerializer):
+    item_name = serializers.CharField(source='rental_item.name')
+    item_image = serializers.SerializerMethodField()
+    size = serializers.CharField(source='size_variant.size')
+    size_id = serializers.IntegerField(source='size_variant.variant_id')
+    
+    class Meta:
+        model = OrderItem
+        fields = [
+            'order_item_id', 'item_name', 'item_image', 'size', 'size_id',
+            'quantity', 'price', 'rental_start_date', 'rental_end_date'
+        ]
+    
+    def get_item_image(self, obj):
+        request = self.context.get('request')
+        if obj.rental_item.image and request:
+            return request.build_absolute_uri(obj.rental_item.image.url)
+        return None
 
+class OrderHistorySerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(source='order_items', many=True)
+    total_amount = serializers.SerializerMethodField()
+    payment_method_display = serializers.CharField(source='get_payment_method_display')
+    
+    class Meta:
+        model = Order
+        fields = ['order_id', 'status', 'transaction_id', 'payment_method',
+                'payment_method_display', 'created_at', 'items', 'total_amount']
+    
+    def get_total_amount(self, obj):
+        return sum(item.price for item in obj.order_items.all())
+    
+
+
+import logging
+logger = logging.getLogger(__name__)
+
+
+class AdminOrderSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email')
+    user_name = serializers.CharField(source='user.full_name')
+    items = OrderItemSerializer(source='order_items', many=True)
+    total_amount = serializers.SerializerMethodField()
+    payment_method_display = serializers.CharField(source='get_payment_method_display')
+    
     class Meta:
         model = Order
         fields = [
-            'order_id',
-            'status',
-            'created_at',
-            'payment_method',
-            'items',
-            'total_price',
-            'delivery_address',
-            'transaction_id'
+            'order_id', 'user', 'user_email', 'user_name', 'created_at', 
+            'status', 'payment_method', 'payment_method_display',
+            'transaction_id', 'items', 'total_amount', 'khalti_data'
         ]
-
-    def get_items(self, obj):
-        cart_items = obj.cart.items.all()
-        return CartItemSerializer(cart_items, many=True).data
-
-    def get_total_price(self, obj):
-        return obj.cart.total_price
-
-    def get_delivery_address(self, obj):
-        if obj.cart.delivery_location:
-            return str(obj.cart.delivery_location)
-        return "Not specified"
+    
+    def get_total_amount(self, obj):
+        return sum(item.price for item in obj.order_items.all())
