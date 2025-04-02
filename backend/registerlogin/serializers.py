@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import make_password
-from .models import User, Pandit, Vendor
+from .models import User, Pandit, Vendor, Inquiry
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from django.contrib.auth.hashers import check_password
@@ -23,6 +23,12 @@ class UserSerializer(serializers.ModelSerializer):
         # Hash the password before saving
         validated_data['password'] = make_password(validated_data['password'])
         return super().create(validated_data)
+    
+    def update(self, instance, validated_data):
+    # Hash the password if it's being updated
+     if 'password' in validated_data:
+        validated_data['password'] = make_password(validated_data['password'])
+        return super().update(instance, validated_data)
 
 
 class PanditSerializer(serializers.ModelSerializer):
@@ -44,6 +50,17 @@ class PanditSerializer(serializers.ModelSerializer):
         pandit = Pandit.objects.create(user=user, **validated_data)
         return pandit
     
+    def update(self, instance, validated_data):
+    # Hash the password if it's being updated
+     if 'password' in validated_data:
+        validated_data['password'] = make_password(validated_data['password'])
+        return super().update(instance, validated_data)
+     
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['full_name', 'phone_number', 'address', 'country']
+
 class VendorSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)  # Read-only for promotion API
     user_id = serializers.IntegerField(write_only=True)  # For accepting user ID
@@ -111,3 +128,8 @@ class AdminUserCreateSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
     
 
+class InquirySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Inquiry
+        fields = ['id', 'name', 'email', 'phone_number', 'subject', 'message', 'created_at', 'is_resolved']
+        read_only_fields = ['id', 'created_at', 'is_resolved', 'resolved_at']

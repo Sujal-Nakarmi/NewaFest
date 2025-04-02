@@ -12,6 +12,7 @@ const OrderHistory = () => {
   const [error, setError] = useState(null);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [apiResponse, setApiResponse] = useState(null);
   const navigate = useNavigate();
 
   // Status badge colors
@@ -32,21 +33,32 @@ const OrderHistory = () => {
           return;
         }
 
+        console.log("Fetching orders with token:", token);
+
+        // Fixed API URL to match the one working in Postman
         const response = await axios.get("http://localhost:8000/renting/orders/history/", {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
 
-        if (response.data.success) {
-          setOrders(response.data.orders);
+        console.log("API Response:", response.data);
+        setApiResponse(response.data);
+
+        // Handling the response properly based on the actual structure
+        if (response.data && response.data.success) {
+          console.log("Orders loaded:", response.data.orders);
+          setOrders(response.data.orders || []);
         } else {
-          setError("Failed to fetch orders");
+          console.error("API returned success:false or missing data", response.data);
+          setError("Failed to fetch orders: API returned success:false");
         }
       } catch (err) {
-        setError(err.response?.data?.error || "Failed to fetch order history");
+        console.error("Error fetching orders:", err);
+        const errorMessage = err.response?.data?.error || err.message || "Failed to fetch order history";
+        setError(errorMessage);
         setShowToast(true);
-        setToastMessage(err.response?.data?.error || "Failed to fetch order history");
+        setToastMessage(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -64,25 +76,37 @@ const OrderHistory = () => {
     navigate(`/orders/${orderId}`);
   };
 
+  // Debug information component
+  const DebugInfo = () => {
+    if (process.env.NODE_ENV !== 'development') return null;
+    
+    return (
+      <div className="mt-5 p-3 border border-warning" style={{background: '#fffbea'}}>
+        <h5>Debug Information</h5>
+        <p>Loading: {loading ? 'Yes' : 'No'}</p>
+        <p>Error: {error || 'None'}</p>
+        <p>Orders Length: {orders?.length || 0}</p>
+        <div>
+          <h6>API Response:</h6>
+          <pre style={{maxHeight: '200px', overflow: 'auto'}}>
+            {JSON.stringify(apiResponse, null, 2)}
+          </pre>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
-      <Container className="d-flex justify-content-center align-items-center" style={{ height: "50vh" }}>
-        <Spinner animation="border" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </Spinner>
-      </Container>
-    );
-  }
-
-  if (error) {
-    return (
-      <Container className="py-5 text-center">
-        <h4>Error loading order history</h4>
-        <p className="text-muted">{error}</p>
-        <Button variant="primary" onClick={() => window.location.reload()}>
-          Retry
-        </Button>
-      </Container>
+      <>
+        <NavBar />
+        <Container className="d-flex flex-column justify-content-center align-items-center" style={{ height: "50vh" }}>
+          <Spinner animation="border" role="status" className="mb-3">
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
+          <p>Loading your order history...</p>
+        </Container>
+      </>
     );
   }
 
@@ -103,7 +127,7 @@ const OrderHistory = () => {
             </Button>
           </Col>
           <Col className="text-end">
-            <span className="text-muted">Total Orders: {orders.length}</span>
+            <span className="text-muted">Total Orders: {orders?.length || 0}</span>
           </Col>
         </Row>
 
@@ -113,7 +137,18 @@ const OrderHistory = () => {
           My Orders
         </h2>
 
-        {orders.length === 0 ? (
+        {/* Display error if present */}
+        {error && (
+          <div className="alert alert-danger">
+            <h5>Error loading order history</h5>
+            <p>{error}</p>
+            <Button variant="primary" onClick={() => window.location.reload()}>
+              Retry
+            </Button>
+          </div>
+        )}
+
+        {!error && orders?.length === 0 ? (
           <div className="text-center py-5 empty-orders">
             <h4>No orders found</h4>
             <p className="text-muted">You haven't placed any orders yet</p>
@@ -121,7 +156,7 @@ const OrderHistory = () => {
               Rent Items Now
             </Button>
           </div>
-        ) : (
+        ) : !error && (
           <Table responsive bordered hover className="order-table">
             <thead>
               <tr>
@@ -134,7 +169,7 @@ const OrderHistory = () => {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
+              {orders?.map((order) => (
                 <tr key={order.order_id}>
                   <td>#{order.order_id}</td>
                   <td>
@@ -145,10 +180,10 @@ const OrderHistory = () => {
                     {order.items.length} item{order.items.length !== 1 ? "s" : ""}
                   </td>
                   <td>
-                    Rs {order.total_price.toFixed(2)}
+                    Rs {order.total_amount?.toFixed(2)}
                   </td>
                   <td>
-                    <Badge bg={statusVariant[order.status]} className="status-badge">
+                    <Badge bg={statusVariant[order.status] || "secondary"} className="status-badge">
                       {order.status}
                     </Badge>
                   </td>
@@ -167,20 +202,7 @@ const OrderHistory = () => {
           </Table>
         )}
 
-        {/* Toast for errors */}
-        <Toast
-          show={showToast}
-          onClose={() => setShowToast(false)}
-          delay={5000}
-          autohide
-          bg="danger"
-          className="position-fixed bottom-0 end-0 m-3"
-        >
-          <Toast.Header>
-            <strong className="me-auto">Error</strong>
-          </Toast.Header>
-          <Toast.Body className="text-white">{toastMessage}</Toast.Body>
-        </Toast>
+     
       </Container>
     </>
   );

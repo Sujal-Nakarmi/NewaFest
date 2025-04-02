@@ -43,6 +43,7 @@ import VendorOrders from './Components/OrderLists';
 import SizeVariantManagerAdmin from './Components/SizeVariantAdmin';
 
 
+
 function App() {
   return (
     <Router>
@@ -105,6 +106,7 @@ function App() {
            {/* Protected routes for specific roles */}
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+         
           <Route path="/admin/dashboard/users" element={<Users />} />
           <Route path="/admin/dashboard/events" element={<Events />} />
           <Route path="/admin/dashboard/registrations" element={<EventRegistrations />} />

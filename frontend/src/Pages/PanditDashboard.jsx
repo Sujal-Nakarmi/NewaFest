@@ -257,7 +257,7 @@ const PanditDashboard = () => {
 
   return (
     <div className="pandit-dashboard">
-      <NavBar />
+      <NavBar /> <br/><br/>
       <div className="container mt-5 pt-3">
         {/* Alerts for success/error messages */}
         {successMessage && (
@@ -270,6 +270,7 @@ const PanditDashboard = () => {
             {errorMessage}
           </Alert>
         )}
+        <br/>
 
         <h1 className="dashboard-heading mb-4">
           <FaUserClock className="me-2" />

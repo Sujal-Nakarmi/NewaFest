@@ -34,7 +34,7 @@ const ClothingGrid = () => {
   const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 })
   const [showFilters, setShowFilters] = useState(false)
   const [categories, setCategories] = useState([
-    "All", "Men", "Ornaments", "Women"
+    "All", "Men", "Ornaments", "Women", "Props"
   ])
 
   useEffect(() => {
@@ -500,12 +500,15 @@ const ClothingGrid = () => {
         </Modal.Footer>
       </Modal>
 
+
+
       <Toast
         show={showToast}
         onClose={() => setShowToast(false)}
         delay={5000}
         autohide
-        className="position-fixed bottom-0 end-0 m-3"
+        className="position-fixed end-0 m-3"
+        style={{ top: "80px" }}
         bg={toastVariant}
         text={toastVariant === "warning" ? "dark" : "white"}
       >

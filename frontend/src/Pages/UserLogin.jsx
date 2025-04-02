@@ -171,28 +171,9 @@ const LoginPage = () => {
               <h1 className="user-login-title">Log in to your Account</h1>
               <p className="user-login-subtitle">Welcome back! Select a method to log in</p>
               
-              {/* Google Login Button */}
-              <Button 
-                className="user-login-google-btn mb-3" 
-                onClick={handleGoogleLogin}
-                style={{
-                  backgroundColor: '#fff', 
-                  color: '#757575', 
-                  border: '1px solid #ddd',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: '100%',
-                  padding: '10px'
-                }}
-              >
-                <FaGoogle style={{ marginRight: '10px', color: '#4285F4' }} />
-                Sign in with Google
-              </Button>
+          
               
-              <div className="user-login-divider mb-3">
-                <span style={{ backgroundColor: '#fff', padding: '0 10px', color: '#757575' }}>OR</span>
-              </div>
+            
               
               {error && <p className="user-login-error-message">{error}</p>}
               

@@ -89,18 +89,12 @@ const PaymentSuccess = () => {
               <Card.Header as="h5">Order Information</Card.Header>
               <Card.Body>
                 <p><strong>Order ID:</strong> {orderDetails?.orderId}</p> 
-                <p>You will receive an email confirmation with details about your order and delivery information.</p>
+              
               </Card.Body>
             </Card>
             
             <div className="d-grid gap-2">
-              <Button 
-                variant="primary"
-                size="lg"
-                onClick={() => navigate('/user/orders')}
-              >
-                View My Orders
-              </Button>
+           
               
               <Button 
                 variant="outline-secondary"

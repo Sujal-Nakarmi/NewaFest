@@ -1,6 +1,6 @@
 import React from 'react';
 import '../CSS/HeroSection.css';
-import VStall from '../Assests/VStall.png';
+import VStall from '../Assests/hello.jpg';
 
 const HeroSection = () => {
   return (

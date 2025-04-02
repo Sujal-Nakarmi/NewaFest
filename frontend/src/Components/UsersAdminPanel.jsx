@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '../CSS/UsersAdminPanel.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { FiHome, FiUsers, FiCalendar, FiBookOpen, FiLogOut, FiEdit, FiTrash2, FiEye, FiUser} from 'react-icons/fi';
+import { FiHome, FiUsers, FiCalendar, FiBookOpen, FiLogOut, FiEdit, FiTrash2, FiEye, FiUser, FiArrowUpCircle } from 'react-icons/fi';
 import logo from "../Assests/Logo.png";
 import { Link } from "react-router-dom";
 
@@ -17,6 +17,7 @@ const Users = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPromoteModal, setShowPromoteModal] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [formData, setFormData] = useState({
     full_name: '',
@@ -26,6 +27,13 @@ const Users = () => {
     address: '',
     country: '',
     password: '',
+    experience_year: '',
+    experience_description: ''
+  });
+  const [vendorData, setVendorData] = useState({
+    user_id: '',
+    company_name: '',
+    business_description: ''
   });
   const navigate = useNavigate();
   
@@ -110,16 +118,36 @@ const Users = () => {
     });
   };
 
+  // Handle vendor form input changes
+  const handleVendorInputChange = (e) => {
+    const { name, value } = e.target;
+    setVendorData({
+      ...vendorData,
+      [name]: value
+    });
+  };
+
   // Handle add user form submission
   const handleAddUser = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("access_token");
-      await axios.post(`${API_BASE_URL}/api/admin/users/create/`, formData, {
+      
+      // Create a copy of formData to send
+      const dataToSend = { ...formData };
+      
+      // Remove pandit-specific fields if user role is not pandit
+      if (dataToSend.user_role !== 'pandit') {
+        delete dataToSend.experience_year;
+        delete dataToSend.experience_description;
+      }
+      
+      await axios.post(`${API_BASE_URL}/api/admin/users/create/`, dataToSend, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
+      
       setShowAddModal(false);
       setFormData({
         full_name: '',
@@ -129,6 +157,8 @@ const Users = () => {
         address: '',
         country: '',
         password: '',
+        experience_year: '',
+        experience_description: ''
       });
       fetchUsers();
     } catch (err) {
@@ -149,7 +179,12 @@ const Users = () => {
       setCurrentUser(response.data);
       // Set form data without password (we don't want to update password necessarily)
       const { password, ...userData } = response.data;
-      setFormData(userData);
+      setFormData({
+        ...userData,
+        password: '',
+        experience_year: userData.experience_year || '',
+        experience_description: userData.experience_description || ''
+      });
       setShowEditModal(true);
     } catch (err) {
       console.error(`Error fetching user ${userId}:`, err);
@@ -166,6 +201,12 @@ const Users = () => {
       const updateData = {...formData};
       if (!updateData.password) {
         delete updateData.password;
+      }
+      
+      // Remove pandit-specific fields if user role is not pandit
+      if (updateData.user_role !== 'pandit') {
+        delete updateData.experience_year;
+        delete updateData.experience_description;
       }
       
       await axios.put(`${API_BASE_URL}/api/admin/users/${currentUser.id}/`, updateData, {
@@ -204,6 +245,69 @@ const Users = () => {
     }
   };
 
+  // Handle promote user to vendor
+  const handlePromoteUser = (userId) => {
+    setCurrentUser({id: userId});
+    setVendorData({
+      user_id: userId,
+      company_name: '',
+      business_description: ''
+    });
+    setShowPromoteModal(true);
+  };
+
+  // Confirm promote to vendor
+  const confirmPromoteToVendor = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("access_token");
+      await axios.post(`${API_BASE_URL}/api/admin/promote-to-vendor/`, vendorData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setShowPromoteModal(false);
+      fetchUsers();
+    } catch (err) {
+      console.error('Error promoting user to vendor:', err);
+      setError('Failed to promote user to vendor. Please try again.');
+    }
+  };
+
+  // Render experience fields if user role is pandit
+  const renderExperienceFields = (isPandit) => {
+    if (!isPandit) return null;
+    
+    return (
+      <>
+        <div className="mb-3">
+          <label htmlFor="experience_year" className="form-label">Experience Years</label>
+          <input 
+            type="number" 
+            className="form-control" 
+            id="experience_year"
+            name="experience_year"
+            value={formData.experience_year}
+            onChange={handleInputChange}
+            required={formData.user_role === 'pandit'}
+          />
+        </div>
+        <div className="mb-3">
+          <label htmlFor="experience_description" className="form-label">Experience Description</label>
+          <textarea 
+            className="form-control" 
+            id="experience_description"
+            name="experience_description"
+            value={formData.experience_description}
+            onChange={handleInputChange}
+            rows="3"
+            required={formData.user_role === 'pandit'}
+          ></textarea>
+        </div>
+      </>
+    );
+  };
+
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
@@ -212,7 +316,7 @@ const Users = () => {
           <Link to="/"><img src={logo} className="dashboard-logo" alt="Logo" /></Link>
         </div>
         <nav className="nav-menu">
-          <a href="#" className="nav-item">
+          <a href="/admin/dashboard/all" className="nav-item">
             <FiHome size={18} /> Dashboard
           </a>
           <a href="#" className="nav-item active">
@@ -226,11 +330,11 @@ const Users = () => {
             <FiCalendar size={18} /> Event Registration
           </Link>
           <Link to="/admin/dashboard/rentals" className="nav-item">
-                      <FiCalendar size={18} /> Rental Items
-                    </Link>
-              <a href="/admin/size-variants" className="nav-item">
-                        <FiUser size={18} /> Size Variants
-                      </a>
+            <FiCalendar size={18} /> Rental Items
+          </Link>
+          <a href="/admin/size-variants" className="nav-item">
+            <FiUser size={18} /> Size Variants
+          </a>
         </nav>
         <div className="logout">
           <a href="#" className="nav-item logout-btn" onClick={handleLogout}>
@@ -324,13 +428,22 @@ const Users = () => {
                             >
                               <FiTrash2 size={16} />
                             </button>
+                            {user.user_role === 'normal_user' &&(
+                              <button 
+                                className="btn btn-sm btn-outline-success me-1" 
+                                onClick={() => handlePromoteUser(user.id)}
+                                title="Promote to Vendor"
+                              >
+                                <FiArrowUpCircle size={16} />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="7" className="text-center">No users found</td>
+                      <td colSpan="8" className="text-center">No users found</td>
                     </tr>
                   )}
                 </tbody>
@@ -454,6 +567,10 @@ const Users = () => {
                       onChange={handleInputChange}
                     />
                   </div>
+                  
+                  {/* Conditionally render experience fields for pandit */}
+                  {renderExperienceFields(formData.user_role === 'pandit')}
+                  
                   <div className="mb-3">
                     <label htmlFor="password" className="form-label">Password</label>
                     <input 
@@ -560,6 +677,10 @@ const Users = () => {
                       onChange={handleInputChange}
                     />
                   </div>
+                  
+                  {/* Conditionally render experience fields for pandit */}
+                  {renderExperienceFields(formData.user_role === 'pandit')}
+                  
                   <div className="mb-3">
                     <label htmlFor="edit_password" className="form-label">Password (Leave blank to keep unchanged)</label>
                     <input 
@@ -603,8 +724,54 @@ const Users = () => {
         </div>
       )}
 
+      {/* Promote to Vendor Modal */}
+      {showPromoteModal && (
+        <div className="modal show d-block" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Promote to Vendor</h5>
+                <button type="button" className="btn-close" onClick={() => setShowPromoteModal(false)}></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={confirmPromoteToVendor}>
+                  <div className="mb-3">
+                    <label htmlFor="company_name" className="form-label">Company Name</label>
+                    <input 
+                      type="text" 
+                      className="form-control" 
+                      id="company_name"
+                      name="company_name"
+                      value={vendorData.company_name}
+                      onChange={handleVendorInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="business_description" className="form-label">Business Description</label>
+                    <textarea 
+                      className="form-control" 
+                      id="business_description"
+                      name="business_description"
+                      value={vendorData.business_description}
+                      onChange={handleVendorInputChange}
+                      rows="3"
+                      required
+                    ></textarea>
+                  </div>
+                  <div className="modal-footer">
+                    <button type="button" className="btn btn-secondary" onClick={() => setShowPromoteModal(false)}>Cancel</button>
+                    <button type="submit" className="btn btn-primary">Promote to Vendor</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Background overlay for modals */}
-      {(showAddModal || showEditModal || showDeleteModal) && (
+      {(showAddModal || showEditModal || showDeleteModal || showPromoteModal) && (
         <div className="modal-backdrop show"></div>
       )}
     </div>

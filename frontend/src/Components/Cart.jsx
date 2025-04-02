@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Form, Table, Alert } from 'react-bootstrap';
-import { FaTrash, FaMinus, FaPlus, FaCalendarAlt } from 'react-icons/fa';
+import { FaTrash, FaMinus, FaPlus, FaCalendarAlt, FaMapMarkerAlt, FaEdit } from 'react-icons/fa';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
@@ -13,6 +13,8 @@ const CartPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updateLoading, setUpdateLoading] = useState({});
+  const [landmark, setLandmark] = useState('');
+  const [showLandmarkInput, setShowLandmarkInput] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,6 +38,9 @@ const CartPage = () => {
       });
       
       setCart(response.data);
+      if (response.data.delivery_location_details && response.data.delivery_location_details.landmark) {
+        setLandmark(response.data.delivery_location_details.landmark);
+      }
       setError(null);
     } catch (err) {
       setError('Failed to load cart data. Please try again.');
@@ -143,6 +148,9 @@ const CartPage = () => {
   };
 
   const handleLocationSelected = (location) => {
+    // Open landmark input when location is selected
+    setShowLandmarkInput(true);
+    
     // Update the cart with the new location
     const updatedCart = { ...cart };
     updatedCart.delivery_location_details = location;
@@ -156,11 +164,56 @@ const CartPage = () => {
     setCart(updatedCart);
   };
 
+  const updateLandmark = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('access_token');
+      
+      // Updated to use the correct endpoint path
+      const response = await axios.put(
+        'http://localhost:8000/renting/cart/update-delivery-location/',
+        { 
+          location_id: cart.delivery_location_details.location_id,
+          landmark: landmark 
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      // Update local cart with the response
+      const updatedCart = response.data;
+      
+      // Make sure to update the delivery_location_details with the landmark
+      if (updatedCart.delivery_location_details) {
+        updatedCart.delivery_location_details.landmark = landmark;
+      }
+      
+      setCart(updatedCart);
+      setShowLandmarkInput(false);
+      setError(null);
+    } catch (err) {
+      setError('Failed to update landmark. Please try again.');
+      console.error('Error updating landmark:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleCheckout = () => {
     if (!cart.delivery_location_details) {
       setError('Please select a delivery location before proceeding to checkout.');
       return;
     }
+    
+    if (!landmark && !cart.delivery_location_details.landmark) {
+      setError('Please add a landmark to help our delivery team find your location.');
+      setShowLandmarkInput(true);
+      return;
+    }
+    
     navigate('/checkout');
   };
 
@@ -355,7 +408,7 @@ const CartPage = () => {
                 Clear Cart
               </Button>
               <Button 
-                variant="outline-primary" 
+               variant="outline-secondary" 
                 className="ms-2"
                 onClick={() => navigate('/rent-traditionals')}
               >
@@ -370,28 +423,142 @@ const CartPage = () => {
                     <span>Items ({cart.items ? cart.items.length : 0}):</span>
                     <span>Rs {itemsTotal}</span>
                   </div>
+                  
                   <div className="d-flex justify-content-between mb-2">
                     <span>Delivery Fee:</span>
                     <span>Rs {deliveryFee}</span>
                   </div>
+                  
+                  {/* Display selected delivery location with full hierarchy */}
+                  {cart.delivery_location_details && (
+                    <div className="selected-delivery-location mt-3 mb-3">
+                      <div className="d-flex align-items-start">
+                        <FaMapMarkerAlt className="location-icon mt-1 me-2" />
+                        <div>
+                          <h6 className="mb-1">Delivery Location:</h6>
+                          <div className="location-hierarchy">
+                            <span className="province">{cart.delivery_location_details.province},</span>
+                            <span className="separator">  </span>
+                            <span className="metro-area">{cart.delivery_location_details.metro_area},</span>
+                            <span className="separator">  </span>
+                            <span className="area-name">{cart.delivery_location_details.area_name}</span>
+                          </div>
+                          
+                          {/* Display landmark if available or show landmark input */}
+                          {showLandmarkInput ? (
+                            <div className="landmark-section mt-2">
+                              <div className="landmark-input-container">
+                                <Form.Group>
+                                  <Form.Label>Landmark / Detailed Address:</Form.Label>
+                                  <Form.Control
+                                    as="textarea"
+                                    rows={2}
+                                    placeholder="Enter nearby landmark or detailed address for easier delivery (e.g., Near City Hospital, Blue Building, etc.)"
+                                    value={landmark}
+                                    onChange={(e) => setLandmark(e.target.value)}
+                                  />
+                                  <div className="d-flex mt-2">
+                                    <Button 
+                                      size="sm" 
+                                      onClick={updateLandmark}
+                                      disabled={!landmark.trim()}
+                                      className="me-2"
+                                      style={{ backgroundColor: "#8B0000", color: "white", border: "none" }}
+                                    >
+                                      Save
+                                    </Button>
+                                    <Button 
+                                      variant="outline-secondary" 
+                                      size="sm"
+                                      onClick={() => {
+                                        setShowLandmarkInput(false);
+                                        setLandmark(cart.delivery_location_details.landmark || '');
+                                      }}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </Form.Group>
+                              </div>
+                            </div>
+                          ) : (
+                            cart.delivery_location_details.landmark ? (
+                              <div className="landmark-section mt-2">
+                                <div className="d-flex align-items-center">
+                                  <div className="landmark-display">
+                                    <span className="text-muted">Landmark: </span>
+                                    <span>{cart.delivery_location_details.landmark}</span>
+                                    <Button 
+                                      variant="link" 
+                                      size="sm" 
+                                      className="p-0 ms-2"
+                                      onClick={() => {
+                                        setLandmark(cart.delivery_location_details.landmark || '');
+                                        setShowLandmarkInput(true);
+                                      }}
+                                    >
+                                      <FaEdit />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ) : (
+                              <Button 
+                                variant="outline-secondary" 
+                                size="sm"
+                                className="w-100 mt-2"
+                                onClick={() => setShowLandmarkInput(true)}
+                              >
+                                + Add Landmark
+                              </Button>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   <hr />
                   <div className="d-flex justify-content-between mb-3">
                     <strong>Total:</strong>
                     <strong>Rs {totalPrice}</strong>
                   </div>
                   
-                  <DeliveryLocationSelector 
-                    onLocationSelected={handleLocationSelected} 
-                  />
+                  {!cart.delivery_location_details && (
+                    <DeliveryLocationSelector 
+                      onLocationSelected={handleLocationSelected} 
+                    />
+                  )}
                   
                   <Button 
-                    variant="primary" 
-                    className="w-100 mt-3"
+                    className="w-100 mt-3" 
+                    style={{ backgroundColor: "#8B0000", color: "white" }}
                     onClick={handleCheckout}
-                    disabled={loading || !cart.items || cart.items.length === 0}
+                    disabled={
+                      loading || 
+                      !cart.items || 
+                      cart.items.length === 0 || 
+                      !cart.delivery_location_details
+                    }
                   >
                     Proceed to Checkout
                   </Button>
+                  
+                  {/* Add button to change delivery location if already selected */}
+                  {cart.delivery_location_details && (
+                    <Button 
+                      variant="outline-secondary" 
+                      size="sm"
+                      className="w-100 mt-2"
+                      onClick={() => {
+                        setCart({...cart, delivery_location_details: null});
+                        setLandmark('');
+                        setShowLandmarkInput(false);
+                      }}
+                    >
+                      Change Delivery Location
+                    </Button>
+                  )}
                 </Card.Body>
               </Card>
             </Col>

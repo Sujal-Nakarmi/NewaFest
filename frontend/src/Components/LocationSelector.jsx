@@ -95,9 +95,17 @@ const LocationSelector = ({ onLocationSelected }) => {
   const handleAreaSelect = (area) => {
     setSelectedArea(area);
     
-    // Call the callback with the selected location
+    // Create a complete location object with hierarchy information
+    const completeLocation = {
+      ...area,
+      province: selectedProvince,
+      metro_area: selectedMetroArea,
+      full_address: `${selectedProvince} > ${selectedMetroArea} > ${area.area_name}`
+    };
+    
+    // Call the callback with the complete location
     if (onLocationSelected) {
-      onLocationSelected(area);
+      onLocationSelected(completeLocation);
     }
     
     // Update the delivery location in the cart
@@ -233,12 +241,7 @@ const LocationSelector = ({ onLocationSelected }) => {
           </div>
         </Card.Body>
         
-        <Card.Footer className="location-footer">
-          <div className="mobile-scan">
-            <FaMapMarkerAlt className="mobile-icon" />
-            <span>Scan with mobile</span>
-          </div>
-        </Card.Footer>
+       
       </Card>
     </Container>
   );

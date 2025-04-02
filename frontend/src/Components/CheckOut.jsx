@@ -157,16 +157,7 @@ const Checkout = () => {
         </Card.Body>
       </Card>
       
-      <Card className="mb-4">
-        <Card.Header as="h5">Delivery Information</Card.Header>
-        <Card.Body>
-          <p><strong>Delivery Location:</strong> {cart.delivery_location_details?.location_name}</p>
-          <p><strong>Address:</strong> {cart.delivery_location_details?.address}</p>
-          {cart.delivery_location_details?.additional_info && (
-            <p><strong>Additional Info:</strong> {cart.delivery_location_details.additional_info}</p>
-          )}
-        </Card.Body>
-      </Card>
+    
       
       <div className="d-grid gap-2">
         <Button 

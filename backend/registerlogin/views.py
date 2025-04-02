@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import UserSerializer, PanditSerializer, VendorSerializer
+from .serializers import UserSerializer, PanditSerializer, VendorSerializer, ProfileUpdateSerializer, InquirySerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -87,6 +87,56 @@ def get_user_profile(request):
         "user_role": user.user_role
     }, status=status.HTTP_200_OK)
 
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_user_profile(request):
+    """Update the authenticated user's profile"""
+    user = request.user
+    
+    if not user.is_authenticated:
+        return Response(
+            {"detail": "Authentication failed", "code": "authentication_failed"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    serializer = ProfileUpdateSerializer(user, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    """Change the authenticated user's password"""
+    user = request.user
+    
+    if not user.is_authenticated:
+        return Response(
+            {"detail": "Authentication failed", "code": "authentication_failed"},
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+    
+    old_password = request.data.get('old_password')
+    new_password = request.data.get('new_password')
+    
+    if not old_password or not new_password:
+        return Response(
+            {"detail": "Both old and new passwords are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    if not user.check_password(old_password):
+        return Response(
+            {"detail": "Incorrect old password"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    user.set_password(new_password)
+    user.save()
+    
+    return Response({"detail": "Password updated successfully"}, status=status.HTTP_200_OK)
 
 
 
@@ -266,4 +316,26 @@ def promote_to_vendor(request):
                 'message': 'User promoted to vendor successfully',
                 'vendor': VendorSerializer(vendor).data
             }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def submit_inquiry(request):
+    if request.method == 'POST':
+        data = request.data
+        
+        # Check if required fields are present
+        if not all(field in data for field in ['name', 'email', 'message']):
+            return Response({"detail": "Missing required fields"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = InquirySerializer(data=data)
+        if serializer.is_valid():
+            inquiry = serializer.save()
+            return Response({
+                'status': 'success',
+                'message': 'Your inquiry has been submitted successfully',
+                'inquiry_id': inquiry.id
+            }, status=status.HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -1,20 +1,84 @@
 "use client"
-import { Container, Row, Col, Form, Button } from "react-bootstrap"
+import { useState } from "react"
+import { Container, Row, Col, Form, Button, Alert } from "react-bootstrap"
 import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock } from "react-icons/fa"
 import "../CSS/ContactPage.css"
 import NavBar from '../Components/NavBar'
 import ContactUs from "../Assests/ContactUs.png";
+import axios from "axios";
 
 const ContactPage = () => {
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // Add your form submission logic here
-    console.log("Form submitted")
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone_number: "",
+    subject: "",
+    message: ""
+  });
+  
+  const [formStatus, setFormStatus] = useState({
+    submitted: false,
+    success: false,
+    message: ""
+  });
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      const response = await axios.post('http://localhost:8000/registerlogin/api/inquiry/submit/', formData);
+      
+      setFormStatus({
+        submitted: true,
+        success: true,
+        message: "Thank you! Your message has been sent successfully."
+      });
+      
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        phone_number: "",
+        subject: "",
+        message: ""
+      });
+      
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || "Something went wrong. Please try again.";
+      
+      setFormStatus({
+        submitted: true,
+        success: false,
+        message: errorMessage
+      });
+    } finally {
+      setIsSubmitting(false);
+      
+      // Hide status message after 5 seconds
+      setTimeout(() => {
+        setFormStatus({
+          submitted: false,
+          success: false,
+          message: ""
+        });
+      }, 5000);
+    }
   }
 
   return (
     <Container className="contact-container">
-         <NavBar /><br/><br/><br/>
+      <NavBar /><br/><br/><br/>
       <Row className="text-center mb-5">
         <Col>
           <h1 className="contact-title">Contact Us</h1>
@@ -63,42 +127,95 @@ const ContactPage = () => {
         </Col>
       </Row>
 
+      {formStatus.submitted && (
+        <Row className="mt-3">
+          <Col>
+            <Alert variant={formStatus.success ? "success" : "danger"}>
+              {formStatus.message}
+            </Alert>
+          </Col>
+        </Row>
+      )}
+
       <Row className="mt-4">
         <Col xs={12} lg={6}>
           <Form onSubmit={handleSubmit}>
             <Row>
               <Col xs={12} md={6} className="mb-3">
-                <Form.Control type="text" placeholder="Name" className="contact-input" />
+                <Form.Control 
+                  type="text" 
+                  name="name"
+                  placeholder="Name" 
+                  className="contact-input"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
               </Col>
               <Col xs={12} md={6} className="mb-3">
-                <Form.Control type="email" placeholder="Email" className="contact-input" />
+                <Form.Control 
+                  type="email" 
+                  name="email"
+                  placeholder="Email" 
+                  className="contact-input"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
               </Col>
             </Row>
 
             <Row>
               <Col xs={12} md={6} className="mb-3">
-                <Form.Control type="tel" placeholder="Phone Number" className="contact-input" />
+                <Form.Control 
+                  type="tel" 
+                  name="phone_number"
+                  placeholder="Phone Number" 
+                  className="contact-input"
+                  value={formData.phone_number}
+                  onChange={handleChange}
+                />
               </Col>
               <Col xs={12} md={6} className="mb-3">
-                <Form.Control type="text" placeholder="Subject" className="contact-input" />
+                <Form.Control 
+                  type="text" 
+                  name="subject"
+                  placeholder="Subject" 
+                  className="contact-input"
+                  value={formData.subject}
+                  onChange={handleChange}
+                />
               </Col>
             </Row>
 
             <Row className="mb-3">
               <Col>
-                <Form.Control as="textarea" rows={5} placeholder="Message" className="contact-input" />
+                <Form.Control 
+                  as="textarea" 
+                  name="message"
+                  rows={5} 
+                  placeholder="Message" 
+                  className="contact-input"
+                  value={formData.message}
+                  onChange={handleChange}
+                  required
+                />
               </Col>
             </Row>
 
-            <Button type="submit" className="send-message-btn w-100">
-              SEND MESSAGE
+            <Button 
+              type="submit" 
+              className="send-message-btn w-100" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "SENDING..." : "SEND MESSAGE"}
             </Button>
           </Form>
         </Col>
 
         <Col xs={12} lg={6} className="mt-4 mt-lg-0">
           <div className="contact-image-container">
-            <img src= {ContactUs} style={{ width: "500px", height: "350px" }} />
+            <img src={ContactUs} style={{ width: "500px", height: "350px" }} alt="Contact Us" />
           </div>
         </Col>
       </Row>
@@ -122,4 +239,3 @@ const ContactPage = () => {
 }
 
 export default ContactPage
-

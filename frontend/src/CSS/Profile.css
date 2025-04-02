@@ -1,0 +1,96 @@
+/* ProfilePage.css */
+.profile-card {
+    border-radius: 10px;
+    overflow: hidden;
+    border: none;
+  }
+  
+  .profile-card .card-header {
+    padding: 1rem 1.5rem;
+  }
+  
+  .profile-info {
+    padding: 1rem;
+  }
+  
+  .profile-label {
+    font-weight: 600;
+    color: #495057;
+  }
+  
+  .profile-value {
+    color: #212529;
+  }
+  
+  .security-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+  }
+  
+  .form-control:focus {
+    border-color: #8B0000;
+    box-shadow: 0 0 0 0.2rem rgba(66, 133, 244, 0.25);
+  }
+  
+  .badge {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+  }
+  
+  /* Tabs styling */
+  .nav-tabs .nav-link {
+    border: none;
+    color: #495057;
+    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+  }
+  
+  .nav-tabs .nav-link.active {
+    color: #8B0000;
+    background-color: transparent;
+    border-bottom: 2px solid #8B0000;
+  }
+  
+  .nav-tabs {
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  /* Button styling */
+  .btn-primary {
+    background-color: #8B0000;
+    border-color: #8B0000;
+  }
+  
+  .btn-primary:hover {
+    background-color: #8B0000;
+    border-color: #8B0000;
+  }
+  
+  .btn-success {
+    background-color: #34a853;
+    border-color: #34a853;
+  }
+  
+  .btn-success:hover {
+    background-color: #2d9248;
+    border-color: #2d9248;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .profile-label,
+    .profile-value {
+      text-align: left;
+    }
+    
+    .profile-label {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    
+    .profile-value {
+      margin-bottom: 1rem;
+      padding-left: 0.5rem;
+    }
+  }

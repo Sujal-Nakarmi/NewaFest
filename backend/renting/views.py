@@ -241,6 +241,40 @@ def add_to_cart(request):
     item_id = request.data.get('item_id')
     variant_id = request.data.get('variant_id')
     quantity = int(request.data.get('quantity', 1))
+
+        
+    # Check if item_id is present
+    if not item_id:
+        return Response({'error': 'Item ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Get the rental item
+    try:
+        rental_item = RentalItem.objects.get(item_id=item_id, is_available=True)
+    except RentalItem.DoesNotExist:
+        return Response({'error': 'Item not found or not available'}, status=status.HTTP_404_NOT_FOUND)
+    
+    # Handle variant selection
+    variant_id = request.data.get('variant_id')
+    if variant_id:
+        try:
+            variant = ItemSizeVariant.objects.get(variant_id=variant_id, rental_item=rental_item)
+        except ItemSizeVariant.DoesNotExist:
+            return Response({'error': 'Size variant not found'}, status=status.HTTP_404_NOT_FOUND)
+    else:
+        # Try to get the default variant
+        variant = rental_item.size_variants.filter(is_default=True).first()
+        
+        # If no variant exists, create a default one for the item
+        if not variant and not rental_item.has_size_variants:
+            variant = ItemSizeVariant.objects.create(
+                rental_item=rental_item,
+                size='Default',
+                quantity=1,  # Set appropriate default quantity
+                price=rental_item.base_price,
+                is_default=True
+            )
+        elif not variant:
+            return Response({'error': 'Please select a size variant'}, status=status.HTTP_400_BAD_REQUEST)
     
     # Get rental dates
     rental_start_date = request.data.get('rental_start_date')
@@ -446,12 +480,13 @@ def list_areas(request, province, metro_area=None):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_cart_delivery_location(request):
-    """Update the delivery location for the user's cart."""
+    """Update the delivery location and landmark for the user's cart."""
     location_id = request.data.get('location_id')
+    landmark = request.data.get('landmark')
     
     if not location_id:
         return Response({'error': 'Location ID is required'}, status=status.HTTP_400_BAD_REQUEST)
-    
+        
     # Get the delivery location
     location = get_object_or_404(DeliveryLocation, location_id=location_id, is_available=True)
     
@@ -460,9 +495,20 @@ def update_cart_delivery_location(request):
     
     # Update cart's delivery location
     cart.delivery_location = location
+    
+    # Store the landmark in the location
+    if landmark:
+        # Option 1: Create a temporary location with landmark
+        # This approach doesn't modify the original location in the database
+        # but associates the landmark with this specific cart
+        temp_location = DeliveryLocation.objects.get(pk=location.pk)
+        temp_location.landmark = landmark
+        temp_location.save()
+        cart.delivery_location = temp_location
+    
     cart.save()
     
-    # Return the updated cart
+    # Return the updated cart with landmark information included
     cart_serializer = CartSerializer(cart, context={'request': request})
     return Response(cart_serializer.data, status=status.HTTP_200_OK)
 

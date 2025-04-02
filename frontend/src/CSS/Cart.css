@@ -89,6 +89,60 @@
   .date-picker-container > div:hover {
     background-color: #f8f9fa;
   }
+
+  .location-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+  
+  .area-full-path {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  
+  .province-name, .metro-name {
+    color: #666;
+    font-size: 0.9em;
+  }
+  
+  .area-name {
+    font-weight: 500;
+  }
+  
+  .separator {
+    margin: 0 5px;
+    color: #999;
+  }
+  
+  .location-icon {
+    color: #4a89dc;
+    margin-left: 10px;
+  }
+  
+  /* Styles for the cart page's delivery location display */
+  .selected-delivery-location {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #e9ecef;
+  }
+  
+  .location-hierarchy {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  
+  .province, .metro-area {
+    color: #6c757d;
+  }
+  
+  .area-name {
+    font-weight: 500;
+    color: #212529;
+  }
   
   @media (max-width: 768px) {
     .cart-table th, .cart-table td {

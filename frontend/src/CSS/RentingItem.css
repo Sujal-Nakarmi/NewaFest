@@ -280,6 +280,7 @@
   border: 2px solid black;        /* Change the border to black when hovered */
 }
 
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   

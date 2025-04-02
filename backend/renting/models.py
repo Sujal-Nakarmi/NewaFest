@@ -59,7 +59,7 @@ class ItemSizeVariant(models.Model):
         ):
             self.is_default = True
         super().save(*args, **kwargs)
-
+        
 class DeliveryLocation(models.Model):
     location_id = models.AutoField(primary_key=True)
     province = models.CharField(max_length=100)
@@ -67,6 +67,7 @@ class DeliveryLocation(models.Model):
     area_name = models.CharField(max_length=100)
     delivery_charge = models.DecimalField(max_digits=10, decimal_places=2)
     is_available = models.BooleanField(default=True)
+    landmark = models.TextField(blank=True, null=True)  # Add this field
     
     class Meta:
         db_table = 'delivery_location'
@@ -76,7 +77,6 @@ class DeliveryLocation(models.Model):
         if self.metro_area:
             return f"{self.metro_area} - {self.area_name}"
         return f"{self.province} - {self.area_name}"
-    
 
 class Cart(models.Model):
     cart_id = models.AutoField(primary_key=True)
