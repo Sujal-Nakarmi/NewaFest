@@ -1,16 +1,24 @@
-
-
 import "../CSS/BhintunaCelebration.css"
 import Bhintuna1 from "../Assests/Bhintuna1.png";
 import Bhintuna2 from "../Assests/Bhintuna2.png";
 import Bhintuna3 from "../Assests/Bhintuna3.png";
+import BC1 from "../Assests/BC1.png";
+import BC2 from "../Assests/BC2.png";
+import BC3 from "../Assests/BC3.png";
+import BC4 from "../Assests/BC4.png";
+import BC5 from "../Assests/bc5.png";
+import BC6 from "../Assests/bc6.png";
+import BC7 from "../Assests/BC7.png";
+import BC8 from "../Assests/BC8.png";
+import BC9 from "../Assests/BC9.png";
+import BC10 from "../Assests/BC10.png";
 
 function BhintunaCelebration() {
   const expectations = [
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip",
+    "Volunteers are expected to embrace and uphold the values of Newari culture by showing respect during rituals, processions, and cultural activities.",
+    "Support in organizing and managing various segments of Bhintuna, including rallies, performances, and cultural showcases, ensuring smooth flow and participation.",
+    "Maintain cleanliness around the event area and help enforce discipline among attendees, encouraging a respectful and festive environment.",
+    "Help visitors understand the significance of Bhintuna, guide them through the activities, and provide assistance when needed with warmth and hospitality.",
   ]
 
   const celebrationMethods = [
@@ -18,27 +26,27 @@ function BhintunaCelebration() {
       title:
         "Processions through the city: Participants, often in traditional attire, walk through key streets in cities like Kathmandu and Bhaktapur, starting from Basantapur Durbar Square.",
       images: [
-        "https://v0.dev/placeholder.svg?height=200&width=300",
-        "https://v0.dev/placeholder.svg?height=200&width=300",
-        "https://v0.dev/placeholder.svg?height=200&width=300",
+        BC1,
+        BC2,
+        BC7,
       ],
     },
     {
       title:
         "Traditional music and dance: People play Newari drums (Dha) and other instruments, accompanied by cultural dances.",
       images: [
-        "https://v0.dev/placeholder.svg?height=200&width=300",
-        "https://v0.dev/placeholder.svg?height=200&width=300",
-        "https://v0.dev/placeholder.svg?height=200&width=300",
+       BC3,
+        BC10,
+        BC8,
       ],
     },
     {
       title:
         'Offerings and greetings: People stop at temples to offer prayers and exchange "Bhintuna" greetings for good fortune in the new year.',
       images: [
-        "https://v0.dev/placeholder.svg?height=200&width=300",
-        "https://v0.dev/placeholder.svg?height=200&width=300",
-        "https://v0.dev/placeholder.svg?height=200&width=300",
+        BC5,
+       BC6,
+       BC9,
       ],
     },
   ]
@@ -57,13 +65,18 @@ function BhintunaCelebration() {
           ))}
         </div>
       </section>
+      <br/>
+      <br/>
+
 
       {/* Bhintuna Section */}
       <section className="text-center mb-5">
         <h1 className="bhintuna-title">Bhintuna</h1>
         <p className="bhintuna-description">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-          magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+        Bhintuna is a significant Newari cultural event celebrated in the Kathmandu Valley, marking the arrival of the New Year according to the Nepal Sambat calendar. 
+        This vibrant festival brings together the Newar community to celebrate with a rich blend of tradition, music, dance, and rituals. The day is marked by processions through 
+        the streets, where participants, often dressed in traditional attire, visit key places like Basantapur Durbar Square in Kathmandu, Bhaktapur, and other historical locations. 
+        
         </p>
         <div className="row g-4 mt-4">
           <div className="col-md-4">

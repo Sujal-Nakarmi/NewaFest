@@ -52,10 +52,11 @@ function Bhintuna() {
       {/* Main Content */}
       <div className="container py-5">
         <div className="text-center mb-5">
-          <h2>Become a part of Bhintuna</h2>
+          <h2 className="BCH2">Become a part of Bhintuna</h2>
           <p className="lead">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+          Celebrate culture, connect with community, and be part of something special. 
+          Participate, serve, or share Bhintuna invites you to engage in meaningful ways. 
+          Join the rally, become a volunteer, or run your own stall.
           </p>
         </div>
 

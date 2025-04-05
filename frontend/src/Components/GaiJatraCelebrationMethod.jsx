@@ -1,16 +1,23 @@
-
-
 import "../CSS/BhintunaCelebration.css"
 import GC1 from "../Assests/GC1.png";
 import Bhintuna2 from "../Assests/GC2.png";
 import Bhintuna3 from "../Assests/GC3.png";
+import GJ1 from '../Assests/GJ1.png'
+import GJ2 from '../Assests/GJ2.png'
+import GJ3 from '../Assests/GJ3.png'
+import GJ4 from '../Assests/GJ4.png'
+import GJ5 from '../Assests/GJ5.png'
+import GJ6 from '../Assests/GJ6.png'
+import GJ7 from '../Assests/GJ7.png'
+import GJ8 from '../Assests/GJ8.jpg'
+import GJ9 from '../Assests/GJ9.jpg'
 
 function GaiJatraCelebration() {
   const expectations = [
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip",
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip",
+    "Assist in organizing and managing the Gai Jatra procession to ensure smooth movement and cultural harmony throughout the event.",
+    "Support participants, including performers and community members, by guiding them with schedules, directions, and required resources.",
+    "Help maintain cleanliness and safety across event zones, ensuring a respectful and festive environment.",
+    "Promote Newa cultural values by engaging with visitors, answering queries, and upholding the spirit of Gai Jatra.",
   ]
 
   const celebrationMethods = [
@@ -18,27 +25,27 @@ function GaiJatraCelebration() {
       title:
         "Procession of Cows: Families with deceased members lead a cow, symbolizing the journey of souls to the afterlife, through the streets.",
       images: [
-        "https://v0.dev/placeholder.svg?height=200&width=300",
-        "https://v0.dev/placeholder.svg?height=200&width=300",
-        "https://v0.dev/placeholder.svg?height=200&width=300",
+        GJ1,
+        GJ2,
+        GJ7,
       ],
     },
     {
       title:
         "Dressing and Decorations: Participants dress in traditional attire, and homes are decorated with marigold flowers and other festive items.",
       images: [
-        "https://v0.dev/placeholder.svg?height=200&width=300",
-        "https://v0.dev/placeholder.svg?height=200&width=300",
-        "https://v0.dev/placeholder.svg?height=200&width=300",
+        GJ3,
+        GJ4,
+       GJ8,
       ],
     },
     {
       title:
         'Community Gathering: The festival encourages social bonding as neighbors and families gather to share food and stories.',
       images: [
-        "https://v0.dev/placeholder.svg?height=200&width=300",
-        "https://v0.dev/placeholder.svg?height=200&width=300",
-        "https://v0.dev/placeholder.svg?height=200&width=300",
+        GJ5,
+        GJ6,
+       GJ9,
       ],
     },
   ]
@@ -57,13 +64,16 @@ function GaiJatraCelebration() {
           ))}
         </div>
       </section>
+      <br/>
+      <br/>
 
       {/* Bhintuna Section */}
       <section className="text-center mb-5">
         <h1 className="bhintuna-title">Gai Jatra</h1>
         <p className="bhintuna-description">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore
-          magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+        Gai Jatra is a Newari festival celebrated to honor and remember deceased loved ones. During the festival, 
+        families lead a cow or a person dressed as one in a lively procession, symbolizing the journey of the departed soul. 
+        The event is filled with humor, satire, and colorful celebrations, blending mourning with joy.
         </p>
         <div className="row g-4 mt-4">
           <div className="col-md-4">

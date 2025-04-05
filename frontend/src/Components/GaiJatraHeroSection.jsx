@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import "bootstrap/dist/css/bootstrap.min.css"
 import "../CSS/BhintunaHeroSection.css"
@@ -52,10 +50,12 @@ function GaiJatraHeroSection() {
       {/* Main Content */}
       <div className="container py-5">
         <div className="text-center mb-5">
-          <h2>Become a part of Gai Jatra</h2>
+          <h2 className="BCH2">Become a part of Gai Jatra</h2>
           <p className="lead">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+          Celebrate culture with purpose join Gai Jatra as a passionate volunteer or vibrant stall participant.
+Be a part of preserving Newa heritage through service, food, and festive spirit.
+
+
           </p>
         </div>
 

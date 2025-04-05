@@ -30,15 +30,15 @@
     color: #7b2110;
     font-size: 2.5rem;
     font-weight: bold;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2.8rem;
   }
   
   .bhintuna-description {
-    max-width: 800px;
-    margin: 0 auto;
     color: #666;
-    line-height: 1.6;
-  }
+    text-align: justify;
+    line-height: 1.9; 
+}
+
   
   .celebration-methods {
     display: flex;
