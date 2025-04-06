@@ -17,6 +17,28 @@ function NavBar() {
   const popoverRef = useRef(null);
   const navigate = useNavigate();
 
+  // Function to get user profile data including profile picture
+  const getUserProfile = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      if (!token) return;
+      
+      const response = await axios.get("http://localhost:8000/registerlogin/profile/", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      // If profile picture URL exists in response, update it in localStorage and state
+      if (response.data && response.data.profile_picture_url) {
+        localStorage.setItem("user_profile_image", response.data.profile_picture_url);
+        setUserImage(response.data.profile_picture_url);
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
+
   // Check if user is logged in and retrieve user details
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -24,11 +46,19 @@ function NavBar() {
     const profileImage = localStorage.getItem("user_profile_image");
     
     setUserFullName(fullName);
-    setUserImage(profileImage);
     setIsLoggedIn(!!token);
     
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      
+      // Set profile image from localStorage if it exists
+      if (profileImage) {
+        setUserImage(profileImage);
+      } else {
+        // If no profile image in localStorage, try to fetch it
+        getUserProfile();
+      }
+      
       fetchCartData();
     }
   
@@ -40,8 +70,18 @@ function NavBar() {
         fetchCartData();
       }
     };
+    
+    // Listen for profile updates from other components
+    const handleProfileUpdate = (event) => {
+      if (event.detail && event.detail.profilePicture) {
+        setUserImage(event.detail.profilePicture);
+      } else {
+        getUserProfile();
+      }
+    };
   
     window.addEventListener('cartUpdated', handleCartUpdate);
+    window.addEventListener('profileUpdated', handleProfileUpdate);
   
     const handleClickOutside = (event) => {
       if (popoverRef.current && !popoverRef.current.contains(event.target) && 
@@ -54,6 +94,7 @@ function NavBar() {
   
     return () => {
       window.removeEventListener('cartUpdated', handleCartUpdate);
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
@@ -151,8 +192,14 @@ function NavBar() {
                     {userImage ? (
                       <img 
                         src={userImage} 
-                        alt={userFullName} 
+                        alt={userFullName || "User"} 
                         className="user-avatar" 
+                        onError={(e) => {
+                          // If image fails to load, fallback to initials
+                          e.target.style.display = 'none';
+                          e.target.parentNode.classList.add('initials-avatar');
+                          e.target.parentNode.innerText = getInitials(userFullName);
+                        }}
                       />
                     ) : (
                       <div className="initials-avatar">
@@ -209,7 +256,17 @@ function NavBar() {
             <div className="popover-user-info">
               <div className="popover-avatar">
                 {userImage ? (
-                  <img src={userImage} alt={userFullName} className="popover-user-img" />
+                  <img 
+                    src={userImage} 
+                    alt={userFullName || "User"}
+                    className="popover-user-img"
+                    onError={(e) => {
+                      // If image fails to load, fallback to initials
+                      e.target.style.display = 'none';
+                      e.target.parentNode.classList.add('popover-initials');
+                      e.target.parentNode.innerText = getInitials(userFullName);
+                    }}
+                  />
                 ) : (
                   <div className="popover-initials">{getInitials(userFullName)}</div>
                 )}

@@ -59,7 +59,8 @@ class PanditSerializer(serializers.ModelSerializer):
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['full_name', 'phone_number', 'address', 'country']
+        fields = ['full_name', 'phone_number', 'address', 'country', 'profile_picture']
+        
 
 class VendorSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)  # Read-only for promotion API

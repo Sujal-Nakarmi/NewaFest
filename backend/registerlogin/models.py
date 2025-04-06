@@ -39,6 +39,7 @@ class User(AbstractBaseUser):
     phone_number = models.CharField(max_length=10)
     address = models.CharField(max_length=200)
     country = models.CharField(max_length=50)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
     user_role = models.CharField(
         max_length=15,
         choices=UserRole.choices,
@@ -47,6 +48,7 @@ class User(AbstractBaseUser):
     # Add fields for soft delete
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
+
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['full_name', 'phone_number', 'address', 'country']

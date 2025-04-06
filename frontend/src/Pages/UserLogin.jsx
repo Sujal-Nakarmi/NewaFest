@@ -38,6 +38,11 @@ const LoginPage = () => {
         localStorage.setItem("user_role", parsedData.user_role);
         localStorage.setItem("user_full_name", parsedData.full_name);
         localStorage.setItem("user_email", parsedData.email);
+
+         // Store profile picture URL if available
+      if (parsedData.profile_picture_url) {
+        localStorage.setItem("user_profile_image", parsedData.profile_picture_url);
+      }
         
         // Set default authorization header
         axios.defaults.headers.common["Authorization"] = `Bearer ${parsedData.access}`;
@@ -77,6 +82,11 @@ const LoginPage = () => {
       localStorage.setItem("user_phone_number", response.data.phone_number);
       localStorage.setItem("user_address", response.data.address);
       localStorage.setItem("user_country", response.data.country);
+
+       // Store profile picture URL if available
+    if (response.data.profile_picture_url) {
+      localStorage.setItem("user_profile_image", response.data.profile_picture_url);
+    }
       
       // Set default authorization header
       axios.defaults.headers.common["Authorization"] = `Bearer ${response.data.access}`;

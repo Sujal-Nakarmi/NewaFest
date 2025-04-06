@@ -5,7 +5,7 @@ from .serializers import UserSerializer, PanditSerializer, VendorSerializer, Pro
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
-
+import os
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import CustomTokenObtainSerializer
 from rest_framework.permissions import AllowAny
@@ -66,17 +66,19 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_user_profile(request):
-
-    print("Request received in get_user_profile view")
-    # The user is automatically populated from the JWT token
     user = request.user
-
+    
     if not user.is_authenticated:
         return Response(
             {"detail": "Authentication failed", "code": "authentication_failed"},
             status=status.HTTP_401_UNAUTHORIZED
         )
-
+    
+    # Construct profile picture URL if it exists
+    profile_picture_url = None
+    if user.profile_picture:
+        profile_picture_url = request.build_absolute_uri(user.profile_picture.url)
+    
     return Response({
         "id": user.id,
         "full_name": user.full_name,
@@ -84,7 +86,8 @@ def get_user_profile(request):
         "phone_number": user.phone_number,
         "address": user.address,
         "country": user.country,
-        "user_role": user.user_role
+        "user_role": user.user_role,
+        "profile_picture_url": profile_picture_url
     }, status=status.HTTP_200_OK)
 
 @api_view(['PUT'])
@@ -99,10 +102,33 @@ def update_user_profile(request):
             status=status.HTTP_401_UNAUTHORIZED
         )
     
-    serializer = ProfileUpdateSerializer(user, data=request.data, partial=True)
+    # Create a mutable copy of the data
+    data = request.data.copy()
+    
+    # Handle profile picture upload
+    if 'profile_picture' in request.FILES:
+        # If user already has a profile picture, delete the old one
+        if user.profile_picture:
+            if os.path.isfile(user.profile_picture.path):
+                os.remove(user.profile_picture.path)
+        
+        # Save the new profile picture
+        user.profile_picture = request.FILES['profile_picture']
+    
+    serializer = ProfileUpdateSerializer(user, data=data, partial=True)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        # Construct full URL for profile picture if it exists
+        profile_picture_url = None
+        if user.profile_picture:
+            profile_picture_url = request.build_absolute_uri(user.profile_picture.url)
+        
+        # Include the profile picture URL in the response
+        response_data = serializer.data
+        response_data['profile_picture_url'] = profile_picture_url
+        
+        return Response(response_data, status=status.HTTP_200_OK)
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
