@@ -111,7 +111,7 @@ const EventSection = () => {
 
   return (
     <div className="forest-event-page-container">
-      <NavBar /><br/><br/><br/>
+      <NavBar /><br/><br/><br/><br/>
       
       <div className="forest-event-content-container">
         <div className="forest-event-header">

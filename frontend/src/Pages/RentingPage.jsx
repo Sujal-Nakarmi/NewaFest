@@ -9,7 +9,7 @@ function RentingPage() {
     return (
       <div >
   
-          <NavBar /><br/><br/><br/>
+          <NavBar /><br/><br/><br/><br/><br/>
           <ClothingGrid />
        
        
