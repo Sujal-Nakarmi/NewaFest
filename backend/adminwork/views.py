@@ -614,82 +614,143 @@ def get_user_registrations(request, year=None):
 
 @api_view(['GET'])
 @permission_classes([IsAdmin])
-def get_all_user_registrations(request, year=None):
-    """Get all user registrations for admins with complete details."""
+def get_all_user_registrations(request):
+    # Get query parameters
+    category = request.query_params.get('category', None)
+    event_name = request.query_params.get('event_name', None)
+    
+    # Start with base queryset
     registrations = EventRegistration.objects.filter(is_deleted=False)
-    if year:
-        registrations = registrations.filter(event_detail__year=year)
+    
+    # Apply filters - add explicit checks
+    if category and category.strip():
+        registrations = registrations.filter(category__name__iexact=category.strip())
+    if event_name and event_name.strip():
+        registrations = registrations.filter(event_detail__event__name__iexact=event_name.strip())
+    
+    # Now get distinct combinations from the FILTERED queryset
+    distinct_regs = registrations.values(
+        'user__id',
+        'event_detail__event__name',
+        'category__name',
+        'event_detail__year'
+    ).distinct()
     
     data = []
-    for reg in registrations.select_related('event_detail', 'event_detail__event', 'category', 'registrationdetail', 'user'):
-        reg_data = {
-            'registration_id': reg.registration_id,
-            'event_name': reg.event_detail.event.name,
-            'category': reg.category.name,
-            'year': reg.event_detail.year,
-            'registration_date': reg.registration_date,
-            'user_info': {
-                'id': reg.user.id,
-                'name': reg.user.full_name,  # Adjust based on your User model field
-                'phone_number': reg.user.phone_number,
-                # Add more user fields as needed
-            }
-        }
+    
+    for combo in distinct_regs:
+        # Get all registrations for this user-event-category combo
+        user_regs = registrations.filter(
+            user__id=combo['user__id'],
+            event_detail__event__name=combo['event_detail__event__name'],
+            category__name=combo['category__name'],
+            event_detail__year=combo['event_detail__year']
+        ).select_related(
+            'user', 'event_detail', 'event_detail__event', 'category',
+            'registrationdetail'
+        ).prefetch_related(
+            'registrationdetail__volunteer_laps',
+            'registrationdetail__rally_laps'
+        )
         
-        # Add category-specific details based on your model relationships
-        if hasattr(reg, 'registrationdetail'):
-            detail = reg.registrationdetail
+        # Calculate total seats
+        total_seats = 0
+        
+        # Get the earliest registration date
+        first_reg = user_regs.order_by('registration_date').first()
+        if not first_reg:
+            continue  # skip if no registration found (shouldn't happen)
+        
+        # Group by identical details
+        grouped_details = {}
+        
+        for reg in user_regs:
+            # Create a key for grouping identical registrations
+            detail_key = combo['category__name']
             
-            # Common fields
-            reg_data['seats'] = detail.seats
+            # Common details
+            seats = 0
+            detail_hash = {}
             
-            # Category-specific fields
-            if reg.category.code == 'MUSIC':
-                if detail.newari_instrument:
-                    reg_data['music_instrument'] = detail.newari_instrument.name
+            # Get registration detail if exists
+            if hasattr(reg, 'registrationdetail'):
+                detail = reg.registrationdetail
+                seats = detail.seats
+                total_seats += seats
                 
-            elif reg.category.code == 'STALL':
-                reg_data['drinks'] = detail.drinks
-                reg_data['food_items'] = detail.food_items
-                if detail.stall_location:
-                    reg_data['stall_location'] = detail.stall_location.name
-                if detail.stall_type:
-                    reg_data['stall_type'] = detail.stall_type.name
+                category_name = reg.category.name
+                detail_hash['seats'] = seats
                 
-            elif reg.category.code == 'VOLUNTEER':
-                if detail.volunteer_type:
-                    reg_data['volunteer_type'] = detail.volunteer_type.name
-                # Add volunteer laps if needed
-                volunteer_laps = []
-                for lap in detail.volunteer_laps.all():
-                    volunteer_laps.append({
-                        'lap_number': lap.lap_number,
-                        'route': lap.route_description,
-                        'time': lap.time.strftime('%I:%M %p') if lap.time else "TBD"
-                    })
-                if volunteer_laps:
-                    reg_data['volunteer_laps'] = volunteer_laps
-                    
-            # Check for IhiRegistration if category is for Ihi
-            if hasattr(reg, 'ihiregistration'):
-                ihi = reg.ihiregistration
-                reg_data['ihi_info'] = {
-                    'location': ihi.location.address,
-                    'phone': ihi.phone,
-                    'description': ihi.description,
-                    'seats': ihi.seats
-                }
+                # Add category-specific fields
+                if category_name == 'Stall':
+                    if detail.stall_type:
+                        detail_hash['stall_type'] = detail.stall_type.name
+                        detail_key += f"-{detail.stall_type.name}"
+                    if detail.stall_location:
+                        detail_hash['stall_location'] = detail.stall_location.name
+                        detail_key += f"-{detail.stall_location.name}"
+                    detail_hash['drinks'] = detail.drinks
+                    detail_hash['food_items'] = detail.food_items
+                    detail_key += f"-{detail.drinks}-{detail.food_items}"
                 
-            # Check for BhintunaTicket
-            if hasattr(reg, 'bhintunaticket'):
-                ticket = reg.bhintunaticket
-                reg_data['ticket_info'] = {
-                    'price': str(ticket.price),
-                    'payment_status': ticket.status,
-                    'payment_method': ticket.payment_method
-                }
+                elif category_name == 'Rally':
+                    if detail.rally_option:
+                        detail_hash['rally_option'] = detail.rally_option.name
+                        detail_key += f"-{detail.rally_option.name}"
+                    rally_laps = list(detail.rally_laps.values('lap_number', 'route_description'))
+                    if rally_laps:
+                        detail_hash['rally_laps'] = rally_laps
+                        detail_key += f"-laps:{len(rally_laps)}"
+                
+                elif category_name == 'Volunteer':
+                    if detail.volunteer_type:
+                        detail_hash['volunteer_type'] = detail.volunteer_type.name
+                        detail_key += f"-{detail.volunteer_type.name}"
+                    if detail.newari_instrument:
+                        detail_hash['instrument'] = detail.newari_instrument.name
+                        detail_key += f"-{detail.newari_instrument.name}"
+                    volunteer_laps = list(detail.volunteer_laps.values('lap_number', 'route_description', 'time'))
+                    if volunteer_laps:
+                        detail_hash['volunteer_laps'] = volunteer_laps
+                        for lap in volunteer_laps:
+                            detail_key += f"-lap:{lap['lap_number']}-{lap['time']}"
             
-        data.append(reg_data)
+            # Handle Ihi registrations (separate table)
+            if reg.category.name == 'Ihi' and hasattr(reg, 'ihiregistration'):
+                ihi_reg = reg.ihiregistration
+                seats = ihi_reg.seats
+                total_seats += seats
+                detail_hash['seats'] = seats
+                detail_hash['location'] = ihi_reg.location.address
+                detail_hash['phone'] = ihi_reg.phone
+                detail_hash['description'] = ihi_reg.description
+                detail_key += f"-{ihi_reg.location.address}-{ihi_reg.phone}"
+            
+            # Add or update group
+            if detail_key in grouped_details:
+                grouped_details[detail_key]['registration_ids'].append(reg.registration_id)
+                grouped_details[detail_key]['seats'] += seats
+            else:
+                detail_hash['registration_ids'] = [reg.registration_id]
+                grouped_details[detail_key] = detail_hash
+        
+        # Convert grouped details to list
+        details_list = list(grouped_details.values())
+        
+        data.append({
+            'registration_ids': list(user_regs.values_list('registration_id', flat=True)),
+            'event_name': combo['event_detail__event__name'],
+            'category': combo['category__name'],
+            'year': combo['event_detail__year'],
+            'registration_date': first_reg.registration_date,
+            'user_info': {
+                'id': combo['user__id'],
+                'name': first_reg.user.full_name,
+                'phone_number': first_reg.user.phone_number,
+            },
+            'total_seats': total_seats,
+            'details': details_list
+        })
     
     return Response(data, status=status.HTTP_200_OK)
 

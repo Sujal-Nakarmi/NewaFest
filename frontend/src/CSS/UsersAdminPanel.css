@@ -334,6 +334,19 @@
   .text-center {
     text-align: center;
   }
+
+  /* Add this to your CSS */
+.bg-purple {
+  background-color: #5E338D !important;
+  color: white !important;
+}
+
+.bg-slot {
+  background-color: #8B0000 !important;
+  color: white !important;
+ margin-left: 50px;
+}
+
   
   /* Responsive adjustments */
   @media (max-width: 992px) {

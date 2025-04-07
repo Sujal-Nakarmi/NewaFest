@@ -1,184 +1,128 @@
-/* Create a new file called Cart.css in your CSS folder */
-
 .cart-table th {
-    font-weight: 600;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cart-item-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quantity-control button {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+
+
+
+.summary-card {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.cart-table {
+  margin-bottom: 0;
+}
+
+.date-picker-container .form-control {
+  width: 100%;
+}
+
+.date-picker-container .react-datepicker-wrapper {
+  width: auto;
+}
+
+.date-picker-container > div {
+  cursor: pointer;
+  padding: 5px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.date-picker-container > div:hover {
+  background-color: #f8f9fa;
+}
+
+.selected-delivery-location {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #e9ecef;
+}
+
+.location-hierarchy {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.province, .metro-area {
+  color: #6c757d;
+}
+
+.area-name {
+  font-weight: 500;
+  color: #212529;
+}
+
+.days-badge {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  padding: 5px 10px;
+  text-align: center;
+  min-width: 40px;
+}
+
+@media (max-width: 768px) {
+  .cart-table th, .cart-table td {
+    font-size: 0.9rem;
   }
   
   .cart-item-image {
-    width: 50px;
-    height: 50px;
-    object-fit: cover;
-    border-radius: 5px;
-  }
-  
-  .quantity-control {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 40px;
+    height: 40px;
   }
   
   .quantity-control button {
-    width: 28px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
+    width: 24px;
+    height: 24px;
   }
-  
-  .rental-days-select {
-    width: 100px;
-    margin: 0 auto;
-  }
-  
-  .summary-card {
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  }
+}
 
-  /* Cart.css */
-
-.cart-table {
-    margin-bottom: 0;
+@media (max-width: 576px) {
+  .cart-table {
+    font-size: 0.8em;
   }
   
-  .cart-item-image {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 4px;
+  .cart-table th {
+    padding: 8px 4px;
   }
   
-  .quantity-control {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .rental-days-select {
-    width: 100px;
-  }
-  
-  .summary-card {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .date-picker-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-  }
-  
-  .date-picker-container .form-control {
-    width: 100%;
-    margin-bottom: 5px;
-  }
-  
-  .date-picker-container .react-datepicker-wrapper {
-    width: 100%;
+  .cart-table td {
+    padding: 8px 4px;
   }
   
   .date-picker-container > div {
-    cursor: pointer;
-    padding: 5px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-  }
-  
-  .date-picker-container > div:hover {
-    background-color: #f8f9fa;
-  }
-
-  .location-info {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-  }
-  
-  .area-full-path {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-  
-  .province-name, .metro-name {
-    color: #666;
+    padding: 3px;
     font-size: 0.9em;
   }
   
-  .area-name {
-    font-weight: 500;
+  .days-badge {
+    padding: 3px 6px;
+    min-width: 30px;
   }
-  
-  .separator {
-    margin: 0 5px;
-    color: #999;
-  }
-  
-  .location-icon {
-    color: #4a89dc;
-    margin-left: 10px;
-  }
-  
-  /* Styles for the cart page's delivery location display */
-  .selected-delivery-location {
-    background-color: #f8f9fa;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #e9ecef;
-  }
-  
-  .location-hierarchy {
-    font-size: 0.9rem;
-    line-height: 1.4;
-  }
-  
-  .province, .metro-area {
-    color: #6c757d;
-  }
-  
-  .area-name {
-    font-weight: 500;
-    color: #212529;
-  }
-  
-  @media (max-width: 768px) {
-    .cart-table th, .cart-table td {
-      font-size: 0.9rem;
-    }
-    
-    .date-picker-container {
-      flex-direction: column;
-    }
-    
-    .date-picker-container span.mx-2 {
-      margin: 5px 0;
-    }
-  }
-  
-  @media (max-width: 767px) {
-    .cart-table {
-      font-size: 0.85em;
-    }
-    
-    .cart-item-image {
-      width: 40px;
-      height: 40px;
-    }
-    
-    .quantity-control button {
-      width: 24px;
-      height: 24px;
-    }
-    
-    .quantity-control span {
-      margin: 0 5px !important;
-    }
-    
-    .rental-days-select {
-      width: 80px;
-      font-size: 0.85em;
-    }
-  }
+}

@@ -7,6 +7,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../CSS/Cart.css';
 import DeliveryLocationSelector from './DeliveryLocation';
+import NavBar from './NavBar';
 
 const CartPage = () => {
   const [cart, setCart] = useState({ items: [] });
@@ -148,19 +149,13 @@ const CartPage = () => {
   };
 
   const handleLocationSelected = (location) => {
-    // Open landmark input when location is selected
     setShowLandmarkInput(true);
-    
-    // Update the cart with the new location
     const updatedCart = { ...cart };
     updatedCart.delivery_location_details = location;
     updatedCart.delivery_fee = parseFloat(location.delivery_charge);
-    
-    // Recalculate total price
     const itemsTotal = updatedCart.items_total || 
       (updatedCart.items ? updatedCart.items.reduce((total, item) => total + parseFloat(item.price), 0) : 0);
     updatedCart.total_price = (parseFloat(itemsTotal) + parseFloat(updatedCart.delivery_fee)).toFixed(2);
-    
     setCart(updatedCart);
   };
 
@@ -169,7 +164,6 @@ const CartPage = () => {
       setLoading(true);
       const token = localStorage.getItem('access_token');
       
-      // Updated to use the correct endpoint path
       const response = await axios.put(
         'http://localhost:8000/renting/cart/update-delivery-location/',
         { 
@@ -183,14 +177,10 @@ const CartPage = () => {
         }
       );
       
-      // Update local cart with the response
       const updatedCart = response.data;
-      
-      // Make sure to update the delivery_location_details with the landmark
       if (updatedCart.delivery_location_details) {
         updatedCart.delivery_location_details.landmark = landmark;
       }
-      
       setCart(updatedCart);
       setShowLandmarkInput(false);
       setError(null);
@@ -217,12 +207,10 @@ const CartPage = () => {
     navigate('/checkout');
   };
 
-  // Calculate total price from the cart data
   const itemsTotal = cart.items_total || (cart.items ? cart.items.reduce((total, item) => total + item.price, 0) : 0);
   const deliveryFee = cart.delivery_fee || 0;
   const totalPrice = cart.total_price || (itemsTotal + deliveryFee);
 
-  // Calculate rental days between two dates
   const calculateDays = (startDate, endDate) => {
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -245,7 +233,9 @@ const CartPage = () => {
   }
 
   return (
+    
     <Container className="py-5 mt-5">
+      <NavBar/><br/>
       <h1 className="mb-4">Your Cart</h1>
       
       {error && <Alert variant="danger">{error}</Alert>}
@@ -316,67 +306,74 @@ const CartPage = () => {
                         </div>
                       </td>
                       <td>
-                        <div className="date-picker-container">
-                          <DatePicker
-                            selected={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
-                            onChange={(date) => {
-                              const endDate = item.rental_end_date ? new Date(item.rental_end_date) : new Date();
-                              if (date > endDate) {
-                                // If start date is after end date, set end date to start date + 1
-                                const newEndDate = new Date(date);
-                                newEndDate.setDate(newEndDate.getDate() + 1);
-                                updateRentalDates(item.item_id, date, newEndDate);
-                              } else {
-                                updateRentalDates(item.item_id, date, endDate);
+                        <div className="d-flex align-items-center flex-wrap">
+                          <div className="me-2">
+                            <small className="text-muted d-block">Start Date</small>
+                            <DatePicker
+                              selected={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
+                              onChange={(date) => {
+                                const endDate = item.rental_end_date ? new Date(item.rental_end_date) : new Date();
+                                if (date > endDate) {
+                                  const newEndDate = new Date(date);
+                                  newEndDate.setDate(newEndDate.getDate() + 1);
+                                  updateRentalDates(item.item_id, date, newEndDate);
+                                } else {
+                                  updateRentalDates(item.item_id, date, endDate);
+                                }
+                              }}
+                              selectsStart
+                              startDate={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
+                              endDate={item.rental_end_date ? new Date(item.rental_end_date) : new Date()}
+                              minDate={new Date()}
+                              className="form-control form-control-sm"
+                              disabled={updateLoading[item.item_id]}
+                              customInput={
+                                <div className="d-flex align-items-center">
+                                  <FaCalendarAlt className="me-1 cart-calendar" />
+                                  <span>
+                                    {item.rental_start_date 
+                                      ? new Date(item.rental_start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) 
+                                      : 'Select'}
+                                  </span>
+                                </div>
                               }
-                            }}
-                            selectsStart
-                            startDate={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
-                            endDate={item.rental_end_date ? new Date(item.rental_end_date) : new Date()}
-                            minDate={new Date()}
-                            className="form-control form-control-sm"
-                            disabled={updateLoading[item.item_id]}
-                            customInput={
-                              <div className="d-flex align-items-center">
-                                <FaCalendarAlt className="me-2" />
-                                <span>
-                                  {item.rental_start_date 
-                                    ? new Date(item.rental_start_date).toLocaleDateString() 
-                                    : 'Select start date'}
-                                </span>
-                              </div>
-                            }
-                          />
-                          <span className="mx-2">to</span>
-                          <DatePicker
-                            selected={item.rental_end_date ? new Date(item.rental_end_date) : new Date()}
-                            onChange={(date) => {
-                              const startDate = item.rental_start_date ? new Date(item.rental_start_date) : new Date();
-                              updateRentalDates(item.item_id, startDate, date);
-                            }}
-                            selectsEnd
-                            startDate={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
-                            endDate={item.rental_end_date ? new Date(item.rental_end_date) : new Date()}
-                            minDate={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
-                            className="form-control form-control-sm"
-                            disabled={updateLoading[item.item_id]}
-                            customInput={
-                              <div className="d-flex align-items-center">
-                                <FaCalendarAlt className="me-2" />
-                                <span>
-                                  {item.rental_end_date 
-                                    ? new Date(item.rental_end_date).toLocaleDateString() 
-                                    : 'Select end date'}
-                                </span>
-                              </div>
-                            }
-                          />
-                          <div className="mt-1 text-muted">
-                            {item.rental_start_date && item.rental_end_date && (
-                              <small>
-                                {calculateDays(item.rental_start_date, item.rental_end_date)} days
-                              </small>
-                            )}
+                            />
+                          </div>
+                          <div className="me-2">
+                            <small className="text-muted d-block">End Date</small>
+                            <DatePicker
+                              selected={item.rental_end_date ? new Date(item.rental_end_date) : new Date()}
+                              onChange={(date) => {
+                                const startDate = item.rental_start_date ? new Date(item.rental_start_date) : new Date();
+                                updateRentalDates(item.item_id, startDate, date);
+                              }}
+                              selectsEnd
+                              startDate={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
+                              endDate={item.rental_end_date ? new Date(item.rental_end_date) : new Date()}
+                              minDate={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
+                              className="form-control form-control-sm"
+                              disabled={updateLoading[item.item_id]}
+                              customInput={
+                                <div className="d-flex align-items-center">
+                                  <FaCalendarAlt className="me-1 cart-calendar" />
+                                  <span>
+                                    {item.rental_end_date 
+                                      ? new Date(item.rental_end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) 
+                                      : 'Select'}
+                                  </span>
+                                </div>
+                              }
+                            />
+                          </div>
+                          <div>
+                            <small className="text-muted d-block">Days</small>
+                            <div className="days-badge">
+                              {item.rental_start_date && item.rental_end_date ? (
+                                calculateDays(item.rental_start_date, item.rental_end_date)
+                              ) : (
+                                '--'
+                              )}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -429,7 +426,6 @@ const CartPage = () => {
                     <span>Rs {deliveryFee}</span>
                   </div>
                   
-                  {/* Display selected delivery location with full hierarchy */}
                   {cart.delivery_location_details && (
                     <div className="selected-delivery-location mt-3 mb-3">
                       <div className="d-flex align-items-start">
@@ -444,7 +440,6 @@ const CartPage = () => {
                             <span className="area-name">{cart.delivery_location_details.area_name}</span>
                           </div>
                           
-                          {/* Display landmark if available or show landmark input */}
                           {showLandmarkInput ? (
                             <div className="landmark-section mt-2">
                               <div className="landmark-input-container">
@@ -544,7 +539,6 @@ const CartPage = () => {
                     Proceed to Checkout
                   </Button>
                   
-                  {/* Add button to change delivery location if already selected */}
                   {cart.delivery_location_details && (
                     <Button 
                       variant="outline-secondary" 

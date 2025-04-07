@@ -31,7 +31,7 @@ const IhiHeroSection = () => {
       {/* Main Content */}
       <div className="container py-5">
         <div className="text-center mb-5">
-          <h2>Become a part of this event</h2>
+          <h2 className='IHH2'>Become a part of this event</h2>
           <p className="lead">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
             dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip

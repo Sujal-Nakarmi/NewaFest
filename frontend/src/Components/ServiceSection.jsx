@@ -25,7 +25,7 @@ const ServicesSection = () => {
         </svg>
       ),
       description: 'orem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et...',
-      link: '/book-pandits'
+      link: '/register/12'
     },
     {
       id: 3,

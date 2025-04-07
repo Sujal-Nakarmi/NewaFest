@@ -37,7 +37,7 @@ urlpatterns = [
    
 
     path('orders/history/', views.order_history, name='order-history'),
-    path('orders/lists', views.all_orders, name='order_list')
+    path('orders/lists/', views.all_orders, name='order_list')
 ]
 
 

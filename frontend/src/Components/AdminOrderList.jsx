@@ -9,17 +9,19 @@ import {
   FiHome,
   FiUsers,
   FiBookOpen,
-  FiLogOut
+  FiLogOut,
+ 
 } from 'react-icons/fi';
 import { useNavigate, Outlet } from 'react-router-dom';
 import axios from 'axios';
 import { format, parseISO } from 'date-fns';
 import '../CSS/UsersAdminPanel.css'; // Reusing the same CSS
+import { Link } from "react-router-dom";
 
 // Import logo (you'll need to adjust the path to match your project structure)
 import logo from "../Assests/Logo.png";
 
-const VendorOrders = () => {
+const AdminOrders = () => {
   // State management
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -151,21 +153,32 @@ const VendorOrders = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Sidebar */}
-      <div className="sidebar">
+  <div className="sidebar">
         <div className="logo-container">
-          <img src={logo} className="dashboard-logo" alt="Logo" />
+          <Link to="/"><img src={logo} className="dashboard-logo" alt="Logo" /></Link>
         </div>
         <nav className="nav-menu">
-          <a href="/vendor/products" className="nav-item">
-            <FiPackage size={18} /> My Products
-          </a>
-          <a href="/vendor/orders" className="nav-item active">
-            <FiCalendar size={18} /> Orders
-          </a>
-          <a href="/vendor/size-variants" className="nav-item">
+          <Link to="/admin/dashboard" className="nav-item">
+            <FiHome size={18} /> Dashboard
+          </Link>
+          <Link to="/admin/dashboard/users" className="nav-item">
+            <FiUsers size={18} /> Users
+          </Link>
+          <Link to="/admin/dashboard/events" className="nav-item">
+            <FiCalendar size={18} /> Events
+          </Link>
+          <Link to="/admin/dashboard/registrations" className="nav-item">
+            <FiCalendar size={18} /> Event Registration
+          </Link>
+          <Link to="/admin/dashboard/rentals" className="nav-item">
+            <FiCalendar size={18} /> Rental Items
+          </Link>
+          <Link to="/admin/size-variants" className="nav-item">
             <FiUser size={18} /> Size Variants
-          </a>
+          </Link>
+          <Link to="/admin/orders" className="nav-item active">
+            <FiUser size={18} /> Orders
+          </Link>
         </nav>
         <div className="logout">
           <a href="#" className="nav-item logout-btn" onClick={handleLogout}>
@@ -178,7 +191,7 @@ const VendorOrders = () => {
       <div className="main-content">
         {/* Header */}
         <div className="dashboard-header">
-          <h4 className="m-0">Welcome Vendor!</h4>
+          <h4 className="m-0">Welcome Admin!</h4>
           <input 
             type="text" 
             placeholder="Search orders..." 
@@ -512,4 +525,4 @@ const VendorOrders = () => {
   );
 };
 
-export default VendorOrders;
+export default AdminOrders;

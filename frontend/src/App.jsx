@@ -17,7 +17,7 @@ import IhiDetail from './Pages/IhiDetail';
 import PanditBookingForm from './Components/PanditBookingForm';
 import Events from './Components/EventsAdminPanel';
 import Users from './Components/UsersAdminPanel';
-import EventRegistrations from './Components/RegistrationAdminPanel';
+import EventRegistrations from './Components/AdminRegistration';
 import EventCard from './Components/EventSection'
 import ScrollToTop from './Components/Scrolltotop';
 import UserBookings from './Components/UserBookingHistory';
@@ -41,6 +41,7 @@ import RentalItemForm from './Components/RentalItemadd';
 import SizeVariantManager from './Components/SizeVariant';
 import VendorOrders from './Components/OrderLists';
 import SizeVariantManagerAdmin from './Components/SizeVariantAdmin';
+import AdminOrders from './Components/AdminOrderList';
 
 
 
@@ -112,6 +113,7 @@ function App() {
           <Route path="/admin/dashboard/registrations" element={<EventRegistrations />} />
           <Route path="/admin/dashboard/rentals" element={<RentalItemsAdminPanel />} />
           <Route path="/admin/size-variants" element={< SizeVariantManagerAdmin />} />
+          <Route path="/admin/orders" element={< AdminOrders />} />
 
       
         </Route>

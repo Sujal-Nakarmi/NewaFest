@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Added Link import
+import { Link, useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Table, Button, Spinner, Badge, Alert, Modal, Form } from 'react-bootstrap';
 import { 
   FiEdit, 
@@ -14,8 +14,6 @@ import {
 } from 'react-icons/fi';
 import axios from 'axios';
 import '../CSS/UsersAdminPanel.css';
-
-// Import logo (you'll need to adjust the path to match your project structure)
 import logo from "../Assests/Logo.png";
 
 const SizeVariantManagerAdmin = () => {
@@ -286,12 +284,15 @@ const SizeVariantManagerAdmin = () => {
           <Link to="/admin/size-variants" className="nav-item active">
             <FiUser size={18} /> Size Variants
           </Link>
+          <Link to="/admin/orders" className="nav-item">
+            <FiUser size={18} /> Orders
+          </Link>
         </nav>
-       <div className="logout">
-                <a href="#" className="nav-item logout-btn" onClick={handleLogout}>
-                  <FiLogOut size={18} /> Log out
-                </a>
-              </div>
+        <div className="logout">
+          <a href="#" className="nav-item logout-btn" onClick={handleLogout}>
+            <FiLogOut size={18} /> Log out
+          </a>
+        </div>
       </div>
 
       {/* Main Content */}
@@ -343,31 +344,29 @@ const SizeVariantManagerAdmin = () => {
                 {selectedItem && (
                   <div className="mb-4">
                     <Row className="align-items-center">
-                      <Col md={selectedItem.image ? 9 : 12}>
-                        <div className="d-flex">
-                          <div className="me-4">
-                            <h5 className="mb-3">{selectedItem.name}</h5>
-                            <div className="d-flex align-items-center mb-2">
-                              <span className="text-muted me-2">Category:</span>
-                              <span className={getCategoryBadgeClass(selectedItem.category)}>
-                                {selectedItem.category || 'N/A'}
-                              </span>
-                            </div>
-                            <div className="d-flex align-items-center mb-2">
-                              <span className="text-muted me-2">Base Price:</span>
-                              <span className="fw-bold">${selectedItem.base_price}</span>
-                            </div>
-                            <div className="d-flex align-items-center">
-                              <span className="text-muted me-2">Status:</span>
-                              <span className={`badge ${selectedItem.is_available ? 'bg-success' : 'bg-secondary'}`}>
-                                {selectedItem.is_available ? 'Available' : 'Unavailable'}
-                              </span>
-                            </div>
+                      <Col md={selectedItem.image ? 8 : 12}>
+                        <h5 className="mb-3">{selectedItem.name}</h5>
+                        <div className="d-flex flex-wrap align-items-center gap-3 mb-2">
+                          <div className="d-flex align-items-center">
+                            <span className="text-muted me-2">Category:</span>
+                            <span className={getCategoryBadgeClass(selectedItem.category)}>
+                              {selectedItem.category || 'N/A'}
+                            </span>
+                          </div>
+                          <div className="d-flex align-items-center">
+                            <span className="text-muted me-2">Base Price:</span>
+                            <span className="fw-bold">${selectedItem.base_price}</span>
+                          </div>
+                          <div className="d-flex align-items-center">
+                            <span className="text-muted me-2">Status:</span>
+                            <span className={`badge ${selectedItem.is_available ? 'bg-success' : 'bg-secondary'}`}>
+                              {selectedItem.is_available ? 'Available' : 'Unavailable'}
+                            </span>
                           </div>
                         </div>
                       </Col>
                       {selectedItem.image && (
-                        <Col md={3} className="text-center">
+                        <Col md={4} className="text-center">
                           <img 
                             src={selectedItem.image} 
                             alt={selectedItem.name} 
@@ -404,7 +403,7 @@ const SizeVariantManagerAdmin = () => {
                   <>
                     {sizeVariants.length > 0 ? (
                       <div className="table-responsive">
-                        <table className="table table-hover">
+                        <Table hover className="align-middle">
                           <thead className="table-light">
                             <tr>
                               <th>Size</th>
@@ -429,26 +428,29 @@ const SizeVariantManagerAdmin = () => {
                                 </td>
                                 <td>
                                   <div className="d-flex">
-                                    <button 
-                                      className="btn btn-sm btn-outline-primary me-2" 
+                                    <Button 
+                                      variant="outline-primary" 
+                                      size="sm"
+                                      className="me-2" 
                                       onClick={() => handleEditVariant(variant)}
                                       title="Edit"
                                     >
                                       <FiEdit size={16} />
-                                    </button>
-                                    <button 
-                                      className="btn btn-sm btn-outline-danger" 
+                                    </Button>
+                                    <Button 
+                                      variant="outline-danger" 
+                                      size="sm"
                                       onClick={() => handleDeleteVariant(variant.variant_id)}
                                       title="Delete"
                                     >
                                       <FiTrash2 size={16} />
-                                    </button>
+                                    </Button>
                                   </div>
                                 </td>
                               </tr>
                             ))}
                           </tbody>
-                        </table>
+                        </Table>
                       </div>
                     ) : (
                       <Alert variant="info">

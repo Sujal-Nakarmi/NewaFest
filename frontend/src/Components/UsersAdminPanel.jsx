@@ -335,6 +335,9 @@ const Users = () => {
           <a href="/admin/size-variants" className="nav-item">
             <FiUser size={18} /> Size Variants
           </a>
+          <Link to="/admin/orders" className="nav-item">
+                                <FiUser size={18} /> Orders
+                              </Link>
         </nav>
         <div className="logout">
           <a href="#" className="nav-item logout-btn" onClick={handleLogout}>
