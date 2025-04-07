@@ -19,12 +19,23 @@ class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = PanditBooking
         fields = ['booking_id', 'user_details', 'pandit_details', 'booking_date', 
-                 'description', 'status', 'created_at', 'updated_at']
+                 'description',  'location_province',
+            'location_metro_area',
+            'location_area',
+            'location_id',
+            'landmark', 'status', 'created_at', 'updated_at']
 
 class CreateBookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = PanditBooking
-        fields = ['pandit', 'booking_date', 'description']
+        fields = [ 'pandit', 
+            'booking_date', 
+            'description',
+            'location_province',
+            'location_metro_area',
+            'location_area',
+            'location_id',
+            'landmark']
 
     def validate_booking_date(self, value):
         if value < timezone.now():

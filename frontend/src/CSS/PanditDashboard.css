@@ -4,6 +4,10 @@
     padding: 2rem;
   }
   
+  .pandit-dashboard-heading{
+    font-size: 40px;
+    
+  }
   .page-title {
     color: #8B0000;
     font-size: 2.5rem;
@@ -39,12 +43,13 @@
     width: 100%;
   }
   
-  .user-avatar {
-    width: 50px;
-    height: 50px;
-    background-color: #e5e7eb;
+  .user-avatar img {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    flex-shrink: 0;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   }
   
   .user-details {
@@ -92,24 +97,31 @@
     transition: all 0.2s ease;
   }
   
-  .btn-accept {
+  .accept-booking {
     background-color: #8B0000;
     color: white;
     border: none;
   }
   
-  .btn-accept:hover {
+  .accept-booking:hover {
     background-color: #6b0000;
   }
   
-  .btn-reject {
-    background-color: transparent;
-    color: #8B0000;
-    border: 1px solid #8B0000;
+  .reject-booking {
+    background-color: transparent !important;
+    color: #8B0000 !important;
+    border: 1px solid #8B0000 !important;
+  }
+  .reject-booking:hover {
+    background-color: transparent !important;
+    color: #6b0000 !important;
+    border: 1px solid #6b0000 !important;
   }
   
-  .btn-reject:hover {
-    background-color: #fff5f5;
+ 
+  .booking-calendar{
+    color: #8B0000;
+
   }
   
   /* Desktop Optimizations */

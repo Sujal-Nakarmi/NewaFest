@@ -16,20 +16,28 @@ class PanditBooking(models.Model):
         ACCEPTED = "accepted", "Accepted"
         REJECTED = "rejected", "Rejected"
         CANCELLED = "cancelled", "Cancelled"
-
+    
     booking_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,  # Use AUTH_USER_MODEL setting
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='user_bookings'
     )
     pandit = models.ForeignKey(
-        'registerlogin.Pandit',  # Use string reference to avoid import issues
+        'registerlogin.Pandit',
         on_delete=models.CASCADE,
         related_name='pandit_bookings'
     )
     booking_date = models.DateTimeField()
     description = models.TextField()
+    
+    # Add new location fields
+    location_province = models.CharField(max_length=100, null=True, blank=True)
+    location_metro_area = models.CharField(max_length=100, null=True, blank=True)
+    location_area = models.CharField(max_length=100, null=True, blank=True)
+    location_id = models.IntegerField(null=True, blank=True)
+    landmark = models.TextField(null=True, blank=True)
+    
     status = models.CharField(
         max_length=20,
         choices=BookingStatus.choices,

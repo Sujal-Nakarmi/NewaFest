@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Tabs, Tab, Card, Button, Badge, Modal, Form, Row, Col, Alert, Spinner } from 'react-bootstrap';
-import { FaCalendarAlt, FaUserClock, FaCheck, FaTimes, FaClock, FaTrash, FaEdit, FaPlus } from 'react-icons/fa';
+import { FaCalendarAlt, FaUserClock, FaCheck, FaTimes, FaClock, FaTrash, FaEdit, FaPlus, FaMapMarkerAlt } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import NavBar from '../Components/NavBar';
+import "../CSS/PanditDashboard.css"
 
 const API_URL = 'http://localhost:8000/pandit_booking/';
 const BOOKINGS_URL = `${API_URL}bookings/`;
@@ -212,7 +213,7 @@ const PanditDashboard = () => {
     setAvailabilityForm({
       day_of_week: availability.day_of_week,
       start_time: availability.start_time.slice(0, 5), // HH:MM format
-      end_time: availability.end_time.slice(0, 5),     // HH:MM format
+      end_time: availability.end_time.slice(0, 5), // HH:MM format
       is_available: availability.is_available
     });
     setShowAvailabilityModal(true);
@@ -271,12 +272,12 @@ const PanditDashboard = () => {
           </Alert>
         )}
         <br/>
-
-        <h1 className="dashboard-heading mb-4">
-          <FaUserClock className="me-2" />
-          Pandit Dashboard
+        
+        <h1 className="pandit-dashboard-heading">
+         
+          Welcome to Pandit Dashboard!
         </h1>
-
+        
         <Tabs defaultActiveKey="pending" className="mb-4">
           <Tab eventKey="pending" title={
             <span><FaClock className="me-2" />Pending Bookings ({pendingBookings.length})</span>
@@ -291,10 +292,10 @@ const PanditDashboard = () => {
                 <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
                   {pendingBookings.map((booking) => (
                     <BookingCard 
-                      key={booking.booking_id} 
-                      booking={booking} 
-                      updateBookingStatus={updateBookingStatus} 
-                    />
+                       key={booking.booking_id}
+                       booking={booking}
+                       updateBookingStatus={updateBookingStatus}
+                     />
                   ))}
                 </div>
               ) : (
@@ -318,10 +319,10 @@ const PanditDashboard = () => {
                 <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
                   {acceptedBookings.map((booking) => (
                     <BookingCard 
-                      key={booking.booking_id} 
-                      booking={booking} 
-                      updateBookingStatus={updateBookingStatus} 
-                      showActions={false}
+                       key={booking.booking_id}
+                       booking={booking}
+                       updateBookingStatus={updateBookingStatus}
+                       showActions={false}
                     />
                   ))}
                 </div>
@@ -346,10 +347,10 @@ const PanditDashboard = () => {
                 <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
                   {otherBookings.map((booking) => (
                     <BookingCard 
-                      key={booking.booking_id} 
-                      booking={booking} 
-                      updateBookingStatus={updateBookingStatus} 
-                      showActions={false}
+                       key={booking.booking_id}
+                       booking={booking}
+                       updateBookingStatus={updateBookingStatus}
+                       showActions={false}
                     />
                   ))}
                 </div>
@@ -368,8 +369,8 @@ const PanditDashboard = () => {
               <div className="d-flex justify-content-between mb-4">
                 <h3>Your Availability Schedule</h3>
                 <Button 
-                  variant="primary" 
-                  onClick={handleAddAvailability}
+                   variant="primary" 
+                   onClick={handleAddAvailability}
                   className="d-flex align-items-center"
                 >
                   <FaPlus className="me-2" /> Add New Time Slot
@@ -405,16 +406,16 @@ const PanditDashboard = () => {
                                 </div>
                                 <div>
                                   <Button 
-                                    variant="outline-primary" 
-                                    size="sm" 
-                                    className="me-2"
+                                     variant="outline-primary" 
+                                     size="sm" 
+                                     className="me-2"
                                     onClick={() => handleEditAvailability(slot)}
                                   >
                                     <FaEdit /> Edit
                                   </Button>
                                   <Button 
-                                    variant="outline-danger" 
-                                    size="sm"
+                                     variant="outline-danger" 
+                                     size="sm"
                                     onClick={() => handleDeleteAvailability(slot.availability_id)}
                                   >
                                     <FaTrash /> Delete
@@ -438,8 +439,8 @@ const PanditDashboard = () => {
 
       {/* Availability Modal */}
       <Modal 
-        show={showAvailabilityModal} 
-        onHide={() => setShowAvailabilityModal(false)}
+         show={showAvailabilityModal} 
+         onHide={() => setShowAvailabilityModal(false)}
         centered
       >
         <Modal.Header closeButton>
@@ -452,7 +453,7 @@ const PanditDashboard = () => {
             <Form.Group className="mb-3">
               <Form.Label>Day of Week</Form.Label>
               <Form.Select 
-                name="day_of_week"
+                 name="day_of_week"
                 value={availabilityForm.day_of_week}
                 onChange={handleAvailabilityFormChange}
                 required
@@ -462,14 +463,14 @@ const PanditDashboard = () => {
                 ))}
               </Form.Select>
             </Form.Group>
-
+            
             <Row>
               <Col>
                 <Form.Group className="mb-3">
                   <Form.Label>Start Time</Form.Label>
                   <Form.Control 
-                    type="time" 
-                    name="start_time"
+                     type="time" 
+                     name="start_time"
                     value={availabilityForm.start_time}
                     onChange={handleAvailabilityFormChange}
                     required
@@ -480,8 +481,8 @@ const PanditDashboard = () => {
                 <Form.Group className="mb-3">
                   <Form.Label>End Time</Form.Label>
                   <Form.Control 
-                    type="time" 
-                    name="end_time"
+                     type="time" 
+                     name="end_time"
                     value={availabilityForm.end_time}
                     onChange={handleAvailabilityFormChange}
                     required
@@ -489,10 +490,10 @@ const PanditDashboard = () => {
                 </Form.Group>
               </Col>
             </Row>
-
+            
             <Form.Group className="mb-3">
               <Form.Check 
-                type="checkbox"
+                 type="checkbox"
                 id="is-available"
                 label="Available for booking"
                 name="is_available"
@@ -541,14 +542,29 @@ const BookingCard = ({ booking, updateBookingStatus, showActions = true }) => {
       statusBadge = <Badge bg="warning" text="dark">Pending</Badge>;
   }
 
+  // Check if location information exists
+  const hasLocation = booking.location_province || 
+                     booking.location_metro_area || 
+                     booking.location_area || 
+                     booking.landmark;
+
   return (
     <div className="col">
       <Card className="h-100 booking-card shadow-sm">
         <Card.Header className="d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center">
-            <div className="user-avatar me-2">
-              {booking.user_details.full_name.substring(0, 1).toUpperCase()}
-            </div>
+          <div className="user-avatar me-2">
+          <img 
+  src={booking.user_details.profile_picture ? `http://localhost:8000${booking.user_details.profile_picture}` : '/assets/default-profile.png'} 
+  alt={booking.user_details.full_name}
+  className="rounded-circle"
+  style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+  onError={(e) => {
+    e.target.onerror = null;
+    e.target.src = '/assets/default-profile.png';
+  }}
+/>
+</div>
             <div>
               <h5 className="mb-0">{booking.user_details.full_name}</h5>
               <small className="text-muted">{booking.user_details.email}</small>
@@ -559,11 +575,35 @@ const BookingCard = ({ booking, updateBookingStatus, showActions = true }) => {
         
         <Card.Body>
           <div className="mb-3">
-            <FaCalendarAlt className="me-2 text-primary" />
+            <FaCalendarAlt className="me-2 booking-calendar" />
             <span className="booking-date">{formattedDate}</span>
           </div>
           
           <Card.Text>{booking.description}</Card.Text>
+          
+          {/* Location Information */}
+          {hasLocation && (
+            <div className="location-info mt-3 p-2 bg-light rounded">
+              <div className="d-flex align-items-start mb-1">
+                <FaMapMarkerAlt className="mt-1 me-2 " />
+                <div>
+                  <h6 className="mb-1">Location</h6>
+                  {booking.location_province && (
+                    <div><strong>Province:</strong> {booking.location_province}</div>
+                  )}
+                  {booking.location_metro_area && (
+                    <div><strong>Metro Area:</strong> {booking.location_metro_area}</div>
+                  )}
+                  {booking.location_area && (
+                    <div><strong>Area:</strong> {booking.location_area}</div>
+                  )}
+                  {booking.landmark && (
+                    <div><strong>Landmark:</strong> {booking.landmark}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
           
           {booking.user_details.phone_number && (
             <div className="user-contact mt-3">
@@ -576,15 +616,15 @@ const BookingCard = ({ booking, updateBookingStatus, showActions = true }) => {
           <Card.Footer className="bg-white">
             <div className="d-flex gap-2">
               <Button 
-                variant="success" 
-                className="flex-fill"
+                 
+                 className="flex-fill accept-booking"
                 onClick={() => updateBookingStatus(booking.booking_id, 'accepted')}
               >
                 <FaCheck className="me-1" /> Accept
               </Button>
               <Button 
-                variant="danger" 
-                className="flex-fill"
+                
+                 className="flex-fill reject-booking"
                 onClick={() => updateBookingStatus(booking.booking_id, 'rejected')}
               >
                 <FaTimes className="me-1" /> Reject
