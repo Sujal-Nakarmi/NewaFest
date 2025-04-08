@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { Row, Col, Card, Table, Button, Spinner, Badge, Alert, Modal, Form } from 'react-bootstrap';
 import { 
   FiEdit, 
@@ -9,11 +8,15 @@ import {
   FiCalendar,
   FiUser,
   FiLogOut,
-  FiHome,
-  FiUsers
+  FiUsers,
+  FiHome
 } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../CSS/UsersAdminPanel.css';
+import { Link } from "react-router-dom";
+
+// Import logo (you'll need to adjust the path to match your project structure)
 import logo from "../Assests/Logo.png";
 
 const SizeVariantManagerAdmin = () => {
@@ -266,27 +269,33 @@ const SizeVariantManagerAdmin = () => {
           <img src={logo} className="dashboard-logo" alt="Logo" />
         </div>
         <nav className="nav-menu">
-          <Link to="/admin/dashboard" className="nav-item">
-            <FiHome size={18} /> Dashboard
-          </Link>
-          <Link to="/admin/dashboard/users" className="nav-item">
-            <FiUsers size={18} /> Users
-          </Link>
+           <a href="/admin/dashboard/all" className="nav-item">
+                      <FiHome size={18} /> Dashboard
+                    </a>
+            <a href="/admin/dashboard/users" className="nav-item ">
+                        <FiUsers size={18} /> Users
+                      </a>
+
+         
+         
           <Link to="/admin/dashboard/events" className="nav-item">
             <FiCalendar size={18} /> Events
           </Link>
           <Link to="/admin/dashboard/registrations" className="nav-item">
-            <FiCalendar size={18} /> Event Registration
-          </Link>
-          <Link to="/admin/dashboard/rentals" className="nav-item">
-            <FiPackage size={18} /> Rental Items
-          </Link>
-          <Link to="/admin/size-variants" className="nav-item active">
-            <FiUser size={18} /> Size Variants
-          </Link>
-          <Link to="/admin/orders" className="nav-item">
-            <FiUser size={18} /> Orders
-          </Link>
+                      <FiCalendar size={18} /> Event Registration
+                    </Link>
+                    <Link to="/admin/dashboard/rentals" className="nav-item">
+                      <FiCalendar size={18} /> Rental Items
+                    </Link>
+                    <a href="/admin/size-variants" className="nav-item active">
+                      <FiUser size={18} /> Size Variants
+                    </a>
+                    <Link to="/admin/orders" className="nav-item">
+                                          <FiUser size={18} /> Orders
+                                        </Link>
+  
+          
+         
         </nav>
         <div className="logout">
           <a href="#" className="nav-item logout-btn" onClick={handleLogout}>
@@ -340,38 +349,44 @@ const SizeVariantManagerAdmin = () => {
                   </Form.Select>
                 </Form.Group>
 
-                {/* Selected Item Details */}
+                {/* Selected Item Details - REDESIGNED */}
                 {selectedItem && (
-                  <div className="mb-4">
+                  <div className="mb-4 product-details-container border rounded p-3">
                     <Row className="align-items-center">
-                      <Col md={selectedItem.image ? 8 : 12}>
+                      <Col md={9}>
                         <h5 className="mb-3">{selectedItem.name}</h5>
-                        <div className="d-flex flex-wrap align-items-center gap-3 mb-2">
-                          <div className="d-flex align-items-center">
-                            <span className="text-muted me-2">Category:</span>
-                            <span className={getCategoryBadgeClass(selectedItem.category)}>
-                              {selectedItem.category || 'N/A'}
-                            </span>
-                          </div>
-                          <div className="d-flex align-items-center">
-                            <span className="text-muted me-2">Base Price:</span>
-                            <span className="fw-bold">${selectedItem.base_price}</span>
-                          </div>
-                          <div className="d-flex align-items-center">
-                            <span className="text-muted me-2">Status:</span>
-                            <span className={`badge ${selectedItem.is_available ? 'bg-success' : 'bg-secondary'}`}>
-                              {selectedItem.is_available ? 'Available' : 'Unavailable'}
-                            </span>
-                          </div>
-                        </div>
+                        <Row className="mb-3">
+                          <Col md={4} className="mb-2 mb-md-0">
+                            <div className="d-flex align-items-center">
+                              <span className="text-muted me-2">Category:</span>
+                              <span className={getCategoryBadgeClass(selectedItem.category)}>
+                                {selectedItem.category || 'N/A'}
+                              </span>
+                            </div>
+                          </Col>
+                          <Col md={4} className="mb-2 mb-md-0">
+                            <div className="d-flex align-items-center">
+                              <span className="text-muted me-2">Base Price:</span>
+                              <span className="fw-bold">Rs {selectedItem.base_price}</span>
+                            </div>
+                          </Col>
+                          <Col md={4}>
+                            <div className="d-flex align-items-center">
+                              <span className="text-muted me-2">Status:</span>
+                              <span className={`badge ${selectedItem.is_available ? 'bg-success' : 'bg-secondary'}`}>
+                                {selectedItem.is_available ? 'Available' : 'Unavailable'}
+                              </span>
+                            </div>
+                          </Col>
+                        </Row>
                       </Col>
                       {selectedItem.image && (
-                        <Col md={4} className="text-center">
+                        <Col md={3} className="text-center">
                           <img 
                             src={selectedItem.image} 
                             alt={selectedItem.name} 
                             className="img-thumbnail"
-                            style={{ maxHeight: '120px' }} 
+                            style={{ maxHeight: '120px', maxWidth: '100%' }} 
                           />
                         </Col>
                       )}
@@ -379,8 +394,8 @@ const SizeVariantManagerAdmin = () => {
                   </div>
                 )}
 
-                {/* Size Variants Section */}
-                <div className="d-flex justify-content-between align-items-center mb-3 mt-4">
+                {/* Size Variants Section - IMPROVED HEADER */}
+                <div className="d-flex justify-content-between align-items-center mb-3 mt-4 border-bottom pb-2">
                   <h5 className="mb-0">Size Variants</h5>
                   {selectedItem && (
                     <Button variant="primary" onClick={handleAddVariant}>
@@ -403,7 +418,7 @@ const SizeVariantManagerAdmin = () => {
                   <>
                     {sizeVariants.length > 0 ? (
                       <div className="table-responsive">
-                        <Table hover className="align-middle">
+                        <table className="table table-hover ">
                           <thead className="table-light">
                             <tr>
                               <th>Size</th>
@@ -416,41 +431,38 @@ const SizeVariantManagerAdmin = () => {
                           <tbody>
                             {sizeVariants.map(variant => (
                               <tr key={variant.variant_id}>
-                                <td>{variant.size}</td>
-                                <td>{variant.quantity}</td>
-                                <td>${variant.price || selectedItem.base_price}</td>
-                                <td>
+                                <td className="align-middle">{variant.size}</td>
+                                <td className="align-middle">{variant.quantity}</td>
+                                <td className="align-middle">Rs {variant.price || selectedItem.base_price}</td>
+                                <td className="align-middle">
                                   {variant.is_default ? (
                                     <Badge bg="success">Default</Badge>
                                   ) : (
                                     <Badge bg="secondary">No</Badge>
                                   )}
                                 </td>
-                                <td>
+                                <td className="align-middle">
                                   <div className="d-flex">
-                                    <Button 
-                                      variant="outline-primary" 
-                                      size="sm"
-                                      className="me-2" 
+                                    <button 
+                                      className="btn btn-sm btn-outline-primary me-2" 
                                       onClick={() => handleEditVariant(variant)}
                                       title="Edit"
                                     >
                                       <FiEdit size={16} />
-                                    </Button>
-                                    <Button 
-                                      variant="outline-danger" 
-                                      size="sm"
+                                    </button>
+                                    <button 
+                                      className="btn btn-sm btn-outline-danger" 
                                       onClick={() => handleDeleteVariant(variant.variant_id)}
                                       title="Delete"
                                     >
                                       <FiTrash2 size={16} />
-                                    </Button>
+                                    </button>
                                   </div>
                                 </td>
                               </tr>
                             ))}
                           </tbody>
-                        </Table>
+                        </table>
                       </div>
                     ) : (
                       <Alert variant="info">
@@ -516,7 +528,7 @@ const SizeVariantManagerAdmin = () => {
                 onChange={handleFormChange}
                 min="0"
                 step="0.01"
-                placeholder={selectedItem ? `Default: $${selectedItem.base_price}` : 'Enter price'}
+                placeholder={selectedItem ? `Default: Rs ${selectedItem.base_price}` : 'Enter price'}
               />
             </Form.Group>
 

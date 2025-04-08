@@ -1,6 +1,7 @@
 import React from 'react'
 import NavBar from '../Components/NavBar'
 import ClothingGrid from '../Components/RentingItems'
+import Footer from '../Components/Footer'
 
 
 
@@ -10,7 +11,8 @@ function RentingPage() {
       <div >
   
           <NavBar /><br/><br/><br/><br/><br/>
-          <ClothingGrid />
+          <ClothingGrid /><br/><br/><br/>
+          <Footer />
        
        
       </div>

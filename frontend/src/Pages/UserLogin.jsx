@@ -179,7 +179,7 @@ const LoginPage = () => {
             <img src={Design2} className="user-login-design2" alt="Design element 2" />
             <div className="user-login-form-container">
               <h1 className="user-login-title">Log in to your Account</h1>
-              <p className="user-login-subtitle">Welcome back! Select a method to log in</p>
+              <p className="user-login-subtitle">Welcome back! Please Enter your login credentials.</p>
               
           
               

@@ -554,6 +554,17 @@ def register_for_event(request):
                     
                     if category.code == 'Volunteer' and 'volunteer_laps' in locals():
                         registration_detail.volunteer_laps.set(volunteer_laps)
+
+                     # Create notification for event registration success
+                    from pandit_booking.notification import create_notification
+                    from pandit_booking.models import Notification
+
+                    create_notification(
+                        recipient=request.user,
+                        notification_type=Notification.NotificationType.EVENT_REGISTRATION_SUCCESS,
+                         booking=None,  # No booking for event registrations
+                        event_registration=registration
+                    )
                     
                     registrations.append(registration.registration_id)
                 
@@ -1272,7 +1283,18 @@ def register_ihi(request):
             # Update available seats
             location.available_seats -= seats_requested
             location.save()
+
+         # Create notification for event registration success
+            from pandit_booking.notification import create_notification
+            from pandit_booking.models import Notification
             
+            create_notification(
+                recipient=request.user,
+                notification_type=Notification.NotificationType.EVENT_REGISTRATION_SUCCESS,
+                booking=None,  # No booking for event registrations
+                event_registration=event_registration
+            )
+
             return Response({
                 'message': 'Successfully registered for Ihi ceremony',
                 'registration_id': ihi_registration.registration_id

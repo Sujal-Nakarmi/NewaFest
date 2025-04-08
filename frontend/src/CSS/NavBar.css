@@ -346,6 +346,335 @@
   transition: all 0.3s ease;
 }
 
+/* Notification Button Styles - Updated */
+.navbar-notification-button {
+  position: relative;
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 1rem;
+}
+
+.navbar-notification-button:hover .navbar-notification-icon {
+  color: #991b1b;
+}
+
+.navbar-notification-icon {
+  color: #333;
+  transition: color 0.2s ease;
+}
+
+/* Updated Badge Styling */
+.navbar-notification-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 0.7rem;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #991b1b !important;
+  border: 2px solid white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 50% !important;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+/* Updated Notifications Popover Styles */
+.navbar-notifications-popover {
+  position: absolute;
+  top: 70px; /* Adjusted from 60px to 70px to match navbar height */
+  right: 80px;
+  min-width: 320px;
+  max-width: 400px;
+  max-height: 500px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  z-index: 1050; /* Increased z-index to match other dropdowns */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: popIn 0.3s ease forwards;
+}
+
+.notifications-header {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notifications-header h5 {
+  margin: 0;
+  font-weight: 600;
+  color: #333;
+}
+
+.mark-all-read-btn {
+  padding: 0;
+  font-size: 0.8rem;
+  color: #991b1b; /* Updated to match brand color */
+  background: none;
+  border: none;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.mark-all-read-btn:hover {
+  text-decoration: underline;
+}
+
+.notifications-body {
+  overflow-y: auto;
+  max-height: 350px;
+  padding: 0;
+}
+
+.no-notifications {
+  padding: 2rem;
+  text-align: center;
+  color: #888;
+}
+
+.notification-item {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+  background-color: #f8f9fa;
+}
+
+.notification-item.unread {
+  background-color: #f0f7ff;
+}
+
+.notification-item.unread:hover {
+  background-color: #e6f0fa;
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-message {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.notification-time {
+  font-size: 0.75rem;
+  color: #777;
+}
+
+.unread-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #991b1b; /* Updated to match brand color */
+  margin-left: 1rem;
+}
+
+.notifications-footer {
+  padding: 0.75rem;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+
+.view-all-link {
+  color: #991b1b; /* Updated to match brand color */
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.view-all-link:hover {
+  text-decoration: underline;
+}
+
+/* Add these new styles to your NavBar.css file */
+
+/* Icon Badge Container - New */
+.icon-badge-container {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Badge Circle - New */
+.badge-circle {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: #991b1b;
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border: 2px solid white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Updated Cart Button Styling */
+.main-navbar .navbar-cart-button {
+  background: none;
+  border: none;
+  padding: 8px;
+  position: relative;
+  margin-right: 16px;
+  transition: all 0.2s ease;
+}
+
+.main-navbar .navbar-cart-button:hover {
+  transform: translateY(-2px);
+}
+
+.main-navbar .navbar-cart-icon {
+  color: #991b1b;
+  transition: color 0.3s ease;
+  font-size: 22px;
+}
+
+.main-navbar .navbar-cart-icon:hover {
+  color: #7a1616;
+}
+
+/* Notification Button Styles - Updated */
+.navbar-notification-button {
+  position: relative;
+  background: transparent !important;
+  border: none !important;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 1rem;
+}
+
+.navbar-notification-button:hover .navbar-notification-icon {
+  color: #991b1b;
+}
+
+.navbar-notification-icon {
+  color: #333;
+  transition: color 0.2s ease;
+}
+
+/* Remove these old badge styles as they're replaced by badge-circle */
+.navbar-notification-badge,
+.navbar-cart-badge {
+  display: none;
+}
+
+/* New consistent icon styling */
+.action-icon-wrapper {
+  position: relative;
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-button {
+  background: transparent !important;
+  border: none !important;
+  padding: 8px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #991b1b !important;
+  transition: all 0.2s ease;
+}
+
+.icon-button:hover {
+  transform: translateY(-2px);
+  color: #7a1616 !important;
+}
+
+.icon-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 0.7rem;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #991b1b !important;
+  color: white;
+  border: 2px solid white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  border-radius: 50% !important;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+/* Hide old badge styles */
+.navbar-notification-badge,
+.navbar-cart-badge,
+.badge-circle {
+  display: none !important;
+}
+
+/* Hide old button styles */
+.navbar-notification-button,
+.navbar-cart-button {
+  display: none !important;
+}
+
+/* User actions container spacing */
+.user-actions-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+@media (max-width: 768px) {
+  .action-icon-wrapper {
+    margin-right: 10px;
+  }
+}
+
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .navbar-notifications-popover {
+    width: 90%;
+    right: 5%;
+    left: 5%;
+    max-width: none;
+    top: 80px; /* Adjusted for mobile */
+  }
+}
+
+/* Add subtle animations - Make sure this exists */
+@keyframes popIn {
+  0% { opacity: 0; transform: translateY(-10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 /* Add subtle animations */
 @keyframes popIn {
   0% { opacity: 0; transform: translateY(-10px); }

@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from .models import PanditBooking, PanditReview, PanditAvailability
+from .models import PanditBooking, PanditReview, PanditAvailability, Notification
 from registerlogin.models import Pandit, User
 from rest_framework.permissions import AllowAny
 from django.utils import timezone
@@ -17,7 +17,7 @@ from .serializers import (
     CreateBookingSerializer,
     PanditReviewSerializer,
     CreateReviewSerializer,
-    CreatePanditAvailabilitySerializer, PanditAvailabilitySerializer
+    CreatePanditAvailabilitySerializer, PanditAvailabilitySerializer, NotificationSerializer
 )
 
 @api_view(['GET'])
@@ -106,8 +106,19 @@ def create_booking(request):
                 user=request.user,
                 status=PanditBooking.BookingStatus.PENDING
             )
+              # Create notification for the pandit
+            from .notification import create_notification
+            from .models import Notification
+            create_notification(
+                recipient=booking.pandit.user,
+                notification_type=Notification.NotificationType.BOOKING_CREATED,
+                booking=booking
+            )
+            
             response_serializer = BookingSerializer(booking)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+        
+            
         except Exception as e:
             # Log the full exception for server-side debugging
             import traceback
@@ -161,6 +172,22 @@ def update_booking_status(request, booking_id):
     
     booking.status = new_status
     booking.save()
+        # Create notification for the user
+    from .notification import create_notification
+    from .models import Notification
+    
+    if new_status == PanditBooking.BookingStatus.ACCEPTED:
+        create_notification(
+            recipient=booking.user,
+            notification_type=Notification.NotificationType.BOOKING_ACCEPTED,
+            booking=booking
+        )
+    elif new_status == PanditBooking.BookingStatus.REJECTED:
+        create_notification(
+            recipient=booking.user,
+            notification_type=Notification.NotificationType.BOOKING_REJECTED,
+            booking=booking
+        )
     serializer = BookingSerializer(booking)
     return Response(serializer.data)
 
@@ -196,10 +223,59 @@ def cancel_booking(request, booking_id):
     
     # Notify pandit of cancellation
     # send_booking_notification(booking, 'cancelled')
+    # Create notification for the pandit
+    from .notification import create_notification
+    from .models import Notification
+    create_notification(
+        recipient=booking.pandit.user,
+        notification_type=Notification.NotificationType.BOOKING_CANCELLED,
+        booking=booking
+    )
     
     serializer = BookingSerializer(booking)
     return Response(serializer.data)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_notifications(request):
+    """Get all notifications for the current user."""
+    notifications = Notification.objects.filter(recipient=request.user)
+    
+    # Option to filter only unread notifications
+    unread_only = request.query_params.get('unread', False)
+    if unread_only:
+        notifications = notifications.filter(is_read=False)
+        
+    # Pagination (optional but recommended)
+    paginator = PageNumberPagination()
+    paginator.page_size = 10
+    result_page = paginator.paginate_queryset(notifications, request)
+    
+    serializer = NotificationSerializer(result_page, many=True)
+    return paginator.get_paginated_response(serializer.data)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def mark_notification_read(request, notification_id):
+    """Mark a specific notification as read."""
+    notification = get_object_or_404(
+        Notification, 
+        notification_id=notification_id,
+        recipient=request.user
+    )
+    
+    notification.is_read = True
+    notification.save()
+    
+    serializer = NotificationSerializer(notification)
+    return Response(serializer.data)
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def mark_all_notifications_read(request):
+    """Mark all notifications for the current user as read."""
+    Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+    return Response({"message": "All notifications marked as read"})
 
 
 @api_view(['GET'])
@@ -268,6 +344,22 @@ def create_review(request):
                 pandit=booking.pandit,
                 rating=serializer.validated_data['rating'],
                 comment=serializer.validated_data['comment']
+            )
+
+             # Create notification for the pandit
+            from .notification import create_notification
+            from .models import Notification
+            
+            # Create a custom notification type for reviews in models.py
+            # Add this to your NotificationType class in models.py:
+            # NEW_REVIEW = "new_review", "New Review Received"
+            
+            # Create the notification
+            create_notification(
+                recipient=booking.pandit.user,
+                notification_type=Notification.NotificationType.NEW_REVIEW,  # You'll need to add this type
+                booking=booking,
+                message=f"{request.user.full_name} has left a {review.rating}-star review"
             )
             
             response_serializer = PanditReviewSerializer(review)

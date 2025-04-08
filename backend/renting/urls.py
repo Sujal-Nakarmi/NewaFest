@@ -34,8 +34,6 @@ urlpatterns = [
     path('api/initiate-payment/', views.initiate_payment, name='initiate_payment'),
     path('api/verify-payment/', views.verify_payment, name='verify_payment'),
 
-   
-
     path('orders/history/', views.order_history, name='order-history'),
     path('orders/lists/', views.all_orders, name='order_list')
 ]

@@ -33,8 +33,8 @@ const IhiHeroSection = () => {
         <div className="text-center mb-5">
           <h2 className='IHH2'>Become a part of this event</h2>
           <p className="lead">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-            dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+          Celebrate the sacred Ihi ceremony and preserve our cherished Newar tradition with pride and purpose.
+          Register now to be part of this spiritual journey and book a trusted Pandit to perform the Ihi ritual.
           </p>
         </div>
         <br/><br/>
@@ -46,13 +46,11 @@ const IhiHeroSection = () => {
             <div className="col-lg-7">
               <h3 className="event-title">Ihi</h3>
               <p className="event-description">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
+              Ihi (Bel Bibaha) is a sacred and unique rite of passage in Newar culture where young Newar girls are ceremonially married to the bel fruit (wood apple), symbolizing Lord Vishnu. This spiritual tradition ensures that the girl remains symbolically married even after her future human marriage, protecting her from the stigmas of widowhood. The event is filled with rituals, music, blessings, and vibrant attire, reflecting the deep cultural heritage and spiritual beliefs of the Newar community.
+
+Join us to celebrate this meaningful tradition and keep the essence of Newar identity alive for future generations.
               </p>
-              <p className="event-description">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-              </p>
+             
               <button className="register-btn" onClick={handleOpenModal}>Register</button>
             </div>
           </div>

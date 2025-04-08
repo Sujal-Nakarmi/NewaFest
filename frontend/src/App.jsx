@@ -7,7 +7,7 @@ import Registration from './Pages/UserRegistration';
 import RegistrationPandit from './Pages/PanditRegistration';
 import LoginPage from './Pages/UserLogin';
 import PanditLoginPage from './Pages/PanditLogin';
-import AdminDashboard from './Pages/AdminDashboard';
+import AdminDashboard from './Components/AdminDashboard';
 import PanditDashboard from './Pages/PanditDashboard';
 import VendorDashboard from './Pages/VendorDashboard';
 import ProtectedRoute from "./Components/ProtectedRoute";

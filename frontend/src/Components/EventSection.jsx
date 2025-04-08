@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { FaMapMarkerAlt, FaClock, FaSearch } from 'react-icons/fa';
 import NavBar from '../Components/NavBar';
+import Footer from './Footer';
 import '../CSS/EventSection.css';
 
 const EventSection = () => {
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
+  const [upcomingEvent, setUpcomingEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,8 +23,26 @@ const EventSection = () => {
     const fetchEvents = async () => {
       try {
         const response = await axios.get('http://localhost:8000/adminwork/events');
-        setEvents(response.data);
-        setFilteredEvents(response.data);
+        // Sort events alphabetically by name
+        const sortedEvents = [...response.data].sort((a, b) => 
+          a.name.localeCompare(b.name)
+        );
+        setEvents(sortedEvents);
+        setFilteredEvents(sortedEvents);
+        
+        // Find the closest upcoming event
+        const now = new Date();
+        const futureEvents = response.data.filter(event => new Date(event.start_time) > now);
+        
+        if (futureEvents.length > 0) {
+          const closestEvent = futureEvents.reduce((closest, current) => {
+            const closestDate = new Date(closest.start_time);
+            const currentDate = new Date(current.start_time);
+            return currentDate < closestDate ? current : closest;
+          });
+          setUpcomingEvent(closestEvent);
+        }
+        
         setLoading(false);
       } catch (err) {
         setError('Failed to fetch events');
@@ -161,8 +181,6 @@ const EventSection = () => {
                 </select>
               </div>
               
-           
-              
               <button 
                 className="forest-event-reset-filter-button"
                 onClick={() => {
@@ -179,20 +197,24 @@ const EventSection = () => {
             </div>
             
             <div className="forest-event-upcoming-events">
-              <h3>Upcoming Events</h3>
-              <ul className="forest-event-upcoming-events-list">
-                {events.slice(0, 5).map((event) => (
-                  <li key={event.event_id}>
-                    <Link to={`/event/${event.event_id}`}>
-                      {event.name}
-                    </Link>
-                    <span className="forest-event-upcoming-date">
-                      {new Date(event.start_time).toLocaleDateString()}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+  <h3>Upcoming Event</h3>
+  <hr className="forest-event-divider" />
+  {upcomingEvent ? (
+    <div className="forest-event-upcoming-event">
+      <Link 
+        to={`/register/${upcomingEvent.event_detail_id}`} 
+        className="forest-event-upcoming-title"
+      >
+        {upcomingEvent.name}
+      </Link>
+      <span className="forest-event-upcoming-date">
+        {new Date(upcomingEvent.start_time).toLocaleDateString()}
+      </span>
+    </div>
+  ) : (
+    <p>No upcoming events</p>
+  )}
+</div>
           </div>
           
           <div className="forest-event-listing">
@@ -242,7 +264,6 @@ const EventSection = () => {
                       </div>
                       
                       <div className="forest-event-actions">
-                       
                         {eventDetailId && (
                            <Link 
                            to={`/register/${event.event_detail_id}`} 
@@ -259,7 +280,8 @@ const EventSection = () => {
             )}
           </div>
         </div>
-      </div>
+      </div><br/>
+      <Footer />
     </div>
   );
 };

@@ -3,6 +3,8 @@ import { Container, Row, Col, Card, Form, Button, Alert, Spinner, Tabs, Tab, Mod
 import { FaUser, FaEdit, FaKey, FaSignOutAlt, FaCamera } from "react-icons/fa";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../CSS/Profile.css";
+import NavBar from "../Components/NavBar";
+import Footer from "../Components/Footer";
 
 function ProfilePage() {
   // State management
@@ -182,22 +184,35 @@ function ProfilePage() {
       }
 
       const updatedUser = await response.json();
-      setUser(updatedUser);
+      
+      // Log the response to see what data we're getting back
+      console.log("Profile update response:", updatedUser);
+      
+      // Preserve the user_role if it's missing in the response
+      setUser(prevUser => ({
+        ...prevUser,
+        ...updatedUser,
+        user_role: updatedUser.user_role || prevUser.user_role
+      }));
       
       // Update preview URL from response if available
       if (updatedUser.profile_picture_url) {
         setPreviewUrl(updatedUser.profile_picture_url);
         localStorage.setItem("user_profile_image", updatedUser.profile_picture_url);
-        
       } else {
         localStorage.removeItem("user_profile_image");
       }
     
-       // Update other user data in localStorage
-    localStorage.setItem("user_full_name", updatedUser.full_name || "");
-    localStorage.setItem("user_phone_number", updatedUser.phone_number || "");
-    localStorage.setItem("user_address", updatedUser.address || "");
-    localStorage.setItem("user_country", updatedUser.country || "");
+      // Update other user data in localStorage
+      localStorage.setItem("user_full_name", updatedUser.full_name || "");
+      localStorage.setItem("user_phone_number", updatedUser.phone_number || "");
+      localStorage.setItem("user_address", updatedUser.address || "");
+      localStorage.setItem("user_country", updatedUser.country || "");
+      
+      // Make sure to also save the user_role in localStorage
+      if (updatedUser.user_role) {
+        localStorage.setItem("user_role", updatedUser.user_role);
+      }
       
       setSuccessMessage("Profile updated successfully!");
       setEditMode(false);
@@ -264,8 +279,22 @@ function ProfilePage() {
     window.location.href = "/login/user";
   };
 
+  // Helper function to display proper role name
+  const getRoleDisplayName = (roleValue) => {
+    const roleMap = {
+      "normal_user": "User",
+      "admin": "Admin", 
+      "pandit": "Pandit",
+      "vendor": "Vendor"
+    };
+    
+    return roleMap[roleValue] || roleValue || "User";
+  };
+
   return (
+    
     <Container className="py-5">
+      <NavBar/><br/><br/><br/>
       <Row className="justify-content-center">
         <Col md={10} lg={8}>
           <Card className="profile-card shadow">
@@ -413,7 +442,7 @@ function ProfilePage() {
                           <Row className="mb-3">
                             <Col md={4} className="profile-label">Role:</Col>
                             <Col md={8} className="profile-value">
-                              <span className="badge bg-info">{user?.user_role || "User"}</span>
+                              <span className="badge bg-info">{getRoleDisplayName(user?.user_role)}</span>
                             </Col>
                           </Row>
                           <Row className="mb-3">
@@ -514,6 +543,8 @@ function ProfilePage() {
           </Form>
         </Modal.Body>
       </Modal>
+
+     
     </Container>
   );
 }

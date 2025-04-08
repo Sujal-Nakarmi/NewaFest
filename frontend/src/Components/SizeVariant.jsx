@@ -40,7 +40,7 @@ const SizeVariantManager = () => {
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     if (!token) {
-      navigate('/login');
+      navigate('/login/user');
     }
   }, [navigate]);
 
@@ -96,7 +96,7 @@ const SizeVariantManager = () => {
       setError('Failed to load rental items. Please try again later.');
       if (err.response && (err.response.status === 401 || err.response.status === 403)) {
         localStorage.removeItem("access_token");
-        navigate('/login');
+        navigate('/login/user');
       }
     } finally {
       setLoading(false);
@@ -120,7 +120,7 @@ const SizeVariantManager = () => {
       setError('Failed to load size variants. Please try again later.');
       if (err.response && (err.response.status === 401 || err.response.status === 403)) {
         localStorage.removeItem("access_token");
-        navigate('/login');
+        navigate('/login/user');
       }
     } finally {
       setVariantLoading(false);
@@ -177,7 +177,7 @@ const SizeVariantManager = () => {
         }
         if (err.response && (err.response.status === 401 || err.response.status === 403)) {
           localStorage.removeItem("access_token");
-          navigate('/login');
+          navigate('/login/user');
         }
       }
     }
@@ -229,7 +229,7 @@ const SizeVariantManager = () => {
       }
       if (err.response && (err.response.status === 401 || err.response.status === 403)) {
         localStorage.removeItem("access_token");
-        navigate('/login');
+        navigate('/login/user');
       }
     } finally {
       setIsSubmitting(false);
@@ -246,7 +246,7 @@ const SizeVariantManager = () => {
   // Handle logout
   const handleLogout = () => {
     localStorage.removeItem("access_token");
-    navigate('/login');
+    navigate('/login/user');
   };
 
   // Get category badge style
@@ -328,32 +328,36 @@ const SizeVariantManager = () => {
                   </Form.Select>
                 </Form.Group>
 
-                {/* Selected Item Details */}
+                {/* Selected Item Details - REDESIGNED */}
                 {selectedItem && (
-                  <div className="mb-4">
+                  <div className="mb-4 product-details-container border rounded p-3">
                     <Row className="align-items-center">
-                      <Col md={selectedItem.image ? 9 : 12}>
-                        <div className="d-flex">
-                          <div className="me-4">
-                            <h5 className="mb-3">{selectedItem.name}</h5>
-                            <div className="d-flex align-items-center mb-2">
+                      <Col md={9}>
+                        <h5 className="mb-3">{selectedItem.name}</h5>
+                        <Row className="mb-3">
+                          <Col md={4} className="mb-2 mb-md-0">
+                            <div className="d-flex align-items-center">
                               <span className="text-muted me-2">Category:</span>
                               <span className={getCategoryBadgeClass(selectedItem.category)}>
                                 {selectedItem.category || 'N/A'}
                               </span>
                             </div>
-                            <div className="d-flex align-items-center mb-2">
+                          </Col>
+                          <Col md={4} className="mb-2 mb-md-0">
+                            <div className="d-flex align-items-center">
                               <span className="text-muted me-2">Base Price:</span>
-                              <span className="fw-bold">${selectedItem.base_price}</span>
+                              <span className="fw-bold">Rs {selectedItem.base_price}</span>
                             </div>
+                          </Col>
+                          <Col md={4}>
                             <div className="d-flex align-items-center">
                               <span className="text-muted me-2">Status:</span>
                               <span className={`badge ${selectedItem.is_available ? 'bg-success' : 'bg-secondary'}`}>
                                 {selectedItem.is_available ? 'Available' : 'Unavailable'}
                               </span>
                             </div>
-                          </div>
-                        </div>
+                          </Col>
+                        </Row>
                       </Col>
                       {selectedItem.image && (
                         <Col md={3} className="text-center">
@@ -361,7 +365,7 @@ const SizeVariantManager = () => {
                             src={selectedItem.image} 
                             alt={selectedItem.name} 
                             className="img-thumbnail"
-                            style={{ maxHeight: '120px' }} 
+                            style={{ maxHeight: '120px', maxWidth: '100%' }} 
                           />
                         </Col>
                       )}
@@ -369,8 +373,8 @@ const SizeVariantManager = () => {
                   </div>
                 )}
 
-                {/* Size Variants Section */}
-                <div className="d-flex justify-content-between align-items-center mb-3 mt-4">
+                {/* Size Variants Section - IMPROVED HEADER */}
+                <div className="d-flex justify-content-between align-items-center mb-3 mt-4 border-bottom pb-2">
                   <h5 className="mb-0">Size Variants</h5>
                   {selectedItem && (
                     <Button variant="primary" onClick={handleAddVariant}>
@@ -393,7 +397,7 @@ const SizeVariantManager = () => {
                   <>
                     {sizeVariants.length > 0 ? (
                       <div className="table-responsive">
-                        <table className="table table-hover">
+                        <table className="table table-hover ">
                           <thead className="table-light">
                             <tr>
                               <th>Size</th>
@@ -406,17 +410,17 @@ const SizeVariantManager = () => {
                           <tbody>
                             {sizeVariants.map(variant => (
                               <tr key={variant.variant_id}>
-                                <td>{variant.size}</td>
-                                <td>{variant.quantity}</td>
-                                <td>${variant.price || selectedItem.base_price}</td>
-                                <td>
+                                <td className="align-middle">{variant.size}</td>
+                                <td className="align-middle">{variant.quantity}</td>
+                                <td className="align-middle">Rs {variant.price || selectedItem.base_price}</td>
+                                <td className="align-middle">
                                   {variant.is_default ? (
                                     <Badge bg="success">Default</Badge>
                                   ) : (
                                     <Badge bg="secondary">No</Badge>
                                   )}
                                 </td>
-                                <td>
+                                <td className="align-middle">
                                   <div className="d-flex">
                                     <button 
                                       className="btn btn-sm btn-outline-primary me-2" 
@@ -503,7 +507,7 @@ const SizeVariantManager = () => {
                 onChange={handleFormChange}
                 min="0"
                 step="0.01"
-                placeholder={selectedItem ? `Default: $${selectedItem.base_price}` : 'Enter price'}
+                placeholder={selectedItem ? `Default: Rs ${selectedItem.base_price}` : 'Enter price'}
               />
             </Form.Group>
 

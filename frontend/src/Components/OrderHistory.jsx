@@ -165,7 +165,7 @@ const OrderHistory = () => {
                 <th>Items</th>
                 <th>Total</th>
                 <th>Status</th>
-                <th>Action</th>
+                
               </tr>
             </thead>
             <tbody>
@@ -187,15 +187,7 @@ const OrderHistory = () => {
                       {order.status}
                     </Badge>
                   </td>
-                  <td>
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={() => handleViewDetails(order.order_id)}
-                    >
-                      View Details
-                    </Button>
-                  </td>
+                
                 </tr>
               ))}
             </tbody>

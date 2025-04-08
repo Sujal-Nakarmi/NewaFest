@@ -72,7 +72,7 @@ const AdminOrders = () => {
   // Event handlers
   const handleLogout = () => {
     localStorage.removeItem("access_token");
-    navigate('/login');
+    navigate('/login/user');
   };
 
   const handleViewOrder = (order) => {
@@ -199,7 +199,7 @@ const AdminOrders = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-        </div>
+        </div><br/><br/><br/>
 
         {/* Order Stats Cards */}
         <div className="row mb-4">
@@ -221,23 +221,7 @@ const AdminOrders = () => {
             </div>
           </div>
 
-          <div className="col-xl-3 col-md-6 mb-4">
-            <div className="card border-left-success shadow h-100 py-2">
-              <div className="card-body">
-                <div className="row no-gutters align-items-center">
-                  <div className="col mr-2">
-                    <div className="text-xs font-weight-bold text-success text-uppercase mb-1">
-                      Revenue (Completed Orders)
-                    </div>
-                    <div className="h5 mb-0 font-weight-bold text-gray-800">${calculateTotalRevenue().toFixed(2)}</div>
-                  </div>
-                  <div className="col-auto">
-                    <FiDollarSign size={28} className="text-gray-300" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+       
 
           <div className="col-xl-3 col-md-6 mb-4">
             <div className="card border-left-info shadow h-100 py-2">
