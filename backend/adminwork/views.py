@@ -254,7 +254,7 @@ def register_for_event(request):
                     seats_requested = 1  # Force to 1 regardless of input
                 else:
                     # Check if maximum allowed seats per user is defined for this category
-                    max_seats_per_user = getattr(category, 'max_seats_per_user', 5)  # Default to 5 if not set
+                    max_seats_per_user = getattr(category, 'max_seats_per_user', 6)  # Default to 5 if not set
 
                 # Check if user is trying to register more than allowed seats
                 if seats_requested > max_seats_per_user:

@@ -16,7 +16,7 @@ class PanditBooking(models.Model):
         ACCEPTED = "accepted", "Accepted"
         REJECTED = "rejected", "Rejected"
         CANCELLED = "cancelled", "Cancelled"
-    
+        
     booking_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -31,12 +31,15 @@ class PanditBooking(models.Model):
     booking_date = models.DateTimeField()
     description = models.TextField()
     
-    # Add new location fields
-    location_province = models.CharField(max_length=100, null=True, blank=True)
-    location_metro_area = models.CharField(max_length=100, null=True, blank=True)
-    location_area = models.CharField(max_length=100, null=True, blank=True)
-    location_id = models.IntegerField(null=True, blank=True)
+    # Replace multiple location fields with a single full_location field
+    full_location = models.TextField(null=True, blank=True)
+    
+    # Keep landmark as it might contain additional details
     landmark = models.TextField(null=True, blank=True)
+    
+    # Optionally keep latitude/longitude for map functionality
+    location_latitude = models.FloatField(null=True, blank=True)
+    location_longitude = models.FloatField(null=True, blank=True)
     
     status = models.CharField(
         max_length=20,

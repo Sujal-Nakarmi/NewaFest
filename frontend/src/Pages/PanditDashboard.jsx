@@ -1,14 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Tabs, Tab, Card, Button, Badge, Modal, Form, Row, Col, Alert, Spinner } from 'react-bootstrap';
-import { FaCalendarAlt, FaUserClock, FaCheck, FaTimes, FaClock, FaTrash, FaEdit, FaPlus, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaCalendarAlt, FaUserClock, FaCheck, FaTimes, FaClock, FaTrash, FaEdit, FaPlus, FaMapMarkerAlt, FaExpand, FaPhone, FaEnvelope } from 'react-icons/fa';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
 import NavBar from '../Components/NavBar';
-import "../CSS/PanditDashboard.css"
+import "../CSS/PanditDashboard.css";
 
 const API_URL = 'http://localhost:8000/pandit_booking/';
 const BOOKINGS_URL = `${API_URL}bookings/`;
 const AVAILABILITY_URL = `${API_URL}pandits/availability/`;
+
+// Fix for default marker icon in leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 const PanditDashboard = () => {
   // State for bookings
@@ -30,6 +41,10 @@ const PanditDashboard = () => {
     end_time: '17:00',
     is_available: true
   });
+  
+  // State for map modal
+  const [showMapModal, setShowMapModal] = useState(false);
+  const [selectedBookingLocation, setSelectedBookingLocation] = useState(null);
   
   // Success/error messages
   const [successMessage, setSuccessMessage] = useState('');
@@ -231,17 +246,21 @@ const PanditDashboard = () => {
     setShowAvailabilityModal(true);
   };
 
-  // Get status badge style
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'accepted':
-        return <Badge bg="success">Accepted</Badge>;
-      case 'rejected':
-        return <Badge bg="danger">Rejected</Badge>;
-      case 'cancelled':
-        return <Badge bg="secondary">Cancelled</Badge>;
-      default:
-        return <Badge bg="warning" text="dark">Pending</Badge>;
+  // Open map modal with booking location
+  const openMapModal = (booking) => {
+    if (booking.location_latitude && booking.location_longitude) {
+      setSelectedBookingLocation({
+        position: [booking.location_latitude, booking.location_longitude],
+        details: {
+          fullLocation: booking.full_location,
+          landmark: booking.landmark
+        },
+        user: booking.user_details.full_name
+      });
+      setShowMapModal(true);
+    } else {
+      setErrorMessage('This booking does not have location information');
+      setTimeout(() => setErrorMessage(''), 3000);
     }
   };
 
@@ -274,7 +293,6 @@ const PanditDashboard = () => {
         <br/>
         
         <h1 className="pandit-dashboard-heading">
-         
           Welcome to Pandit Dashboard!
         </h1>
         
@@ -292,10 +310,11 @@ const PanditDashboard = () => {
                 <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
                   {pendingBookings.map((booking) => (
                     <BookingCard 
-                       key={booking.booking_id}
-                       booking={booking}
-                       updateBookingStatus={updateBookingStatus}
-                     />
+                      key={booking.booking_id}
+                      booking={booking}
+                      updateBookingStatus={updateBookingStatus}
+                      openMapModal={openMapModal}
+                    />
                   ))}
                 </div>
               ) : (
@@ -319,10 +338,11 @@ const PanditDashboard = () => {
                 <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
                   {acceptedBookings.map((booking) => (
                     <BookingCard 
-                       key={booking.booking_id}
-                       booking={booking}
-                       updateBookingStatus={updateBookingStatus}
-                       showActions={false}
+                      key={booking.booking_id}
+                      booking={booking}
+                      updateBookingStatus={updateBookingStatus}
+                      showActions={false}
+                      openMapModal={openMapModal}
                     />
                   ))}
                 </div>
@@ -347,10 +367,11 @@ const PanditDashboard = () => {
                 <div className="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4">
                   {otherBookings.map((booking) => (
                     <BookingCard 
-                       key={booking.booking_id}
-                       booking={booking}
-                       updateBookingStatus={updateBookingStatus}
-                       showActions={false}
+                      key={booking.booking_id}
+                      booking={booking}
+                      updateBookingStatus={updateBookingStatus}
+                      showActions={false}
+                      openMapModal={openMapModal}
                     />
                   ))}
                 </div>
@@ -369,8 +390,8 @@ const PanditDashboard = () => {
               <div className="d-flex justify-content-between mb-4">
                 <h3>Your Availability Schedule</h3>
                 <Button 
-                   variant="primary" 
-                   onClick={handleAddAvailability}
+                  variant="primary" 
+                  onClick={handleAddAvailability}
                   className="d-flex align-items-center"
                 >
                   <FaPlus className="me-2" /> Add New Time Slot
@@ -406,16 +427,16 @@ const PanditDashboard = () => {
                                 </div>
                                 <div>
                                   <Button 
-                                     variant="outline-primary" 
-                                     size="sm" 
-                                     className="me-2"
+                                    variant="outline-primary" 
+                                    size="sm" 
+                                    className="me-2"
                                     onClick={() => handleEditAvailability(slot)}
                                   >
                                     <FaEdit /> Edit
                                   </Button>
                                   <Button 
-                                     variant="outline-danger" 
-                                     size="sm"
+                                    variant="outline-danger" 
+                                    size="sm"
                                     onClick={() => handleDeleteAvailability(slot.availability_id)}
                                   >
                                     <FaTrash /> Delete
@@ -439,8 +460,8 @@ const PanditDashboard = () => {
 
       {/* Availability Modal */}
       <Modal 
-         show={showAvailabilityModal} 
-         onHide={() => setShowAvailabilityModal(false)}
+        show={showAvailabilityModal} 
+        onHide={() => setShowAvailabilityModal(false)}
         centered
       >
         <Modal.Header closeButton>
@@ -453,7 +474,7 @@ const PanditDashboard = () => {
             <Form.Group className="mb-3">
               <Form.Label>Day of Week</Form.Label>
               <Form.Select 
-                 name="day_of_week"
+                name="day_of_week"
                 value={availabilityForm.day_of_week}
                 onChange={handleAvailabilityFormChange}
                 required
@@ -469,8 +490,8 @@ const PanditDashboard = () => {
                 <Form.Group className="mb-3">
                   <Form.Label>Start Time</Form.Label>
                   <Form.Control 
-                     type="time" 
-                     name="start_time"
+                    type="time" 
+                    name="start_time"
                     value={availabilityForm.start_time}
                     onChange={handleAvailabilityFormChange}
                     required
@@ -481,8 +502,8 @@ const PanditDashboard = () => {
                 <Form.Group className="mb-3">
                   <Form.Label>End Time</Form.Label>
                   <Form.Control 
-                     type="time" 
-                     name="end_time"
+                    type="time" 
+                    name="end_time"
                     value={availabilityForm.end_time}
                     onChange={handleAvailabilityFormChange}
                     required
@@ -493,7 +514,7 @@ const PanditDashboard = () => {
             
             <Form.Group className="mb-3">
               <Form.Check 
-                 type="checkbox"
+                type="checkbox"
                 id="is-available"
                 label="Available for booking"
                 name="is_available"
@@ -512,12 +533,66 @@ const PanditDashboard = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Map Modal */}
+      <Modal 
+        show={showMapModal} 
+        onHide={() => setShowMapModal(false)}
+        centered
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            Booking Location - {selectedBookingLocation?.user}
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedBookingLocation && (
+            <>
+              <div className="location-details mb-3">
+                <h6>Location Details:</h6>
+                {selectedBookingLocation.details.fullLocation && (
+                  <div><strong>Full Address:</strong> {selectedBookingLocation.details.fullLocation}</div>
+                )}
+                {selectedBookingLocation.details.landmark && (
+                  <div><strong>Landmark:</strong> {selectedBookingLocation.details.landmark}</div>
+                )}
+              </div>
+              <div style={{ height: "400px", width: "100%" }}>
+                <MapContainer 
+                  center={selectedBookingLocation.position} 
+                  zoom={15} 
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <Marker position={selectedBookingLocation.position}>
+                    <Popup>
+                      {selectedBookingLocation.user}'s ceremony location
+                      {selectedBookingLocation.details.landmark && (
+                        <div><br/>Landmark: {selectedBookingLocation.details.landmark}</div>
+                      )}
+                    </Popup>
+                  </Marker>
+                </MapContainer>
+              </div>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowMapModal(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
 
-// Booking Card Component
-const BookingCard = ({ booking, updateBookingStatus, showActions = true }) => {
+// BookingCard Component with Map Support
+const BookingCard = ({ booking, updateBookingStatus, showActions = true, openMapModal }) => {
   const formattedDate = new Date(booking.booking_date).toLocaleString('en-US', {
     weekday: 'short',
     year: 'numeric',
@@ -543,28 +618,96 @@ const BookingCard = ({ booking, updateBookingStatus, showActions = true }) => {
   }
 
   // Check if location information exists
-  const hasLocation = booking.location_province || 
-                     booking.location_metro_area || 
-                     booking.location_area || 
-                     booking.landmark;
+  const hasLocation = booking.location_latitude && booking.location_longitude;
+
+  // Create small map preview if location exists
+  const LocationPreview = () => {
+    if (!hasLocation) return null;
+    
+    return (
+      <div className="location-preview mt-3">
+        <div className="d-flex justify-content-between align-items-center mb-2">
+          <h6 className="mb-0">
+            <FaMapMarkerAlt className="me-2" />
+            Location
+          </h6>
+          <Button 
+            variant="outline-primary" 
+            size="sm" 
+            onClick={() => openMapModal(booking)}
+            className="view-map-btn"
+          >
+            <FaExpand className="me-1" /> View Map
+          </Button>
+        </div>
+        
+        <div className="map-thumbnail" style={{ height: "120px", position: "relative", overflow: "hidden", borderRadius: "4px" }}>
+          <MapContainer 
+            center={[booking.location_latitude, booking.location_longitude]} 
+            zoom={13} 
+            style={{ height: "100%", width: "100%" }}
+            zoomControl={false}
+            attributionControl={false}
+            dragging={false}
+            doubleClickZoom={false}
+            scrollWheelZoom={false}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <Marker position={[booking.location_latitude, booking.location_longitude]} />
+          </MapContainer>
+          
+          {/* Overlay to prevent interaction with the preview map */}
+          <div 
+            style={{ 
+              position: "absolute", 
+              top: 0, 
+              left: 0, 
+              right: 0, 
+              bottom: 0, 
+              cursor: "pointer", 
+              zIndex: 1000 
+            }}
+            onClick={() => openMapModal(booking)}
+            className="map-overlay"
+          />
+        </div>
+        
+        {/* Location details summary */}
+        <div className="location-info-summary mt-2 small">
+          {booking.full_location && (
+            <div className="text-truncate">
+              {booking.full_location}
+            </div>
+          )}
+          {booking.landmark && (
+            <div className="text-truncate text-muted">
+              Landmark: {booking.landmark}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="col">
       <Card className="h-100 booking-card shadow-sm">
         <Card.Header className="d-flex justify-content-between align-items-center">
           <div className="d-flex align-items-center">
-          <div className="user-avatar me-2">
-          <img 
-  src={booking.user_details.profile_picture ? `http://localhost:8000${booking.user_details.profile_picture}` : '/assets/default-profile.png'} 
-  alt={booking.user_details.full_name}
-  className="rounded-circle"
-  style={{ width: '40px', height: '40px', objectFit: 'cover' }}
-  onError={(e) => {
-    e.target.onerror = null;
-    e.target.src = '/assets/default-profile.png';
-  }}
-/>
-</div>
+            <div className="user-avatar me-2">
+              <img 
+                src={booking.user_details.profile_picture ? `http://localhost:8000${booking.user_details.profile_picture}` : '/assets/default-profile.png'} 
+                alt={booking.user_details.full_name}
+                className="rounded-circle"
+                style={{ width: '40px', height: '40px', objectFit: 'cover' }}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = '/assets/default-profile.png';
+                }}
+              />
+            </div>
             <div>
               <h5 className="mb-0">{booking.user_details.full_name}</h5>
               <small className="text-muted">{booking.user_details.email}</small>
@@ -581,50 +724,35 @@ const BookingCard = ({ booking, updateBookingStatus, showActions = true }) => {
           
           <Card.Text>{booking.description}</Card.Text>
           
-          {/* Location Information */}
-          {hasLocation && (
-            <div className="location-info mt-3 p-2 bg-light rounded">
-              <div className="d-flex align-items-start mb-1">
-                <FaMapMarkerAlt className="mt-1 me-2 " />
-                <div>
-                  <h6 className="mb-1">Location</h6>
-                  {booking.location_province && (
-                    <div><strong>Province:</strong> {booking.location_province}</div>
-                  )}
-                  {booking.location_metro_area && (
-                    <div><strong>Metro Area:</strong> {booking.location_metro_area}</div>
-                  )}
-                  {booking.location_area && (
-                    <div><strong>Area:</strong> {booking.location_area}</div>
-                  )}
-                  {booking.landmark && (
-                    <div><strong>Landmark:</strong> {booking.landmark}</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Location Map Preview */}
+          <LocationPreview />
           
-          {booking.user_details.phone_number && (
-            <div className="user-contact mt-3">
-              <strong>Contact:</strong> {booking.user_details.phone_number}
+          {/* Contact Information */}
+          <div className="user-contact mt-3">
+            <div className="d-flex align-items-center mb-1">
+              <FaPhone className="text-secondary me-2" size={14} />
+              <span>{booking.user_details.phone_number || 'No phone provided'}</span>
             </div>
-          )}
+            <div className="d-flex align-items-center">
+              <FaEnvelope className="text-secondary me-2" size={14} />
+              <span>{booking.user_details.email}</span>
+            </div>
+          </div>
         </Card.Body>
         
         {showActions && booking.status === 'pending' && (
           <Card.Footer className="bg-white">
             <div className="d-flex gap-2">
               <Button 
-                 
-                 className="flex-fill accept-booking"
+                variant="success"
+                className="flex-fill"
                 onClick={() => updateBookingStatus(booking.booking_id, 'accepted')}
               >
                 <FaCheck className="me-1" /> Accept
               </Button>
               <Button 
-                
-                 className="flex-fill reject-booking"
+                variant="danger"
+                className="flex-fill"
                 onClick={() => updateBookingStatus(booking.booking_id, 'rejected')}
               >
                 <FaTimes className="me-1" /> Reject

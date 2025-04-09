@@ -12,31 +12,24 @@ class PanditDetailSerializer(serializers.ModelSerializer):
         model = Pandit
         fields = ['pandit_id', 'user', 'experience_years', 'experience_description', 'average_rating', 'total_reviews']
 
+
 class BookingSerializer(serializers.ModelSerializer):
     user_details = UserSerializer(source='user', read_only=True)
     pandit_details = PanditDetailSerializer(source='pandit', read_only=True)
     
     class Meta:
         model = PanditBooking
-        fields = ['booking_id', 'user_details', 'pandit_details', 'booking_date', 
-                 'description',  'location_province',
-            'location_metro_area',
-            'location_area',
-            'location_id',
-            'landmark', 'status', 'created_at', 'updated_at']
+        fields = ['booking_id', 'user_details', 'pandit_details', 'booking_date',
+                  'description', 'full_location', 'landmark', 'location_latitude', 
+                  'location_longitude', 'status', 'created_at', 'updated_at']
+
 
 class CreateBookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = PanditBooking
-        fields = [ 'pandit', 
-            'booking_date', 
-            'description',
-            'location_province',
-            'location_metro_area',
-            'location_area',
-            'location_id',
-            'landmark']
-
+        fields = ['pandit', 'booking_date', 'description', 'full_location', 
+                  'landmark', 'location_latitude', 'location_longitude']
+    
     def validate_booking_date(self, value):
         if value < timezone.now():
             raise serializers.ValidationError("Booking date cannot be in the past")

@@ -20,6 +20,32 @@ import os
 
 from pathlib import Path
 
+import ssl
+import certifi
+from pathlib import Path
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'nakarmisujalwork@gmail.com'
+EMAIL_HOST_PASSWORD = 'srry onie feqp vars'
+DEFAULT_FROM_EMAIL = 'nakarmisujalwork@gmail.com'
+
+# Enhanced SSL Configuration
+certifi_path = certifi.where()
+print(f"Using certificate bundle at: {certifi_path}")  # Debug output
+
+# Verify the certificate file exists
+if not Path(certifi_path).exists():
+    raise RuntimeError(f"Certificate file not found at {certifi_path}")
+
+ssl_context = ssl.create_default_context(cafile=certifi_path)
+ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2  # Enforce modern TLS
+EMAIL_SSL_CONTEXT = ssl_context
+
+
 # Khalti Payment Gateway Settings
 KHALTI_SECRET_KEY = '2adfadee1a4e47bbbccef15d6eb1c858'  # Your sandbox key from the image
 KHALTI_PUBLIC_KEY = 'e89d7227f80d4a2191cff14ea3d42f90'  # Your public key from the image

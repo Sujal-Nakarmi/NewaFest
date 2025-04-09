@@ -102,11 +102,31 @@ def create_booking(request):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            booking = serializer.save(
-                user=request.user,
-                status=PanditBooking.BookingStatus.PENDING
-            )
-              # Create notification for the pandit
+            # Create the booking with full location instead of multiple fields
+            booking_data = {
+                'user': request.user,
+                'pandit': pandit,
+                'booking_date': requested_date,
+                'description': serializer.validated_data.get('description', ''),
+                'status': PanditBooking.BookingStatus.PENDING
+            }
+            
+            # Add full location if provided in request
+            if 'full_location' in request.data:
+                booking_data['full_location'] = request.data['full_location']
+            
+            # Still keep landmark if provided
+            if 'landmark' in request.data:
+                booking_data['landmark'] = request.data['landmark']
+                
+            # Keep latitude and longitude if provided
+            if 'location_latitude' in request.data and 'location_longitude' in request.data:
+                booking_data['location_latitude'] = request.data['location_latitude']
+                booking_data['location_longitude'] = request.data['location_longitude']
+            
+            booking = PanditBooking.objects.create(**booking_data)
+              
+            # Create notification for the pandit
             from .notification import create_notification
             from .models import Notification
             create_notification(
@@ -118,7 +138,6 @@ def create_booking(request):
             response_serializer = BookingSerializer(booking)
             return Response(response_serializer.data, status=status.HTTP_201_CREATED)
         
-            
         except Exception as e:
             # Log the full exception for server-side debugging
             import traceback

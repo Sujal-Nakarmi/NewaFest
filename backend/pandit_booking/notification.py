@@ -1,3 +1,36 @@
+def send_email_notification(notification):
+    """
+    Send an email notification with improved error handling.
+    """
+    from django.core.mail import send_mail
+    from django.conf import settings
+    import logging
+    
+    subject = f"Notification: {notification.get_notification_type_display()}"
+    message = notification.message
+    recipient_email = notification.recipient.email
+    
+    try:
+        # Print debugging info
+        print(f"Sending email to: {recipient_email}")
+        print(f"From: {settings.EMAIL_HOST_USER}")
+        print(f"Subject: {subject}")
+        
+        result = send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[recipient_email],
+            fail_silently=False,
+        )
+        
+        print(f"Email sending result: {result}")
+        return True
+    except Exception as e:
+        logging.error(f"Failed to send email notification: {e}")
+        print(f"Email error details: {str(e)}")
+        return False
+
 def create_notification(recipient, notification_type, booking=None, event_registration=None, message=None):
     """
     Create a new notification for a user.
@@ -46,4 +79,11 @@ def create_notification(recipient, notification_type, booking=None, event_regist
         message=notification_message
     )
 
+     # Send email notification
+    try:
+        send_email_notification(notification)
+    except Exception as e:
+        # Log the error but don't break the notification creation
+        print(f"Failed to send email notification: {e}")
+    
     return notification

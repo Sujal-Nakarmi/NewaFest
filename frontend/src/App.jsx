@@ -7,7 +7,6 @@ import Registration from './Pages/UserRegistration';
 import RegistrationPandit from './Pages/PanditRegistration';
 import LoginPage from './Pages/UserLogin';
 import PanditLoginPage from './Pages/PanditLogin';
-import AdminDashboard from './Components/AdminDashboard';
 import PanditDashboard from './Pages/PanditDashboard';
 import VendorDashboard from './Pages/VendorDashboard';
 import ProtectedRoute from "./Components/ProtectedRoute";
@@ -106,7 +105,7 @@ function App() {
 
            {/* Protected routes for specific roles */}
         <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          
          
           <Route path="/admin/dashboard/users" element={<Users />} />
           <Route path="/admin/dashboard/events" element={<Events />} />
