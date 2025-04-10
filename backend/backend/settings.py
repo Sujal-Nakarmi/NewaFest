@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     'pandit_booking',
     'renting',
     'rest_framework', 
+    'notifications', 
 
 ]
 

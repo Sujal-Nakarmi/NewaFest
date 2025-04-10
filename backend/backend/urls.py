@@ -25,6 +25,7 @@ urlpatterns = [
     path('adminwork/', include('adminwork.urls')),
     path('pandit_booking/', include('pandit_booking.urls')),
     path('renting/', include('renting.urls')),
+    path('notifications/', include('notifications.urls')),
 ]
 
 # Add this at the end of the file
