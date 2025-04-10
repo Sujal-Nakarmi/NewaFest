@@ -480,35 +480,34 @@ def list_areas(request, province, metro_area=None):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def update_cart_delivery_location(request):
-    """Update the delivery location and landmark for the user's cart."""
-    location_id = request.data.get('location_id')
-    landmark = request.data.get('landmark')
+    """Update the delivery location and location details for the user's cart."""
+    # Log incoming data for debugging
+    print(f"Updating cart location with data: {request.data}")
     
-    if not location_id:
-        return Response({'error': 'Location ID is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
-    # Get the delivery location
-    location = get_object_or_404(DeliveryLocation, location_id=location_id, is_available=True)
+    # Parse location data from request
+    full_location = request.data.get('full_location')
+    location_latitude = request.data.get('location_latitude')
+    location_longitude = request.data.get('location_longitude')
     
     # Get or create user's cart
     cart, created = Cart.objects.get_or_create(user=request.user, is_active=True)
     
-    # Update cart's delivery location
-    cart.delivery_location = location
+    # Update the direct location fields
+    if full_location:
+        cart.full_location = full_location
     
-    # Store the landmark in the location
-    if landmark:
-        # Option 1: Create a temporary location with landmark
-        # This approach doesn't modify the original location in the database
-        # but associates the landmark with this specific cart
-        temp_location = DeliveryLocation.objects.get(pk=location.pk)
-        temp_location.landmark = landmark
-        temp_location.save()
-        cart.delivery_location = temp_location
+    if location_latitude is not None:
+        cart.location_latitude = location_latitude
     
+    if location_longitude is not None:
+        cart.location_longitude = location_longitude
+    
+    # Save the updated cart
     cart.save()
     
-    # Return the updated cart with landmark information included
+    print(f"Cart updated successfully. ID: {cart.cart_id}")
+    
+    # Return the updated cart
     cart_serializer = CartSerializer(cart, context={'request': request})
     return Response(cart_serializer.data, status=status.HTTP_200_OK)
 

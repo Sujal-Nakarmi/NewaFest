@@ -78,6 +78,7 @@ class DeliveryLocation(models.Model):
             return f"{self.metro_area} - {self.area_name}"
         return f"{self.province} - {self.area_name}"
 
+
 class Cart(models.Model):
     cart_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(
@@ -85,8 +86,12 @@ class Cart(models.Model):
         on_delete=models.CASCADE,
         related_name='user_carts'
     )
-    delivery_location = models.ForeignKey('DeliveryLocation', on_delete=models.SET_NULL, 
-                                         null=True, blank=True, related_name='carts')
+   
+    # New location fields
+    full_location = models.TextField(null=True, blank=True)
+    location_latitude = models.FloatField(null=True, blank=True)
+    location_longitude = models.FloatField(null=True, blank=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -103,9 +108,12 @@ class Cart(models.Model):
     
     @property
     def delivery_fee(self):
-        if self.delivery_location:
-            return self.delivery_location.delivery_charge
-        return 0
+    # You need to implement the logic to calculate delivery fee based on location
+    # For example:
+        if self.location_latitude and self.location_longitude:
+            # You could implement a calculation based on distance or zone
+            return Decimal('50.00')  # Default delivery fee
+        return Decimal('0.00')
     
     @property
     def total_price(self):
@@ -168,7 +176,7 @@ class Order(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     cart = models.OneToOneField(Cart, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)  # Track updates
+    updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(
         max_length=50, 
         choices=STATUS_CHOICES, 
@@ -178,13 +186,19 @@ class Order(models.Model):
         max_length=100, 
         blank=True, 
         null=True,
-        unique=True  # Ensure pidx uniqueness
+        unique=True
     )
     payment_method = models.CharField(
         max_length=50,
         choices=PAYMENT_METHODS
     )
-    khalti_data = models.JSONField(blank=True, null=True)  # Store full Khalti response
+    khalti_data = models.JSONField(blank=True, null=True)
+    
+    # New location fields
+    full_location = models.TextField(null=True, blank=True)
+    landmark = models.TextField(null=True, blank=True)
+    location_latitude = models.FloatField(null=True, blank=True)
+    location_longitude = models.FloatField(null=True, blank=True)
     
     class Meta:
         db_table = 'Order'
@@ -195,7 +209,7 @@ class Order(models.Model):
         
     def __str__(self):
         return f"Order {self.order_id} ({self.status})"
-
+    
 class OrderItem(models.Model):
     order_item_id = models.AutoField(primary_key=True)
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')

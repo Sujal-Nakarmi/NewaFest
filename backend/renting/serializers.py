@@ -106,20 +106,19 @@ class CartSerializer(serializers.ModelSerializer):
     delivery_fee = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     total_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     items_count = serializers.IntegerField(read_only=True)
-    delivery_location_details = serializers.SerializerMethodField()
+   
     
     class Meta:
         model = Cart
         fields = ('cart_id', 'items', 'items_total', 'delivery_fee', 'total_price', 
-                  'items_count', 'delivery_location', 'delivery_location_details', 
-                  'created_at', 'updated_at')
+                  'items_count', 
+                  'created_at', 'updated_at', 'full_location',  
+                  'location_latitude', 'location_longitude')
         read_only_fields = ('cart_id', 'created_at', 'updated_at')
     
-    def get_delivery_location_details(self, obj):
-        if obj.delivery_location:
-            return DeliveryLocationSerializer(obj.delivery_location).data
-        return None
     
+    
+
 class OrderItemSerializer(serializers.ModelSerializer):
     item_name = serializers.CharField(source='rental_item.name')
     item_image = serializers.SerializerMethodField()
@@ -147,7 +146,8 @@ class OrderHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['order_id', 'status', 'transaction_id', 'payment_method',
-                'payment_method_display', 'created_at', 'items', 'total_amount']
+                'payment_method_display', 'created_at', 'items', 'total_amount',
+                'full_location', 'location_latitude', 'location_longitude']
     
     def get_total_amount(self, obj):
         return sum(item.price for item in obj.order_items.all())
@@ -170,7 +170,8 @@ class AdminOrderSerializer(serializers.ModelSerializer):
         fields = [
             'order_id', 'user', 'user_email', 'user_name', 'created_at', 
             'status', 'payment_method', 'payment_method_display',
-            'transaction_id', 'items', 'total_amount', 'khalti_data'
+            'transaction_id', 'items', 'total_amount', 'khalti_data',
+            'full_location',  'location_latitude', 'location_longitude'
         ]
     
     def get_total_amount(self, obj):

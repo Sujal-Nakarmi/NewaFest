@@ -1,22 +1,44 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Form, Table, Alert } from 'react-bootstrap';
-import { FaTrash, FaMinus, FaPlus, FaCalendarAlt, FaMapMarkerAlt, FaEdit } from 'react-icons/fa';
+import { Container, Row, Col, Card, Button, Table, Alert } from 'react-bootstrap';
+import { FaTrash, FaMinus, FaPlus, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../CSS/Cart.css';
-import DeliveryLocationSelector from './DeliveryLocation';
 import NavBar from './NavBar';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default marker icon in leaflet
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Map click handler component
+const LocationMarker = ({ setPosition }) => {
+  useMapEvents({
+    click(e) {
+      setPosition([e.latlng.lat, e.latlng.lng]);
+    },
+  });
+  return null;
+};
 
 const CartPage = () => {
   const [cart, setCart] = useState({ items: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updateLoading, setUpdateLoading] = useState({});
-  const [landmark, setLandmark] = useState('');
-  const [showLandmarkInput, setShowLandmarkInput] = useState(false);
   const navigate = useNavigate();
+
+  // Location selection state
+  const [position, setPosition] = useState([27.7172, 85.3240]); // Default to Kathmandu
+  const [address, setAddress] = useState("");
 
   useEffect(() => {
     fetchCartData();
@@ -39,15 +61,79 @@ const CartPage = () => {
       });
       
       setCart(response.data);
-      if (response.data.delivery_location_details && response.data.delivery_location_details.landmark) {
-        setLandmark(response.data.delivery_location_details.landmark);
+      
+      // If the cart already has location data, set it
+      if (response.data.location_latitude && response.data.location_longitude) {
+        setPosition([response.data.location_latitude, response.data.location_longitude]);
       }
+      
+      if (response.data.full_location) {
+        setAddress(response.data.full_location);
+      }
+      
       setError(null);
     } catch (err) {
       setError('Failed to load cart data. Please try again.');
       console.error('Error fetching cart:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Reverse geocode to get address from coordinates
+  useEffect(() => {
+    const getAddressFromCoordinates = async () => {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position[0]}&lon=${position[1]}&zoom=18&addressdetails=1`
+        );
+        const data = await response.json();
+        
+        if (data && data.display_name) {
+          setAddress(data.display_name);
+          
+          // Update cart with new location information
+          updateCartLocation(data.display_name, position[0], position[1]);
+        }
+      } catch (error) {
+        console.error("Error getting address:", error);
+      }
+    };
+
+    if (position) {
+      getAddressFromCoordinates();
+    }
+  }, [position]);
+
+  const updateCartLocation = async (fullLocation, latitude, longitude) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      
+      await axios.put(
+        'http://localhost:8000/renting/cart/update-delivery-location/',
+        { 
+          full_location: fullLocation,
+          location_latitude: latitude,
+          location_longitude: longitude
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      // Update local cart object with new location data
+      setCart(prevCart => ({
+        ...prevCart,
+        full_location: fullLocation,
+        location_latitude: latitude,
+        location_longitude: longitude
+      }));
+      
+    } catch (err) {
+      console.error('Error updating cart location:', err);
+      setError('Failed to update delivery location. Please try again.');
     }
   };
 
@@ -148,63 +234,46 @@ const CartPage = () => {
     }
   };
 
-  const handleLocationSelected = (location) => {
-    setShowLandmarkInput(true);
-    const updatedCart = { ...cart };
-    updatedCart.delivery_location_details = location;
-    updatedCart.delivery_fee = parseFloat(location.delivery_charge);
-    const itemsTotal = updatedCart.items_total || 
-      (updatedCart.items ? updatedCart.items.reduce((total, item) => total + parseFloat(item.price), 0) : 0);
-    updatedCart.total_price = (parseFloat(itemsTotal) + parseFloat(updatedCart.delivery_fee)).toFixed(2);
-    setCart(updatedCart);
-  };
-
-  const updateLandmark = async () => {
-    try {
-      setLoading(true);
-      const token = localStorage.getItem('access_token');
-      
-      const response = await axios.put(
-        'http://localhost:8000/renting/cart/update-delivery-location/',
-        { 
-          location_id: cart.delivery_location_details.location_id,
-          landmark: landmark 
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-      
-      const updatedCart = response.data;
-      if (updatedCart.delivery_location_details) {
-        updatedCart.delivery_location_details.landmark = landmark;
+  const handleCheckout = async () => {
+    if (!address) {
+      setError('Please select a delivery location on the map before proceeding to checkout.');
+      return;
+    }
+    
+ // In handleCheckout function
+try {
+  setLoading(true);
+  const token = localStorage.getItem('access_token');
+  
+  console.log("Updating cart location before checkout:", {
+    full_location: address,
+    location_latitude: position[0],
+    location_longitude: position[1]
+  });
+  
+  const response = await axios.put(
+    'http://localhost:8000/renting/cart/update-delivery-location/',
+    { 
+      full_location: address,
+      location_latitude: position[0],
+      location_longitude: position[1]
+    },
+    {
+      headers: {
+        'Authorization': `Bearer ${token}`
       }
-      setCart(updatedCart);
-      setShowLandmarkInput(false);
-      setError(null);
-    } catch (err) {
-      setError('Failed to update landmark. Please try again.');
-      console.error('Error updating landmark:', err);
-    } finally {
-      setLoading(false);
     }
-  };
-
-  const handleCheckout = () => {
-    if (!cart.delivery_location_details) {
-      setError('Please select a delivery location before proceeding to checkout.');
-      return;
+  );
+  
+  console.log("Location update successful:", response.data);
+  console.log("Navigating to checkout page...");
+  navigate('/checkout');
+} catch (err) {
+  console.error('Error details:', err.response?.data || err.message);
+  setError(`Failed to proceed to checkout: ${err.response?.data?.error || err.message}`);
+} finally {
+      setLoading(false); // Reset loading state
     }
-    
-    if (!landmark && !cart.delivery_location_details.landmark) {
-      setError('Please add a landmark to help our delivery team find your location.');
-      setShowLandmarkInput(true);
-      return;
-    }
-    
-    navigate('/checkout');
   };
 
   const itemsTotal = cart.items_total || (cart.items ? cart.items.reduce((total, item) => total + item.price, 0) : 0);
@@ -233,333 +302,268 @@ const CartPage = () => {
   }
 
   return (
-    
-    <Container className="py-5 mt-5">
-      <NavBar/><br/>
-      <h1 className="mb-4">Your Cart</h1>
-      
-      {error && <Alert variant="danger">{error}</Alert>}
-      
-      {cart.items && cart.items.length === 0 ? (
-        <div className="text-center py-5">
-          <h3>Your cart is empty</h3>
-          <p className="mb-4">Looks like you haven't added any items to your cart yet.</p>
-          <Button variant="primary" onClick={() => navigate('/rent-traditionals')}>
-            Continue Shopping
-          </Button>
-        </div>
-      ) : (
-        <>
-          <Card className="mb-4">
-            <Card.Body>
-              <Table responsive className="cart-table">
-                <thead>
-                  <tr>
-                    <th>Item</th>
-                    <th>Size</th>
-                    <th>Price/Day</th>
-                    <th>Quantity</th>
-                    <th>Rental Period</th>
-                    <th>Total</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cart.items && cart.items.map((item) => (
-                    <tr key={item.item_id}>
-                      <td>
-                        <div className="d-flex align-items-center">
-                          {item.item_image && (
-                            <img 
-                              src={item.item_image} 
-                              alt={item.item_name || "Rental item"} 
-                              className="cart-item-image" 
-                              onError={(e) => {e.target.onerror = null; e.target.src="/placeholder-image.png"}}
-                            />
-                          )}
-                          <div className="ms-3">
-                            <h6 className="mb-0">{item.item_name}</h6>
+    <div>
+      <NavBar/><br/><br/>
+      <Container className="py-5 mt-5">
+        <h1 className="mb-4">Your Cart</h1>
+        
+        {error && <Alert variant="danger">{error}</Alert>}
+        
+        {cart.items && cart.items.length === 0 ? (
+          <div className="text-center py-5">
+            <h3>Your cart is empty</h3>
+            <p className="mb-4">Looks like you haven't added any items to your cart yet.</p>
+            <Button variant="primary" onClick={() => navigate('/rent-traditionals')}>
+              Continue Shopping
+            </Button>
+          </div>
+        ) : (
+          <>
+            <Card className="mb-4">
+              <Card.Body>
+                <Table responsive className="cart-table">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Size</th>
+                      <th>Price/Day</th>
+                      <th>Quantity</th>
+                      <th>Rental Period</th>
+                      <th>Total</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cart.items && cart.items.map((item) => (
+                      <tr key={item.item_id}>
+                        <td>
+                          <div className="d-flex align-items-center">
+                            {item.item_image && (
+                              <img 
+                                src={item.item_image} 
+                                alt={item.item_name || "Rental item"} 
+                                className="cart-item-image" 
+                                onError={(e) => {e.target.onerror = null; e.target.src="/placeholder-image.png"}}
+                              />
+                            )}
+                            <div className="ms-3">
+                              <h6 className="mb-0">{item.item_name}</h6>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td>{item.size}</td>
-                      <td>Rs {item.unit_price}</td>
-                      <td>
-                        <div className="quantity-control">
+                        </td>
+                        <td>{item.size}</td>
+                        <td>Rs {item.unit_price}</td>
+                        <td>
+                          <div className="quantity-control">
+                            <Button 
+                              variant="light" 
+                              size="sm"
+                              onClick={() => updateQuantity(item.item_id, item.quantity - 1)}
+                              disabled={updateLoading[item.item_id] || item.quantity <= 1}
+                            >
+                              <FaMinus />
+                            </Button>
+                            <span className="mx-2">{item.quantity}</span>
+                            <Button 
+                              variant="light" 
+                              size="sm"
+                              onClick={() => updateQuantity(item.item_id, item.quantity + 1)}
+                              disabled={updateLoading[item.item_id]}
+                            >
+                              <FaPlus />
+                            </Button>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="d-flex align-items-center flex-wrap">
+                            <div className="me-2">
+                              <small className="text-muted d-block">Start Date</small>
+                              <DatePicker
+                                selected={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
+                                onChange={(date) => {
+                                  const endDate = item.rental_end_date ? new Date(item.rental_end_date) : new Date();
+                                  if (date > endDate) {
+                                    const newEndDate = new Date(date);
+                                    newEndDate.setDate(newEndDate.getDate() + 1);
+                                    updateRentalDates(item.item_id, date, newEndDate);
+                                  } else {
+                                    updateRentalDates(item.item_id, date, endDate);
+                                  }
+                                }}
+                                selectsStart
+                                startDate={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
+                                endDate={item.rental_end_date ? new Date(item.rental_end_date) : new Date()}
+                                minDate={new Date()}
+                                className="form-control form-control-sm"
+                                disabled={updateLoading[item.item_id]}
+                                customInput={
+                                  <div className="d-flex align-items-center">
+                                    <FaCalendarAlt className="me-1 cart-calendar" />
+                                    <span>
+                                      {item.rental_start_date 
+                                        ? new Date(item.rental_start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) 
+                                        : 'Select'}
+                                    </span>
+                                  </div>
+                                }
+                              />
+                            </div>
+                            <div className="me-2">
+                              <small className="text-muted d-block">End Date</small>
+                              <DatePicker
+                                selected={item.rental_end_date ? new Date(item.rental_end_date) : new Date()}
+                                onChange={(date) => {
+                                  const startDate = item.rental_start_date ? new Date(item.rental_start_date) : new Date();
+                                  updateRentalDates(item.item_id, startDate, date);
+                                }}
+                                selectsEnd
+                                startDate={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
+                                endDate={item.rental_end_date ? new Date(item.rental_end_date) : new Date()}
+                                minDate={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
+                                className="form-control form-control-sm"
+                                disabled={updateLoading[item.item_id]}
+                                customInput={
+                                  <div className="d-flex align-items-center">
+                                    <FaCalendarAlt className="me-1 cart-calendar" />
+                                    <span>
+                                      {item.rental_end_date 
+                                        ? new Date(item.rental_end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) 
+                                        : 'Select'}
+                                    </span>
+                                  </div>
+                                }
+                              />
+                            </div>
+                            <div>
+                              <small className="text-muted d-block">Days</small>
+                              <div className="days-badge">
+                                {item.rental_start_date && item.rental_end_date ? (
+                                  calculateDays(item.rental_start_date, item.rental_end_date)
+                                ) : (
+                                  '--'
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td>Rs {item.price}</td>
+                        <td>
                           <Button 
-                            variant="light" 
+                            variant="outline-danger" 
                             size="sm"
-                            onClick={() => updateQuantity(item.item_id, item.quantity - 1)}
-                            disabled={updateLoading[item.item_id] || item.quantity <= 1}
-                          >
-                            <FaMinus />
-                          </Button>
-                          <span className="mx-2">{item.quantity}</span>
-                          <Button 
-                            variant="light" 
-                            size="sm"
-                            onClick={() => updateQuantity(item.item_id, item.quantity + 1)}
+                            onClick={() => removeItem(item.item_id)}
                             disabled={updateLoading[item.item_id]}
                           >
-                            <FaPlus />
+                            <FaTrash />
                           </Button>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="d-flex align-items-center flex-wrap">
-                          <div className="me-2">
-                            <small className="text-muted d-block">Start Date</small>
-                            <DatePicker
-                              selected={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
-                              onChange={(date) => {
-                                const endDate = item.rental_end_date ? new Date(item.rental_end_date) : new Date();
-                                if (date > endDate) {
-                                  const newEndDate = new Date(date);
-                                  newEndDate.setDate(newEndDate.getDate() + 1);
-                                  updateRentalDates(item.item_id, date, newEndDate);
-                                } else {
-                                  updateRentalDates(item.item_id, date, endDate);
-                                }
-                              }}
-                              selectsStart
-                              startDate={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
-                              endDate={item.rental_end_date ? new Date(item.rental_end_date) : new Date()}
-                              minDate={new Date()}
-                              className="form-control form-control-sm"
-                              disabled={updateLoading[item.item_id]}
-                              customInput={
-                                <div className="d-flex align-items-center">
-                                  <FaCalendarAlt className="me-1 cart-calendar" />
-                                  <span>
-                                    {item.rental_start_date 
-                                      ? new Date(item.rental_start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) 
-                                      : 'Select'}
-                                  </span>
-                                </div>
-                              }
-                            />
-                          </div>
-                          <div className="me-2">
-                            <small className="text-muted d-block">End Date</small>
-                            <DatePicker
-                              selected={item.rental_end_date ? new Date(item.rental_end_date) : new Date()}
-                              onChange={(date) => {
-                                const startDate = item.rental_start_date ? new Date(item.rental_start_date) : new Date();
-                                updateRentalDates(item.item_id, startDate, date);
-                              }}
-                              selectsEnd
-                              startDate={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
-                              endDate={item.rental_end_date ? new Date(item.rental_end_date) : new Date()}
-                              minDate={item.rental_start_date ? new Date(item.rental_start_date) : new Date()}
-                              className="form-control form-control-sm"
-                              disabled={updateLoading[item.item_id]}
-                              customInput={
-                                <div className="d-flex align-items-center">
-                                  <FaCalendarAlt className="me-1 cart-calendar" />
-                                  <span>
-                                    {item.rental_end_date 
-                                      ? new Date(item.rental_end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) 
-                                      : 'Select'}
-                                  </span>
-                                </div>
-                              }
-                            />
-                          </div>
-                          <div>
-                            <small className="text-muted d-block">Days</small>
-                            <div className="days-badge">
-                              {item.rental_start_date && item.rental_end_date ? (
-                                calculateDays(item.rental_start_date, item.rental_end_date)
-                              ) : (
-                                '--'
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>Rs {item.price}</td>
-                      <td>
-                        <Button 
-                          variant="outline-danger" 
-                          size="sm"
-                          onClick={() => removeItem(item.item_id)}
-                          disabled={updateLoading[item.item_id]}
-                        >
-                          <FaTrash />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+              </Card.Body>
+            </Card>
 
-          <Row className="mt-4">
-            <Col md={6}>
-              <Button 
-                variant="outline-secondary" 
-                onClick={clearCart}
-                disabled={loading}
-              >
-                Clear Cart
-              </Button>
-              <Button 
-               variant="outline-secondary" 
-                className="ms-2"
-                onClick={() => navigate('/rent-traditionals')}
-              >
-                Continue Shopping
-              </Button>
-            </Col>
-            <Col md={6}>
-              <Card className="summary-card">
-                <Card.Body>
-                  <h5 className="mb-3">Order Summary</h5>
-                  <div className="d-flex justify-content-between mb-2">
-                    <span>Items ({cart.items ? cart.items.length : 0}):</span>
-                    <span>Rs {itemsTotal}</span>
-                  </div>
-                  
-                  <div className="d-flex justify-content-between mb-2">
-                    <span>Delivery Fee:</span>
-                    <span>Rs {deliveryFee}</span>
-                  </div>
-                  
-                  {cart.delivery_location_details && (
-                    <div className="selected-delivery-location mt-3 mb-3">
-                      <div className="d-flex align-items-start">
-                        <FaMapMarkerAlt className="location-icon mt-1 me-2" />
-                        <div>
-                          <h6 className="mb-1">Delivery Location:</h6>
-                          <div className="location-hierarchy">
-                            <span className="province">{cart.delivery_location_details.province},</span>
-                            <span className="separator">  </span>
-                            <span className="metro-area">{cart.delivery_location_details.metro_area},</span>
-                            <span className="separator">  </span>
-                            <span className="area-name">{cart.delivery_location_details.area_name}</span>
-                          </div>
-                          
-                          {showLandmarkInput ? (
-                            <div className="landmark-section mt-2">
-                              <div className="landmark-input-container">
-                                <Form.Group>
-                                  <Form.Label>Landmark / Detailed Address:</Form.Label>
-                                  <Form.Control
-                                    as="textarea"
-                                    rows={2}
-                                    placeholder="Enter nearby landmark or detailed address for easier delivery (e.g., Near City Hospital, Blue Building, etc.)"
-                                    value={landmark}
-                                    onChange={(e) => setLandmark(e.target.value)}
-                                  />
-                                  <div className="d-flex mt-2">
-                                    <Button 
-                                      size="sm" 
-                                      onClick={updateLandmark}
-                                      disabled={!landmark.trim()}
-                                      className="me-2"
-                                      style={{ backgroundColor: "#8B0000", color: "white", border: "none" }}
-                                    >
-                                      Save
-                                    </Button>
-                                    <Button 
-                                      variant="outline-secondary" 
-                                      size="sm"
-                                      onClick={() => {
-                                        setShowLandmarkInput(false);
-                                        setLandmark(cart.delivery_location_details.landmark || '');
-                                      }}
-                                    >
-                                      Cancel
-                                    </Button>
-                                  </div>
-                                </Form.Group>
-                              </div>
-                            </div>
-                          ) : (
-                            cart.delivery_location_details.landmark ? (
-                              <div className="landmark-section mt-2">
-                                <div className="d-flex align-items-center">
-                                  <div className="landmark-display">
-                                    <span className="text-muted">Landmark: </span>
-                                    <span>{cart.delivery_location_details.landmark}</span>
-                                    <Button 
-                                      variant="link" 
-                                      size="sm" 
-                                      className="p-0 ms-2"
-                                      onClick={() => {
-                                        setLandmark(cart.delivery_location_details.landmark || '');
-                                        setShowLandmarkInput(true);
-                                      }}
-                                    >
-                                      <FaEdit />
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            ) : (
-                              <Button 
-                                variant="outline-secondary" 
-                                size="sm"
-                                className="w-100 mt-2"
-                                onClick={() => setShowLandmarkInput(true)}
-                              >
-                                + Add Landmark
-                              </Button>
-                            )
+            <Row className="mt-4">
+              <Col md={6}>
+                <Button 
+                  variant="outline-secondary" 
+                  onClick={clearCart}
+                  disabled={loading}
+                >
+                  Clear Cart
+                </Button>
+                <Button 
+                  variant="outline-secondary" 
+                  className="ms-2"
+                  onClick={() => navigate('/rent-traditionals')}
+                >
+                  Continue Shopping
+                </Button>
+              </Col>
+              <Col md={6}>
+                <Card className="summary-card">
+                  <Card.Body>
+                    <h5 className="mb-3">Order Summary</h5>
+                    <div className="d-flex justify-content-between mb-2">
+                      <span>Items ({cart.items ? cart.items.length : 0}):</span>
+                      <span>Rs {itemsTotal}</span>
+                    </div>
+                    
+                    <div className="d-flex justify-content-between mb-2">
+                      <span>Delivery Fee:</span>
+                      <span>Rs {deliveryFee}</span>
+                    </div>
+                    
+                    <hr />
+                    <div className="d-flex justify-content-between mb-3">
+                      <strong>Total:</strong>
+                      <strong>Rs {totalPrice}</strong>
+                    </div>
+                    
+                    {/* Map Component for Location Selection */}
+                    <div className="location-selection-container mb-4">
+                      <h6 className="mb-3 d-flex align-items-center">
+                        <FaMapMarkerAlt className="me-2" /> Select Delivery Location
+                      </h6>
+                      <div className="map-container" style={{ height: "300px", width: "100%" }}>
+                        <MapContainer 
+                          center={position} 
+                          zoom={13} 
+                          style={{ height: "100%", width: "100%" }}
+                        >
+                          <TileLayer
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          />
+                          <LocationMarker setPosition={setPosition} />
+                          {position && (
+                            <Marker position={position}>
+                              <Popup>
+                                Delivery Location<br />
+                                {address || "Click to select this location"}
+                              </Popup>
+                            </Marker>
                           )}
-                        </div>
+                        </MapContainer>
+                        <small className="text-muted mt-2 d-block">Click on the map to select your delivery location.</small>
                       </div>
                     </div>
-                  )}
-                  
-                  <hr />
-                  <div className="d-flex justify-content-between mb-3">
-                    <strong>Total:</strong>
-                    <strong>Rs {totalPrice}</strong>
-                  </div>
-                  
-                  {!cart.delivery_location_details && (
-                    <DeliveryLocationSelector 
-                      onLocationSelected={handleLocationSelected} 
-                    />
-                  )}
-                  
-                  <Button 
-                    className="w-100 mt-3" 
-                    style={{ backgroundColor: "#8B0000", color: "white" }}
-                    onClick={handleCheckout}
-                    disabled={
-                      loading || 
-                      !cart.items || 
-                      cart.items.length === 0 || 
-                      !cart.delivery_location_details
-                    }
-                  >
-                    Proceed to Checkout
-                  </Button>
-                  
-                  {cart.delivery_location_details && (
+                    
+                    {/* Selected Address Display */}
+                    {address && (
+                      <div className="selected-location mt-3 mb-4">
+                        <div className="d-flex align-items-start">
+                          <FaMapMarkerAlt className="mt-1 me-2" />
+                          <div>
+                            <h6 className="mb-1">Selected Location:</h6>
+                            <p className="mb-0">{address}</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
                     <Button 
-                      variant="outline-secondary" 
-                      size="sm"
-                      className="w-100 mt-2"
-                      onClick={() => {
-                        setCart({...cart, delivery_location_details: null});
-                        setLandmark('');
-                        setShowLandmarkInput(false);
-                      }}
+                      className="w-100 mt-3" 
+                      style={{ backgroundColor: "#8B0000", color: "white" }}
+                      onClick={handleCheckout}
+                      disabled={
+                        loading || 
+                        !cart.items || 
+                        cart.items.length === 0 ||
+                        !address
+                      }
                     >
-                      Change Delivery Location
+                      Proceed to Checkout
                     </Button>
-                  )}
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-        </>
-      )}
-    </Container>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+          </>
+        )}
+      </Container>
+    </div>
   );
 };
 

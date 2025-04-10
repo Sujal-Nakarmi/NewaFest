@@ -51,7 +51,7 @@ function NavBar() {
       const token = localStorage.getItem("access_token")
       if (!token) return
 
-      const response = await axios.get("http://localhost:8000/pandit_booking/notifications/")
+      const response = await axios.get("http://localhost:8000/notifications/notifications/")
       setNotifications(response.data.results || [])
 
       // Count unread notifications
@@ -68,7 +68,7 @@ function NavBar() {
       const token = localStorage.getItem("access_token")
       if (!token) return
 
-      await axios.put(`http://localhost:8000/pandit_booking/notifications/mark-read/${notificationId}/`)
+      await axios.put(`http://localhost:8000/notifications/notifications/mark-read/${notificationId}/`)
 
       // Update the local state
       setNotifications((prevNotifications) =>
@@ -90,7 +90,7 @@ function NavBar() {
       const token = localStorage.getItem("access_token")
       if (!token) return
 
-      await axios.put("http://localhost:8000/pandit_booking/notifications/mark-all-read/")
+      await axios.put("http://localhost:8000/notifications/notifications/mark-all-read/")
 
       // Update the local state
       setNotifications((prevNotifications) => prevNotifications.map((notif) => ({ ...notif, is_read: true })))

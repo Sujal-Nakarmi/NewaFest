@@ -38,11 +38,15 @@ const Checkout = () => {
         return;
       }
   
-      if (!response.data.delivery_location_details) {
-        setError('Please select a delivery location before checkout.');
-        navigate('/cart');
-        return;
-      }
+  // Replace this check in fetchCartData()
+if (!response.data.delivery_location_details) {
+  // With this check instead
+  if (!response.data.full_location) {
+    setError('Please select a delivery location before checkout.');
+    navigate('/cart');
+    return;
+  }
+}
   
       setCart(response.data);
     } catch (err) {
@@ -156,6 +160,28 @@ const Checkout = () => {
           </div>
         </Card.Body>
       </Card>
+
+     
+<Card className="mb-4">
+  <Card.Header as="h5">Delivery Information</Card.Header>
+  <Card.Body>
+    <div className="mb-3">
+      <strong>Delivery Location:</strong>
+      <p className="mt-2">{cart.full_location}</p>
+    </div>
+    
+    {/* You can also display a small static map if you want */}
+    {cart.location_latitude && cart.location_longitude && (
+      <div className="mt-3">
+        <img 
+          src={`https://maps.googleapis.com/maps/api/staticmap?center=${cart.location_latitude},${cart.location_longitude}&zoom=15&size=600x300&markers=color:red%7C${cart.location_latitude},${cart.location_longitude}&key=YOUR_GOOGLE_MAPS_API_KEY`}
+          alt="Delivery Location Map"
+          className="img-fluid rounded"
+        />
+      </div>
+    )}
+  </Card.Body>
+</Card>
       
     
       
