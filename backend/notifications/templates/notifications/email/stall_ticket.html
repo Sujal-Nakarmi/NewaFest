@@ -1,0 +1,37 @@
+<!-- notifications/templates/notifications/email/stall_ticket.html -->
+{% extends "notifications/email/base_ticket.html" %}
+
+{% block ticket_type %}Stall Registration{% endblock %}
+
+{% block category_specific_details %}
+<div class="details-row">
+    <div class="detail-label">Stall Type:</div>
+    <div class="detail-value">{{ stall_type }}</div>
+</div>
+<div class="details-row">
+    <div class="detail-label">Stall Location:</div>
+    <div class="detail-value">{{ stall_location }}</div>
+</div>
+
+{% if food_items %}
+<div class="details-row">
+    <div class="detail-label">Food Items:</div>
+    <div class="detail-value">{{ food_items }}</div>
+</div>
+{% endif %}
+
+{% if drinks %}
+<div class="details-row">
+    <div class="detail-label">Drinks:</div>
+    <div class="detail-value">{{ drinks }}</div>
+</div>
+{% endif %}
+
+<div style="margin-top: 20px; padding: 10px; background-color: #f0fff0; border-left: 4px solid #4caf50;">
+    <p><strong>Stall Setup Information:</strong> Setup time begins 3 hours before the event start. Please bring your own tables and chairs as specified in the stall guidelines.</p>
+</div>
+
+<div style="margin-top: 20px; padding: 10px; background-color: #fff4e0; border-left: 4px solid #ffa500;">
+    <p><strong>Food Safety:</strong> All food stalls must comply with local food safety regulations. An inspector may visit your stall during the event.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+<!-- notifications/templates/notifications/email/rally_ticket.html -->
+{% extends "notifications/email/base_ticket.html" %}
+
+{% block ticket_type %}Bhintuna Rally Registration{% endblock %}
+
+{% block category_specific_details %}
+<div class="details-row">
+    <div class="detail-label">Rally Option:</div>
+    <div class="detail-value">{{ rally_option }}</div>
+</div>
+<div class="details-row">
+    <div class="detail-label">Number of Seats:</div>
+    <div class="detail-value">{{ seats }}</div>
+</div>
+
+<h3>Rally Laps Information</h3>
+<table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+    <thead>
+        <tr style="background-color: #eaeaea;">
+            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Lap</th>
+            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for lap in rally_laps %}
+        <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">{{ lap.lap_number }}</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">{{ lap.route_description }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div style="margin-top: 20px; padding: 10px; background-color: #f0f7ff; border-left: 4px solid #4a7aff;">
+    <p><strong>Important:</strong> Please arrive 30 minutes before the start time for check-in.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,10 @@
+<!-- notifications/templates/notifications/email/generic_ticket.html -->
+{% extends "notifications/email/base_ticket.html" %}
+
+{% block ticket_type %}Event Registration{% endblock %}
+
+{% block category_specific_details %}
+<div style="margin-top: 20px; padding: 10px; background-color: #f0f7ff; border-left: 4px solid #4a7aff;">
+    <p><strong>Important:</strong> Please arrive 15 minutes before the event start time. Bring this ticket with you for entry.</p>
+</div>
+{% endblock %}

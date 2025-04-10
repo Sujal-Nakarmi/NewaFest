@@ -398,7 +398,7 @@ def register_for_volunteer(request, serializer, event_detail, category):
     seats_requested = serializer.validated_data.get('seats_requested', 1)
     
     # Check if maximum allowed seats per user is defined for this category
-    max_seats_per_user = getattr(category, 'max_seats_per_user', 6)  # Default to 6 if not set
+    max_seats_per_user = getattr(category, 'max_seats_per_user', 12)  # Default to 6 if not set
 
     # Check if user is trying to register more than allowed seats
     if seats_requested > max_seats_per_user:
