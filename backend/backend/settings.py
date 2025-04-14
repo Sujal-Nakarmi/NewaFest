@@ -20,6 +20,15 @@ import os
 
 from pathlib import Path
 
+
+# Add this to your settings.py
+SITE_URL = "http://localhost:8000"  # For development
+# In production, you might want to set this to your actual domain
+# SITE_URL = "https://yourdomain.com"
+
+# Internationalization
+# https://docs.djangoproject.com/en/5.0/topics/i18n/
+
 import ssl
 import certifi
 from pathlib import Path
@@ -190,9 +199,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
 

@@ -14,7 +14,8 @@ import {
   FiTrash2, 
   FiEye, 
   FiPlus,
-  FiUser
+  FiUser,
+  FiCheckCircle
 } from 'react-icons/fi';
 import logo from "../Assests/Logo.png";
 import { Modal, Button, Form, Spinner, Alert } from 'react-bootstrap';
@@ -264,6 +265,9 @@ const RentalItemsAdminPanel = () => {
           <a href="/admin/dashboard/events" className="nav-item">
             <FiCalendar size={18} /> Events
           </a>
+           <Link to="/admin/dashboard/checkin" className="nav-item ">
+                      <FiCheckCircle size={18} /> Check-in
+                    </Link>
           <a href="/admin/dashboard/registrations" className="nav-item">
             <FiCalendar size={18} /> Event Registration
           </a>

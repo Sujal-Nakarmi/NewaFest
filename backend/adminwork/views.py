@@ -398,7 +398,7 @@ def register_for_volunteer(request, serializer, event_detail, category):
     seats_requested = serializer.validated_data.get('seats_requested', 1)
     
     # Check if maximum allowed seats per user is defined for this category
-    max_seats_per_user = getattr(category, 'max_seats_per_user', 12)  # Default to 6 if not set
+    max_seats_per_user = getattr(category, 'max_seats_per_user', 35)  # Default to 6 if not set
 
     # Check if user is trying to register more than allowed seats
     if seats_requested > max_seats_per_user:
@@ -551,8 +551,8 @@ def register_for_volunteer(request, serializer, event_detail, category):
 def register_for_stall(request, serializer, event_detail, category):
     """Handle Stall registrations"""
     # For stalls, always set max_seats_per_user to 1 and force seats_requested to 1
-    max_seats_per_user = 1
-    seats_requested = 1  # Force to 1 regardless of input
+    max_seats_per_user = 2
+    seats_requested = 2  # Force to 1 regardless of input
     
     # Count existing registrations for this user in this category for this specific event
     existing_registrations = EventRegistration.objects.filter(
@@ -1401,3 +1401,65 @@ def register_ihi(request):
     
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAdmin])  # Ensure only authenticated staff can check in people
+def verify_registration(request, formatted_id):
+    """API endpoint to verify a ticket registration and optionally check in the attendee"""
+    try:
+        # Look up the registration
+        registration = get_object_or_404(EventRegistration, formatted_id=formatted_id, is_deleted=False)
+        
+        # Get registration details
+        reg_detail = registration.registrationdetail
+        
+        # Basic registration data
+        response_data = {
+            'valid': True,
+            'registration_id': registration.registration_id,
+            'formatted_id': registration.formatted_id,
+            'event_name': f"{registration.event_detail.event.name} - {registration.event_detail.year}",
+            'category': registration.category.name,
+            'user_name': f"{registration.user.full_name}",
+            'checked_in': registration.checked_in,
+        }
+        
+        if registration.checked_in:
+            response_data['check_in_time'] = registration.check_in_time
+        
+        # Add category-specific data
+        if registration.category.code == 'Volunteer':
+            response_data['volunteer_type'] = reg_detail.volunteer_type.name
+            if reg_detail.newari_instrument:
+                response_data['instrument'] = reg_detail.newari_instrument.name
+                
+        elif registration.category.code == 'RALLY':
+            response_data['rally_option'] = reg_detail.rally_option.name
+            
+        elif registration.category.code == 'STALL':
+            response_data['stall_type'] = reg_detail.stall_type.name
+            response_data['stall_location'] = reg_detail.stall_location.name
+        
+        # If it's a POST request, mark the registration as checked in
+        if request.method == 'POST':
+            # Check if already checked in
+            if registration.checked_in:
+                response_data['message'] = f"Already checked in at {registration.check_in_time}"
+            else:
+                registration.checked_in = True
+                registration.check_in_time = timezone.now()
+                registration.check_in_by = request.user
+                registration.save()
+                response_data['checked_in'] = True
+                response_data['check_in_time'] = registration.check_in_time
+                response_data['message'] = f"Successfully checked in {registration.user.full_name}"
+        
+        return Response(response_data)
+        
+    except Exception as e:
+        return Response({
+            'valid': False,
+            'message': str(e)
+        })

@@ -1,48 +1,52 @@
 def send_email_notification(notification):
-    """
-    Send an email notification with improved error handling and ticket details.
-    """
-    from django.core.mail import send_mail, EmailMultiAlternatives
+    from django.core.mail import EmailMultiAlternatives
     from django.conf import settings
     from django.template.loader import render_to_string
     from django.utils.html import strip_tags
+    from email.mime.image import MIMEImage
     import logging
-    
+    from django.core.mail import send_mail
+
     subject = f"Notification: {notification.get_notification_type_display()}"
     recipient_email = notification.recipient.email
-    
+
     try:
-        # Check if this is an event registration notification that needs ticket details
         if notification.notification_type == notification.NotificationType.EVENT_REGISTRATION_SUCCESS and notification.related_event_registration:
-            # Get registration details
             registration = notification.related_event_registration
-            registration_detail = registration.registrationdetail
             event_detail = registration.event_detail
             category = registration.category
-            
-            # Prepare context based on category type
+
+            verification_url = f"{settings.SITE_URL}/verify/{registration.registration_id}/"
+
+            from notifications.views import generate_qr_code
+            qr_image_binary = generate_qr_code(verification_url)
+
+            # Prepare context
             context = {
                 'user': notification.recipient,
                 'event_name': event_detail.event.name,
                 'event_year': event_detail.year,
                 'event_location': event_detail.location,
                 'event_start_time': event_detail.start_time,
-                'registration_id': registration.registration_id,
+                'registration_id': registration.formatted_id,
+                'raw_registration_id': registration.registration_id,
                 'registration_date': registration.registration_date,
                 'category': category.name,
                 'category_code': category.code,
             }
-            
-            # Add category-specific details
+
+            # Add category-specific context
             if category.code == 'RALLY':
+                registration_detail = registration.registrationdetail
                 context.update({
                     'rally_option': registration_detail.rally_option.name,
                     'rally_laps': list(registration_detail.rally_laps.all()),
                     'seats': registration_detail.seats,
                 })
                 template_name = 'notifications/email/rally_ticket.html'
-                
+
             elif category.code == 'Volunteer':
+                registration_detail = registration.registrationdetail
                 context.update({
                     'volunteer_type': registration_detail.volunteer_type.name,
                     'volunteer_laps': list(registration_detail.volunteer_laps.all()),
@@ -50,8 +54,9 @@ def send_email_notification(notification):
                 if registration_detail.newari_instrument:
                     context['instrument'] = registration_detail.newari_instrument.name
                 template_name = 'notifications/email/volunteer_ticket.html'
-                
+
             elif category.code == 'STALL':
+                registration_detail = registration.registrationdetail
                 context.update({
                     'stall_type': registration_detail.stall_type.name,
                     'stall_location': registration_detail.stall_location.name,
@@ -61,16 +66,34 @@ def send_email_notification(notification):
                 if registration_detail.drinks:
                     context['drinks'] = registration_detail.drinks
                 template_name = 'notifications/email/stall_ticket.html'
-                
+            
+            elif category.code == 'IHI':
+                # Retrieve IHI registration details
+                try:
+                    ihi_registration = registration.ihiregistration
+                    ihi_location = ihi_registration.location
+                    
+                    context.update({
+                        'ihi_location': ihi_location,
+                        'seats': ihi_registration.seats,
+                        'phone': ihi_registration.phone,
+                        'description': ihi_registration.description,
+                    })
+                    template_name = 'notifications/email/ihi_ticket.html'
+                except:
+                    # Fallback if IHI registration details are not found
+                    logging.error(f"IHI registration details not found for registration {registration.registration_id}")
+                    template_name = 'notifications/email/generic_ticket.html'
+
             else:
-                # Default template for other categories
                 template_name = 'notifications/email/generic_ticket.html'
-            
-            # Render HTML content
+
+            # Add placeholder for QR in template
+            context['qr_cid'] = 'qr_code_image'
+
             html_content = render_to_string(template_name, context)
-            text_content = strip_tags(html_content)  # Plain text version
-            
-            # Create email message
+            text_content = strip_tags(html_content)
+
             email = EmailMultiAlternatives(
                 subject=subject,
                 body=text_content,
@@ -78,12 +101,16 @@ def send_email_notification(notification):
                 to=[recipient_email]
             )
             email.attach_alternative(html_content, "text/html")
-            
-            # Send email
+
+            # Attach QR code with CID
+            qr_attachment = MIMEImage(qr_image_binary)
+            qr_attachment.add_header('Content-ID', '<qr_code_image>')
+            qr_attachment.add_header('Content-Disposition', 'inline', filename="qr_code.png")
+            email.attach(qr_attachment)
+
             result = email.send()
-            
+
         else:
-            # Regular notification email
             message = notification.message
             result = send_mail(
                 subject=subject,
@@ -92,13 +119,15 @@ def send_email_notification(notification):
                 recipient_list=[recipient_email],
                 fail_silently=False,
             )
-        
-        print(f"Email sending result: {result}")
+
+        print(f"Email sent: {result}")
         return True
+
     except Exception as e:
         logging.error(f"Failed to send email notification: {e}")
-        print(f"Email error details: {str(e)}")
+        print(f"Email error: {e}")
         return False
+
 def create_notification(recipient, notification_type, booking=None, event_registration=None, message=None):
     """
     Create a new notification for a user with enhanced details for event registrations.
@@ -113,7 +142,7 @@ def create_notification(recipient, notification_type, booking=None, event_regist
         # Generate proper notification message
         notification_message = (
             f"You have successfully registered for {event_name} as a {category_name}. "
-            f"Your registration ID is {event_registration.registration_id}. "
+            f"Your registration ID is {event_registration.formatted_id}. "
             f"Please check your email for your detailed ticket information."
         )
     else:

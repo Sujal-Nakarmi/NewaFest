@@ -41,6 +41,7 @@ import SizeVariantManager from './Components/SizeVariant';
 import VendorOrders from './Components/OrderLists';
 import SizeVariantManagerAdmin from './Components/SizeVariantAdmin';
 import AdminOrders from './Components/AdminOrderList';
+import EventCheckIn from './Components/AdminQRCheckin';
 
 
 
@@ -113,6 +114,8 @@ function App() {
           <Route path="/admin/dashboard/rentals" element={<RentalItemsAdminPanel />} />
           <Route path="/admin/size-variants" element={< SizeVariantManagerAdmin />} />
           <Route path="/admin/orders" element={< AdminOrders />} />
+          <Route path="/admin/dashboard/checkin" element={<EventCheckIn />} />
+
 
       
         </Route>

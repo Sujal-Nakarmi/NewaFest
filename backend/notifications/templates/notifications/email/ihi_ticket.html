@@ -1,0 +1,41 @@
+{% extends "notifications/email/base_ticket.html" %}
+
+{% block ticket_type %}IHI{% endblock %}
+
+{% block event_title %}{{ event_name }} - IHI REGISTRATION{% endblock %}
+
+{% block venue_address %}
+{% if ihi_location.address %}{{ ihi_location.address }}{% endif %}
+{% endblock %}
+
+{% block category_specific_details %}
+<div class="info-row">
+    <div class="info-label">Location:</div>
+    <div class="info-value">{{ ihi_location.address }}</div>
+</div>
+
+<div class="info-row">
+    <div class="info-label">Seats Reserved:</div>
+    <div class="info-value">{{ seats }}</div>
+</div>
+
+{% if phone %}
+<div class="info-row">
+    <div class="info-label">Contact Phone:</div>
+    <div class="info-value">{{ phone }}</div>
+</div>
+{% endif %}
+
+{% if description %}
+<div class="info-row">
+    <div class="info-label">Additional Information:</div>
+    <div class="info-value">{{ description }}</div>
+</div>
+{% endif %}
+
+<div class="note-box">
+    <p><strong>IHI Event Note:</strong>
+    <div class="warning">NO REFUNDS/EXCHANGE</div>
+    </p>
+</div>
+{% endblock %}

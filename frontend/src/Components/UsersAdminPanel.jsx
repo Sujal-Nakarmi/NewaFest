@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '../CSS/UsersAdminPanel.css';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { FiHome, FiUsers, FiCalendar, FiBookOpen, FiLogOut, FiEdit, FiTrash2, FiEye, FiUser, FiArrowUpCircle } from 'react-icons/fi';
+import { FiHome, FiUsers, FiCalendar, FiBookOpen, FiLogOut, FiEdit, FiTrash2, FiEye, FiUser, FiArrowUpCircle, FiCheckCircle } from 'react-icons/fi';
 import logo from "../Assests/Logo.png";
 import { Link } from "react-router-dom";
 
@@ -322,10 +322,16 @@ const Users = () => {
           <a href="#" className="nav-item active">
             <FiUsers size={18} /> Users
           </a>
+
        
           <Link to="/admin/dashboard/events" className="nav-item">
             <FiCalendar size={18} /> Events
           </Link>
+
+           <Link to="/admin/dashboard/checkin" className="nav-item ">
+                      <FiCheckCircle size={18} /> Check-in
+                    </Link>
+          
           <Link to="/admin/dashboard/registrations" className="nav-item">
             <FiCalendar size={18} /> Event Registration
           </Link>

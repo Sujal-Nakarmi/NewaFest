@@ -5,22 +5,30 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import get_user_model
-
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 
 
 class UserSerializer(serializers.ModelSerializer):
     user_role = serializers.ChoiceField(choices=User.UserRole.choices, required=False)  # Optional role
-
+    
     class Meta:
         model = User
         fields = '__all__'
-
+    
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except ValidationError as e:
+            raise serializers.ValidationError(e.messages)
+        return value
+    
     def create(self, validated_data):
         # Assign 'normal_user' if not provided
-        validated_data['user_role'] = validated_data.get('user_role', User.UserRole.NORMAL_USER)  
-
-        # Hash the password before saving
+        validated_data['user_role'] = validated_data.get('user_role', User.UserRole.NORMAL_USER)
+        
+        # Password is already validated at this point
         validated_data['password'] = make_password(validated_data['password'])
         return super().create(validated_data)
     
@@ -39,13 +47,20 @@ class PanditSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def create(self, validated_data):
-        # Extract user data
+            # Extract user data
         user_data = validated_data.pop('user')
         user_data['user_role'] = User.UserRole.PANDIT  # Auto-set role to pandit
+        
+        # Validate password against Django's validators
+        try:
+            validate_password(user_data['password'])
+        except ValidationError as e:
+            raise serializers.ValidationError({"password": e.messages})
+        
         # Hash the password before saving
         user_data['password'] = make_password(user_data['password'])
         user = User.objects.create(**user_data)
-
+        
         # Create Pandit instance with linked user
         pandit = Pandit.objects.create(user=user, **validated_data)
         return pandit

@@ -9,7 +9,8 @@ import {
   FiUser,
   FiLogOut,
   FiUsers,
-  FiHome
+  FiHome,
+  FiCheckCircle
 } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -281,6 +282,9 @@ const SizeVariantManagerAdmin = () => {
           <Link to="/admin/dashboard/events" className="nav-item">
             <FiCalendar size={18} /> Events
           </Link>
+           <Link to="/admin/dashboard/checkin" className="nav-item ">
+                      <FiCheckCircle size={18} /> Check-in
+                    </Link>
           <Link to="/admin/dashboard/registrations" className="nav-item">
                       <FiCalendar size={18} /> Event Registration
                     </Link>

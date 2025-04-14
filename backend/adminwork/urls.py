@@ -37,6 +37,11 @@ urlpatterns = [
     path('events/register-ihi/', views.register_ihi, name='register_ihi'),
 
 
+
+# Don't forget to add this to your urls.py
+   path('qr/verify-registration/<str:formatted_id>/', views.verify_registration, name='verify-registration'),
+
+
 ]
 
   # This is important - it tells Django to serve media files during development

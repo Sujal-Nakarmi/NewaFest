@@ -172,15 +172,24 @@ class StallLocation(models.Model):
 
 
 class EventRegistration(models.Model):
-    # Unchanged
+    # Unchanged fields
     registration_id = models.AutoField(primary_key=True)
+    formatted_id = models.CharField(max_length=20, unique=True, editable=False, null=True)
     event_detail = models.ForeignKey(EventDetail, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
     registration_date = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
     deleted_at = models.DateTimeField(null=True, blank=True)
+    checked_in = models.BooleanField(default=False)
+    check_in_time = models.DateTimeField(null=True, blank=True)
+    check_in_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='checked_in_registrations'
+    )
     
     class Meta:
         db_table = 'EventRegistration'
@@ -189,7 +198,27 @@ class EventRegistration(models.Model):
         self.is_deleted = True
         self.deleted_at = timezone.now()
         self.save()
-
+    
+    def save(self, *args, **kwargs):
+        # First save to get the ID
+        create_new = not self.pk
+        super().save(*args, **kwargs)
+        
+        # Generate formatted ID if this is a new record
+        if create_new:
+            if self.category.code == 'RALLY':
+                prefix = "RTI"
+            elif self.category.code == 'Volunteer':
+                prefix = "VTI"
+            elif self.category.code == 'STALL':
+                prefix = "STI"
+            elif self.category.code == "IHI":
+                prefix = "ITI"
+            else:
+                prefix = ""
+            
+            self.formatted_id = f"{prefix}{self.registration_id}"
+            super().save(update_fields=['formatted_id'])
 
 class RegistrationDetail(models.Model):
     # Unchanged

@@ -1,42 +1,47 @@
-<!-- notifications/templates/notifications/email/volunteer_ticket.html -->
 {% extends "notifications/email/base_ticket.html" %}
 
-{% block ticket_type %}Volunteer Registration{% endblock %}
+{% block ticket_type %}VOLUNTEER{% endblock %}
+
+{% block event_title %}{{ event_name }} - VOLUNTEER REGISTRATION{% endblock %}
+
+{% block venue_address %}
+{% if venue_address %}{{ venue_address }}{% endif %}
+{% endblock %}
 
 {% block category_specific_details %}
-<div class="details-row">
-    <div class="detail-label">Volunteer Type:</div>
-    <div class="detail-value">{{ volunteer_type }}</div>
+<div class="info-row">
+    <div class="info-label">Volunteer Type:</div>
+    <div class="info-value">{{ volunteer_type }}</div>
 </div>
 
 {% if instrument %}
-<div class="details-row">
-    <div class="detail-label">Musical Instrument:</div>
-    <div class="detail-value">{{ instrument }}</div>
+<div class="info-row">
+    <div class="info-label">Musical Instrument:</div>
+    <div class="info-value">{{ instrument }}</div>
 </div>
 {% endif %}
 
-<h3>Volunteer Schedule</h3>
-<table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+<h3 style="margin-top: 30px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Volunteer Schedule</h3>
+<table>
     <thead>
-        <tr style="background-color: #eaeaea;">
-            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Lap</th>
-            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Route</th>
-            <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Time</th>
+        <tr>
+            <th>Lap</th>
+            <th>Route</th>
+            <th>Time</th>
         </tr>
     </thead>
     <tbody>
         {% for lap in volunteer_laps %}
         <tr>
-            <td style="padding: 8px; border: 1px solid #ddd;">{{ lap.lap_number }}</td>
-            <td style="padding: 8px; border: 1px solid #ddd;">{{ lap.route_description }}</td>
-            <td style="padding: 8px; border: 1px solid #ddd;">{{ lap.time|time:"g:i a" }}</td>
+            <td>{{ lap.lap_number }}</td>
+            <td>{{ lap.route_description }}</td>
+            <td>{{ lap.time|time:"g:i a" }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<div style="margin-top: 20px; padding: 10px; background-color: #fff4e0; border-left: 4px solid #ffa500;">
-    <p><strong>Volunteer Note:</strong> Please wear the provided volunteer badge at all times. Refreshments will be provided.</p>
+<div class="note-box">
+    <p><strong>Volunteer Note:</strong>  <div class="warning">NO REFUNDS/EXCHANGE</div> </p>
 </div>
 {% endblock %}

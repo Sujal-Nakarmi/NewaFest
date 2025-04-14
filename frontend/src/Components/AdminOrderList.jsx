@@ -10,6 +10,7 @@ import {
   FiUsers,
   FiBookOpen,
   FiLogOut,
+  FiCheckCircle
  
 } from 'react-icons/fi';
 import { useNavigate, Outlet } from 'react-router-dom';
@@ -167,6 +168,9 @@ const AdminOrders = () => {
           <Link to="/admin/dashboard/events" className="nav-item">
             <FiCalendar size={18} /> Events
           </Link>
+            <Link to="/admin/dashboard/checkin" className="nav-item ">
+                      <FiCheckCircle size={18} /> Check-in
+                    </Link>
           <Link to="/admin/dashboard/registrations" className="nav-item">
             <FiCalendar size={18} /> Event Registration
           </Link>

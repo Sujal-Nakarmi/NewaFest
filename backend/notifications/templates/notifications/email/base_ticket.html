@@ -1,4 +1,3 @@
-<!-- notifications/templates/notifications/email/base_ticket.html -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,106 +6,201 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            line-height: 1.6;
+            line-height: 1.4;
             color: #333;
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 0;
+        }
+        .ticket-container {
+            position: relative;
+            padding: 0;
+            margin: 20px 0;
         }
         .ticket {
-            border: 2px solid #4a7aff;
-            border-radius: 10px;
+            position: relative;
+            border: 1px dashed #999;
             padding: 20px;
             background-color: #f9f9f9;
+            background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='smallGrid' width='20' height='20' patternUnits='userSpaceOnUse'%3E%3Cpath d='M 20 0 L 0 20' fill='none' stroke='rgba(0, 0, 0, 0.05)' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23smallGrid)'/%3E%3C/svg%3E");
+            overflow: hidden;
         }
-        .ticket-header {
-            background-color: #4a7aff;
-            color: white;
-            padding: 15px;
-            margin: -20px -20px 20px -20px;
-            border-top-left-radius: 8px;
-            border-top-right-radius: 8px;
+        .fold-here {
             text-align: center;
-        }
-        .ticket-details {
+            color: #999;
+            font-size: 12px;
+            padding: 5px 0;
+            border-bottom: 1px dashed #999;
             margin-bottom: 20px;
+            background-color: #f0f0f0;
         }
-        .details-row {
+        .fold-here-bottom {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            padding: 5px 0;
+            border-top: 1px dashed #999;
+            margin-top: 20px;
+            background-color: #f0f0f0;
+        }
+        .ticket-content {
             display: flex;
-            margin-bottom: 10px;
+            flex-wrap: wrap;
         }
-        .detail-label {
-            font-weight: bold;
-            width: 40%;
-        }
-        .detail-value {
+        .left-column {
             width: 60%;
         }
-        .ticket-footer {
-            margin-top: 30px;
-            font-size: 12px;
+        .right-column {
+            width: 40%;
+            text-align: right;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .info-label {
+            font-weight: bold;
+            width: 180px;
+            font-size: 16px;
+        }
+        .info-value {
+            flex-grow: 1;
+            font-size: 16px;
+        }
+        .event-title {
+            font-size: 24px;
+            font-weight: bold;
             text-align: center;
-            color: #666;
+            margin: 20px 0;
         }
         .qr-code {
-            text-align: center;
+            text-align: right;
             margin: 20px 0;
         }
         .qr-code img {
             max-width: 150px;
         }
+        .warning {
+            color: #e53935;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .save-ticket {
+            color: #e53935;
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 10px;
+            text-align: right;
+        }
+        .bottom-warning {
+            color: #e53935;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table th {
+            background-color: #f0f0f0;
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+        .note-box {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #fff4e0;
+            border-left: 4px solid #ffa500;
+        }
+        .note-box p {
+            margin: 0;
+        }
+        .venue-address {
+            font-weight: normal;
+        }
+        .venue-address a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
-    <div class="ticket">
-        <div class="ticket-header">
-            <h1>{% block ticket_type %}Event Registration{% endblock %}</h1>
-        </div>
-        
-        <div class="ticket-details">
-            <div class="details-row">
-                <div class="detail-label">Registration ID:</div>
-                <div class="detail-value">{{ registration_id }}</div>
+    <div class="ticket-container">
+        <div class="fold-here">FOLD HERE</div>
+        <div class="ticket">
+            <div class="event-title">
+                {% block event_title %}{{ event_name }} - {{ event_year }}{% endblock %}
             </div>
-            <div class="details-row">
-                <div class="detail-label">Name:</div>
-                <div class="detail-value">{{ user.full_name }}</div>
-            </div>
-            <div class="details-row">
-                <div class="detail-label">Event:</div>
-                <div class="detail-value">{{ event_name }} - {{ event_year }}</div>
-            </div>
-            <div class="details-row">
-                <div class="detail-label">Location:</div>
-                <div class="detail-value">{{ event_location }}</div>
-            </div>
-            <div class="details-row">
-                <div class="detail-label">Date & Time:</div>
-                <div class="detail-value">{{ event_start_time|date:"F j, Y, g:i a" }}</div>
-            </div>
-            <div class="details-row">
-                <div class="detail-label">Registration Date:</div>
-                <div class="detail-value">{{ registration_date|date:"F j, Y" }}</div>
-            </div>
-            <div class="details-row">
-                <div class="detail-label">Category:</div>
-                <div class="detail-value">{{ category }}</div>
+            
+            <div class="ticket-content">
+                <div class="left-column">
+                    <div class="info-row">
+                        <div class="info-label">EVENT:</div>
+                        <div class="info-value">{{ event_name }}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="info-label">Registration ID:</div>
+                        <div class="info-value">{{ registration_id }}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="info-label">EVENT FROM:</div>
+                        <div class="info-value">{{ event_start_time|date:"Y-m-d g:i A" }}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="info-label">Location:</div>
+                        <div class="info-value">
+                            {{ event_location }}
+                            <div class="venue-address">
+                                {% block venue_address %}{% endblock %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="info-label">User ID:</div>
+                        <div class="info-value">{{ user.id|default:"" }}</div>
+                    </div>
+                    
+                 
+                </div>
+                
+                <div class="right-column">
+                    <div class="info-row">
+                        <div class="info-label">TICKET CLASS:</div>
+                        <div class="info-value">{% block ticket_type %}Event Registration{% endblock %}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="info-label">PURCHASED ON:</div>
+                        <div class="info-value">{{ registration_date|date:"d M Y" }}</div>
+                    </div>
+                    
+                   
+                    
+                    <img src="cid:{{ qr_cid }}" alt="QR Code" width="200" height="200">
+
+
+          
+                    
+                </div>
             </div>
             
             {% block category_specific_details %}
             <!-- This block will be overridden by specific templates -->
             {% endblock %}
+            
+          
         </div>
-        
-        <div class="qr-code">
-            <!-- You can integrate with a QR code service or use a Django library to generate QR codes -->
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=REG{{ registration_id }}" alt="QR Code">
-        </div>
-        
-        <div class="ticket-footer">
-            <p>Please present this ticket at the event. This ticket is valid for one person only.</p>
-            <p>For any inquiries, please contact our support team at support@yourdomain.com</p>
-        </div>
+        <div class="fold-here-bottom">FOLD HERE</div>
     </div>
 </body>
 </html>
